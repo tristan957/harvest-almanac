@@ -11,8 +11,9 @@ sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
   - setup: |
+      cd harvest-almanac
       CC=gcc meson build
       meson configure -Dwerror=true build
   - build: |
-      cd tllt-cp
+      cd harvest-almanac
       ninja -C build
