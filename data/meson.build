@@ -25,3 +25,4 @@ resources = gnome.compile_resources(
 install_data('ht.sr.git.tristan957.harvest-almanac.gschema.xml',
     install_dir: join_paths(get_option('datadir'), 'glib-2.0/schemas')
 )
+

@@ -17,6 +17,8 @@ c_args = [
     '-Wall',
     '-Wextra',
     '--pedantic',
+    # Required to pick up hal-resources.h in some IDEs
+    '-I' + join_paths(meson.build_root(), 'data'),
 ]
 
 cc = meson.get_compiler('c')
