@@ -1,0 +1,18 @@
+image: fedora/latest
+packages:
+  - gcc
+  - libcurl-devel
+  - gtk3-devel
+  - meson
+  - json-glib-devel
+  - make
+  - git
+sources:
+  - https://git.sr.ht/~tristan957/harvest-almanac
+tasks:
+  - setup: |
+      CC=gcc meson build
+      meson configure -Dwerror=true build
+  - build: |
+      cd tllt-cp
+      ninja -C build

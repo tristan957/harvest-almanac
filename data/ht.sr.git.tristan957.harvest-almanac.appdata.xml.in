@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>ht.sr.git.tristan957.harvest-almanac</id>
+	<licence>GPL-3.0</licence>
+	<description>
+		<p>Harvest for Linux</p>
+	</description>
+	<url type="homepage">https://git.sr.ht/~tristan957/harvest-almanac</url>
+	<screenshots>
+		<screenshot type="default">...</screenshot>
+	</screenshots>
+	<updatecontact>tristan_dot_partin_at_gmail.com</updatecontact>
+</component>
+

@@ -1,0 +1,18 @@
+{
+	"[c]": {
+		"editor.formatOnSave": true,
+		"editor.insertSpaces": false,
+	},
+	"[cpp]": {
+		"editor.formatOnSave": true,
+		"editor.insertSpaces": false,
+	},
+	"files.associations": {
+		"*clang-format": "yaml",
+		"*.desktop.in": "ini",
+		"*.xml.in": "xml",
+		"*.ui": "xml",
+		"*.h.in": "c",
+	},
+	"C_Cpp.clang_format_path": "/usr/bin/clang-format", // until a new version of C/C++ is released with an upgraded clang-format
+}

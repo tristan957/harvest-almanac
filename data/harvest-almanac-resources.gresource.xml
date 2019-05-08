@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+	<gresource prefix="/ht/sr/git/tristan957/harvest-almanac">
+		<file preprocess="xml-stripblanks">ui/hal-window.ui</file>
+	</gresource>
+</gresources>
