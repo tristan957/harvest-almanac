@@ -38,7 +38,7 @@ libharvest = library(
     dependencies: [
         libgio_dep,
         libcurl_dep,
-        libjson_glib_dep,
+        json_glib_dep,
     ],
     install: true,
 )
