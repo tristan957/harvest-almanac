@@ -40,7 +40,7 @@ executable(
     dependencies: [
         libgtk_dep,
         libhandy_dep,
-        libharvest_dep,
+        libharvest_glib_dep,
 	],
     gui_app: true,
     install: true,

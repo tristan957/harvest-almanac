@@ -16,25 +16,25 @@ harvest_h = configure_file(
 sources = [
 ]
 
-libharvest_public_headers = [
+libharvest_glib_public_headers = [
     harvest_h
 ]
 
-install_headers(libharvest_public_headers, subdir: 'harvest')
+install_headers(libharvest_glib_public_headers, subdir: 'harvest-glib')
 
-pkgincludedir = join_paths(get_option('includedir'), 'harvest')
+pkgincludedir = join_paths(get_option('includedir'), 'harvest-glib')
 
-libharvest_version = '1.0.0'
+libharvest_glib_version = '1.0.0'
 
 c_args = [
     '-DHARVEST_COMPILATION',
 ]
 
-libharvest = library(
-    'harvest',
+libharvest_glib = library(
+    'harvest-glib',
     sources,
     c_args: c_args,
-    version: libharvest_version,
+    version: libharvest_glib_version,
     dependencies: [
         libgio_dep,
         libcurl_dep,
@@ -43,8 +43,8 @@ libharvest = library(
     install: true,
 )
 
-libharvest_dep = declare_dependency(
+libharvest_glib_dep = declare_dependency(
     include_directories: include_directories('.'),
-    link_with: libharvest,
-    version: libharvest_version
+    link_with: libharvest_glib,
+    version: libharvest_glib_version
 )
