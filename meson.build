@@ -33,15 +33,15 @@ add_project_arguments(c_args, language: 'c')
 i18n = import('i18n')
 gnome = import('gnome')
 
-libhandy_dep = dependency('libhandy-0.0', version: '>= 0.0.9', required: true, fallback: ['libhandy', 'libhandy_dep'])
 libgio_dep = dependency('gio-2.0', version: '>= 2.50', required: true, fallback: ['glib', 'libgio_dep'])
-libcurl_dep = dependency('libcurl', version: '>= 7.52', required: true)
 json_glib_dep = dependency('json-glib-1.0', version: '>= 1.2', required: true, fallback: ['json-glib', 'json_glib_dep'])
 libgtk_dep = dependency('gtk+-3.0', version: '>= 3.22', required: true, fallback: ['gtk', 'libgtk_dep'])
+libhandy_dep = dependency('libhandy-0.0', version: '>= 0.0.9', required: true, fallback: ['libhandy', 'libhandy_dep'])
+libcurl_dep = dependency('libcurl', version: '>= 7.52', required: true)
 
 subdir('data')
 subdir('lib')
 subdir('src')
 subdir('po')
 
-# meson.add_install_script('meson_post_install.sh')
+meson.add_install_script('meson_post_install.sh')
