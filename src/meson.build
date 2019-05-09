@@ -29,11 +29,17 @@ sources = [
     'hal-window.c',
 ]
 
+c_args = [
+    '-D HANDY_USE_UNSTABLE_API',
+]
+
 executable(
     'harvest-almanac',
     sources + resources,
+    c_args: c_args,
     dependencies: [
         libgtk_dep,
+        libhandy_dep,
         libharvest_dep,
 	],
     gui_app: true,

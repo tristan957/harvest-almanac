@@ -12,6 +12,8 @@ project(
         'c_std=gnu11', # Symptom of statically compiling with wraps
         'buildtype=debugoptimized',
         'warning_level=1',
+        'libhandy:tests=false',
+        'libhandy:vapi=false',
     ],
 )
 
