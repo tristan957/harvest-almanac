@@ -1,5 +1,5 @@
 [wrap-git]
 directory = libhandy
 
-url = https://source.puri.sm/Librem5/libhandy.git
+url = https://source.puri.sm/Librem5/libhandy
 revision = head

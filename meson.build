@@ -14,6 +14,7 @@ project(
         'warning_level=1',
         'libhandy:tests=false',
         'libhandy:vapi=false',
+        'libhandy:glade_catalog=enabled'
     ],
 )
 
@@ -43,4 +44,4 @@ subdir('lib')
 subdir('src')
 subdir('po')
 
-meson.add_install_script('meson_post_install.sh')
+# meson.add_install_script('meson_post_install.sh')

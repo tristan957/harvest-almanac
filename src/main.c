@@ -18,7 +18,7 @@ main(int argc, char *argv[])
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
 
-	g_autoptr(HalApplication) app = hal_application_new("ht.sr.git.tristan957.harvest-almanac");
+	g_autoptr(HalApplication) app = hal_application_new("io.partin.tristan.HarvestAlmanac");
 
 	g_set_application_name(_("Harvest Almanac"));
 

@@ -1,3 +1,4 @@
+#include <glib-object.h>
 #include <gtk/gtk.h>
 
 #include "hal-application.h"
@@ -48,7 +49,7 @@ static void
 hal_application_startup(GApplication *self)
 {
 	g_resources_register(hal_get_resource());
-	g_application_set_resource_base_path(self, "/ht/sr/git/tristan957/harvest-almanac");
+	g_application_set_resource_base_path(self, "/io/partin/tristan/HarvestAlmanac");
 
 	G_APPLICATION_CLASS(hal_application_parent_class)->startup(self);
 }

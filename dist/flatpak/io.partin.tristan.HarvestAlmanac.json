@@ -1,0 +1,62 @@
+{
+	"app-id": "io.partin.tristan.HarvestAlmanac",
+	"runtime": "org.gnome.Platform",
+	"runtime-version": "3.32",
+	"sdk": "org.gnome.Sdk",
+	"command": "harvest-almanac",
+	"finish-args": [
+		"--share=network",
+		"--share=ipc",
+		"--socket=x11",
+		"--socket=wayland",
+		"--filesystem=xdg-run/dconf",
+		"--filesystem=~/.config/dconf:ro",
+		"--talk-name=ca.desrt.dconf",
+		"--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+	],
+	"build-options": {
+		"cflags": "-O2"
+	},
+	"cleanup": [
+		"/include",
+		"/lib/pkgconfig",
+		"/man",
+		"/share/doc",
+		"/share/gtk-doc",
+		"/share/man",
+		"/share/pkgconfig",
+		"*.la",
+		"*.a"
+	],
+	"modules": [
+		{
+			"name": "libhandy",
+			"builddir": true,
+			"buildsystem": "meson",
+			"config-opts": [
+				"-Dtests=false",
+				"-Dvapi=false"
+			],
+			"sources": [
+				{
+					"type": "git",
+					"url": "https://source.puri.sm/Librem5/libhandy"
+				}
+			]
+		},
+		{
+			"name": "harvest-almanac",
+			"builddir": true,
+			"buildsystem": "meson",
+			"config-opts": [
+				"-Dwrap_mode=nodownload"
+			],
+			"sources": [
+				{
+					"type": "git",
+					"url": "https://git.sr.ht/~tristan957/harvest-almanac"
+				}
+			]
+		}
+	]
+}

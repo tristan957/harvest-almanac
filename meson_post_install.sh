@@ -1,5 +1,6 @@
-
 #!/bin/sh
+
+echo $FLATPAK_BUILD
 
 if [ -z $DESTDIR ]; then
 	echo 'Compiling GSchema'

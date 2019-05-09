@@ -1,3 +1,4 @@
+#include <glib-object.h>
 #include <gtk/gtk.h>
 
 #include "hal-window.h"
@@ -29,7 +30,7 @@ hal_window_class_init(HalWindowClass *klass)
 	object_class->finalize = hal_window_finalize;
 
 	gtk_widget_class_set_template_from_resource(
-		wid_class, "/ht/sr/git/tristan957/harvest-almanac/ui/hal-window.ui");
+		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-window.ui");
 }
 
 static void

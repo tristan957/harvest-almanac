@@ -1,6 +1,7 @@
 *.ui#
 *.ui~
 .env
+.flatpak*
 .vscode/c_cpp_properties.json
 .vscode/ipch
 build

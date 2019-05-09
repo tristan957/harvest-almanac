@@ -1,6 +1,6 @@
 i18n.merge_file(
-    input: 'ht.sr.git.tristan957.harvest-almanac.desktop.in',
-    output: 'ht.sr.git.tristan957.harvest-almanac.desktop',
+    input: 'io.partin.tristan.HarvestAlmanac.desktop.in',
+    output: 'io.partin.tristan.HarvestAlmanac.desktop',
     type: 'desktop',
     po_dir: '../po',
     install: true,
@@ -8,8 +8,8 @@ i18n.merge_file(
 )
 
 i18n.merge_file(
-    input: 'ht.sr.git.tristan957.harvest-almanac.appdata.xml.in',
-    output: 'ht.sr.git.tristan957.harvest-almanac.appdata.xml',
+    input: 'io.partin.tristan.HarvestAlmanac.appdata.xml.in',
+    output: 'io.partin.tristan.HarvestAlmanac.appdata.xml',
     po_dir: '../po',
     install: true,
     install_dir: join_paths(get_option('datadir'), 'appdata'),
@@ -17,12 +17,11 @@ i18n.merge_file(
 
 resources = gnome.compile_resources(
     'hal-resources',
-    'harvest-almanac-resources.gresource.xml',
+    'hal-resources.gresource.xml',
     source_dir: '../data',
     c_name: 'hal',
 )
 
-install_data('ht.sr.git.tristan957.harvest-almanac.gschema.xml',
+install_data('io.partin.tristan.HarvestAlmanac.gschema.xml',
     install_dir: join_paths(get_option('datadir'), 'glib-2.0/schemas')
 )
-
