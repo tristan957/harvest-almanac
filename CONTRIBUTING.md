@@ -38,6 +38,30 @@ meson configure -Dwrap_mode=forcefallback build
 
 ### Building
 
+This project includes support for flatpak in addition to a regular application.
+
+#### Host
+
 ```text
 ninja -C build
+```
+
+#### flatpak
+
+```text
+flatpak-builder --install --user .flatpak dist/flatpak/io.partin.tristan.HarvestAlmanac.json
+```
+
+### Running
+
+#### Host
+
+```text
+./build/src/harvest-almanac
+```
+
+#### flatpak
+
+```text
+flatpak run io.partin.tristan.HarvestAlmanac
 ```
