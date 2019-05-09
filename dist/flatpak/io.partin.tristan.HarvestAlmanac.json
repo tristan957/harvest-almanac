@@ -49,7 +49,8 @@
 			"builddir": true,
 			"buildsystem": "meson",
 			"config-opts": [
-				"-Dwrap_mode=nodownload"
+				"-Dwrap_mode=nodownload",
+				"-Dbuildtype=release"
 			],
 			"sources": [
 				{
