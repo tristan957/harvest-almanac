@@ -38,7 +38,13 @@ meson configure -Dwrap_mode=forcefallback build
 
 ### Building
 
-This project includes support for flatpak in addition to a regular application.
+This project includes support for flatpak and snap in addition to a regular
+application.
+
+Unfortunately the version of GTK in the `core18` snap is incompatible with
+`libhandy`. A workaround could be using the GTK wrap supplied in this repo. It
+would take time to figure out if versions of packages in `core18` work with
+GTK 3.24. This is doable if someone commits to it.
 
 #### Host
 
