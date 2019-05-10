@@ -14,27 +14,26 @@ apps:
     command: harvest-almanac
 
 parts:
-  # libhandy:
-  #   plugin: meson
-  #   meson-parameters:
-  #     - -Dvapi=false
-  #     - -Dtest=false
-  #   source-type: git
-  #   source: https://source.puri.sm/Librem5/libhandy
-  #   build-packages:
-  #     - gcc
-  #     - libgtk-3-dev
-  harvest-almanac:
-    # after: [libhandy]
+  libhandy:
     plugin: meson
     meson-parameters:
-      - -Dwrap_mode=forcefallback
+      - -Dvapi=false
+      - -Dtest=false
+    source-type: git
+    source: https://source.puri.sm/Librem5/libhandy
+    build-packages:
+      - gcc
+      - libgtk-3-dev
+  harvest-almanac:
+    after: [libhandy]
+    plugin: meson
+    meson-parameters:
       - -Dbuildtype=release
       - -Dlibhandy:glade_catalog=disabled
     source-type: git
     source: https://git.sr.ht/~tristan957/harvest-almanac
     build-packages:
       - gcc
-      # - libgtk-3-dev
-      # - libjson-glib-dev
+      - libjson-glib-dev
       - libcurl4-openssl-dev
+      - libgtk-3-dev
