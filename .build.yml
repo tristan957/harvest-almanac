@@ -14,7 +14,7 @@ tasks:
   - setup: |
       cd harvest-almanac
       CC=gcc meson build
-      meson configure -Dwerror=true build
+      meson configure -Dwerror=true -Dbuildtype=release -Dlibhandy:glade_catalog=disabled build
   - build: |
       cd harvest-almanac
       ninja -C build
