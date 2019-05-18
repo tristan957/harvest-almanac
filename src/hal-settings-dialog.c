@@ -32,6 +32,8 @@ hal_settings_dialog_class_init(HalSettingsDialogClass *klass)
 
 	gtk_widget_class_set_template_from_resource(
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-settings-dialog.ui");
+	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog,
+												 harvest_api_key_entry);
 }
 
 static void
