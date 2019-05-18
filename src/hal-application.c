@@ -4,6 +4,7 @@
 #include "hal-application.h"
 #include "hal-config.h"
 #include "hal-resources.h"
+#include "hal-settings-dialog.h"
 #include "hal-window.h"
 
 struct _HalApplication
@@ -46,6 +47,18 @@ hal_application_about(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVarian
 }
 
 static void
+hal_application_settings(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param,
+						 gpointer data)
+{
+	HalApplication *self		= HAL_APPLICATION(data);
+	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
+
+	HalSettingsDialog *dialog		  = hal_settings_dialog_new(GTK_WINDOW(priv->main_window));
+	G_GNUC_UNUSED const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+
+static void
 hal_application_startup(GApplication *self)
 {
 	g_resources_register(hal_get_resource());
@@ -71,7 +84,9 @@ hal_application_class_init(HalApplicationClass *klass)
 	app_class->startup  = hal_application_startup;
 }
 
-static const GActionEntry app_entries[] = {{.name = "about", .activate = hal_application_about}};
+static const GActionEntry app_entries[] = {
+	{.name = "about", .activate = hal_application_about},
+	{.name = "settings", .activate = hal_application_settings}};
 
 static void
 hal_application_init(HalApplication *self)

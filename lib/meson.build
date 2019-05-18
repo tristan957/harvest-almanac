@@ -48,3 +48,13 @@ libharvest_glib_dep = declare_dependency(
     link_with: libharvest_glib,
     version: libharvest_glib_version
 )
+
+pkg = import('pkgconfig')
+pkg.generate(
+	libharvest_glib,
+	description: 'GLib-based library for interacting with the Harvest API',
+	filebase: 'libharvest-glib-1.0.0',
+	name: 'libharvest-glib',
+	version: libharvest_glib_version,
+	url: 'https://git.sr.ht/~tristan957/harvest-almanac',
+)

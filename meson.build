@@ -1,6 +1,3 @@
-# https://mesonbuild.com/Subprojects.html
-# https://mesonbuild.com/Wrap-dependency-system-manual.html
-
 project(
     'harvest-almanac',
     'c',
@@ -14,7 +11,8 @@ project(
         'warning_level=1',
         'libhandy:tests=false',
         'libhandy:vapi=false',
-        'libhandy:glade_catalog=enabled'
+        'libhandy:glade_catalog=enabled',
+        'libhandy:gtk_doc=true',
     ],
 )
 
@@ -24,6 +22,7 @@ c_args = [
     '--pedantic',
     # Required to pick up hal-resources.h in some IDEs
     '-I' + join_paths(meson.build_root(), 'data'),
+    '-Wno-overlength-strings',
 ]
 
 cc = meson.get_compiler('c')

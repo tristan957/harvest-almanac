@@ -26,6 +26,7 @@ configure_file(
 sources = [
     'main.c',
     'hal-application.c',
+    'hal-settings-dialog.c',
     'hal-window.c',
 ]
 
