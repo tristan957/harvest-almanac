@@ -7,7 +7,7 @@ packages:
   - json-glib-devel
   - make
   - git
-  - gobject-introspection # libhandy
+  - gobject-introspection-devel # libhandy
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
