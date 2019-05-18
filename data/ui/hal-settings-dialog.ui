@@ -1,8 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
-<interface>
+<!-- Generated with glade 3.22.1 
+
+Copyright (C) 2019
+
+This file is part of Harvest Almanac.
+
+Harvest Almanac is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Harvest Almanac is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Harvest Almanac.  If not, see <http://www.gnu.org/licenses/>.
+
+Author: Tristan Partin
+
+-->
+<interface domain="harvest-almanac">
   <requires lib="gtk+" version="3.20"/>
   <requires lib="libhandy" version="0.0"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name Harvest Almanac -->
+  <!-- interface-description Harvest client for Linux -->
+  <!-- interface-copyright 2019 -->
+  <!-- interface-authors Tristan Partin -->
   <template class="HalSettingsDialog" parent="HdyDialog">
     <property name="can_focus">False</property>
     <property name="modal">True</property>
