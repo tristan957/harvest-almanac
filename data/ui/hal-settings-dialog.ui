@@ -45,8 +45,8 @@ Author: Tristan Partin
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-6">button1</action-widget>
-      <action-widget response="-10">button2</action-widget>
+      <action-widget response="-6">cancel_button</action-widget>
+      <action-widget response="-10">save_button</action-widget>
     </action-widgets>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -60,7 +60,7 @@ Author: Tristan Partin
             <property name="margin_bottom">3</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="button1">
+              <object class="GtkButton" id="cancel_button">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -73,7 +73,7 @@ Author: Tristan Partin
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button2">
+              <object class="GtkButton" id="save_button">
                 <property name="label" translatable="yes">Save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -138,6 +138,30 @@ Author: Tristan Partin
                         <property name="top_attach">0</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Prefer Dark Theme</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSwitch">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="halign">start</property>
+                        <signal name="activate" handler="on_prefer_dark_theme_switch_activate" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -152,8 +176,8 @@ Author: Tristan Partin
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-6">button1</action-widget>
-      <action-widget response="-10">button2</action-widget>
+      <action-widget response="-6">cancel_button</action-widget>
+      <action-widget response="-10">save_button</action-widget>
     </action-widgets>
   </template>
 </interface>

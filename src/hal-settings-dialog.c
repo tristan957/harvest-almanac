@@ -17,6 +17,12 @@ typedef struct HalSettingsDialogPrivate
 G_DEFINE_TYPE_WITH_PRIVATE(HalSettingsDialog, hal_settings_dialog, HDY_TYPE_DIALOG)
 
 static void
+on_prefer_dark_theme_switch_activate(GtkSwitch *widget, gpointer user_data)
+{
+	g_print("hello\n");
+}
+
+static void
 hal_settings_dialog_finalize(GObject *obj)
 {
 	G_OBJECT_CLASS(hal_settings_dialog_parent_class)->finalize(obj);
@@ -34,6 +40,7 @@ hal_settings_dialog_class_init(HalSettingsDialogClass *klass)
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-settings-dialog.ui");
 	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog,
 												 harvest_api_key_entry);
+	gtk_widget_class_bind_template_callback(wid_class, on_prefer_dark_theme_switch_activate);
 }
 
 static void
