@@ -55,8 +55,9 @@ hal_application_settings(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVar
 	HalApplication *self		= HAL_APPLICATION(data);
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
-	HalSettingsDialog *dialog		  = hal_settings_dialog_new(GTK_WINDOW(priv->main_window));
-	G_GNUC_UNUSED const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+	HalSettingsDialog *dialog =
+		hal_settings_dialog_new(GTK_WINDOW(priv->main_window), priv->settings);
+	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
