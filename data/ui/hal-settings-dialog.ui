@@ -76,8 +76,10 @@ Author: Tristan Partin
               <object class="GtkButton" id="save_button">
                 <property name="label" translatable="yes">Save</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_save_button_clicked" object="HalSettingsDialog" swapped="no"/>
                 <style>
                   <class name="suggested-action"/>
                 </style>
@@ -151,11 +153,11 @@ Author: Tristan Partin
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSwitch">
+                      <object class="GtkSwitch" id="prefer_dark_theme_switch">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="halign">start</property>
-                        <signal name="activate" handler="on_prefer_dark_theme_switch_activate" swapped="no"/>
+                        <signal name="notify::active" handler="on_prefer_dark_theme_switch_activate" object="HalSettingsDialog" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>

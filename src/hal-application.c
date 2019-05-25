@@ -15,6 +15,8 @@ struct _HalApplication
 typedef struct HalApplicationPrivate
 {
 	HalWindow *main_window;
+
+	GSettings *settings;
 } HalApplicationPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalApplication, hal_application, GTK_TYPE_APPLICATION)
@@ -70,6 +72,11 @@ hal_application_startup(GApplication *self)
 static void
 hal_application_finalize(GObject *obj)
 {
+	HalApplication *self		= HAL_APPLICATION(obj);
+	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
+
+	g_clear_object(&priv->settings);
+
 	G_OBJECT_CLASS(hal_application_parent_class)->finalize(obj);
 }
 
@@ -91,6 +98,10 @@ static const GActionEntry app_entries[] = {
 static void
 hal_application_init(HalApplication *self)
 {
+	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
+
+	priv->settings = g_settings_new("io.partin.tristan.HarvestAlmanac");
+
 	g_action_map_add_action_entries(G_ACTION_MAP(self), app_entries, G_N_ELEMENTS(app_entries),
 									self);
 }

@@ -11,15 +11,35 @@ struct _HalSettingsDialog
 
 typedef struct HalSettingsDialogPrivate
 {
+	GtkButton *save_button;
 	GtkEntry *harvest_api_key_entry;
+	GtkSwitch *prefer_dark_theme_switch;
+
+	gboolean dirty;
 } HalSettingsDialogPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalSettingsDialog, hal_settings_dialog, HDY_TYPE_DIALOG)
 
 static void
-on_prefer_dark_theme_switch_activate(GtkSwitch *widget, gpointer user_data)
+on_prefer_dark_theme_switch_activate(G_GNUC_UNUSED GtkSwitch *widget,
+									 G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
 {
-	g_print("hello\n");
+	HalSettingsDialog *self		   = HAL_SETTINGS_DIALOG(user_data);
+	HalSettingsDialogPrivate *priv = hal_settings_dialog_get_instance_private(self);
+
+	priv->dirty = TRUE;
+	gtk_widget_set_sensitive(GTK_WIDGET(priv->save_button), TRUE);
+}
+
+static void
+on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	HalSettingsDialog *self		   = HAL_SETTINGS_DIALOG(user_data);
+	HalSettingsDialogPrivate *priv = hal_settings_dialog_get_instance_private(self);
+
+	if (!priv->dirty) {
+		return;
+	}
 }
 
 static void
@@ -40,13 +60,21 @@ hal_settings_dialog_class_init(HalSettingsDialogClass *klass)
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-settings-dialog.ui");
 	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog,
 												 harvest_api_key_entry);
+	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog,
+												 prefer_dark_theme_switch);
+	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog, save_button);
 	gtk_widget_class_bind_template_callback(wid_class, on_prefer_dark_theme_switch_activate);
+	gtk_widget_class_bind_template_callback(wid_class, on_save_button_clicked);
 }
 
 static void
 hal_settings_dialog_init(HalSettingsDialog *self)
 {
+	HalSettingsDialogPrivate *priv = hal_settings_dialog_get_instance_private(self);
+
 	gtk_widget_init_template(GTK_WIDGET(self));
+
+	priv->dirty = FALSE;
 }
 
 HalSettingsDialog *
