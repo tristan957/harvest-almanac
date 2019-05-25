@@ -61,6 +61,16 @@ on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 }
 
 static void
+hal_settings_dialog_constructed(GObject *obj)
+{
+	HalSettingsDialog *self		   = HAL_SETTINGS_DIALOG(obj);
+	HalSettingsDialogPrivate *priv = hal_settings_dialog_get_instance_private(self);
+
+	gtk_switch_set_active(priv->prefer_dark_theme_switch,
+						  g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME));
+}
+
+static void
 hal_settings_dialog_finalize(GObject *obj)
 {
 	HalSettingsDialog *self		   = HAL_SETTINGS_DIALOG(obj);
@@ -95,6 +105,7 @@ hal_settings_dialog_class_init(HalSettingsDialogClass *klass)
 	GObjectClass *obj_class   = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *wid_class = GTK_WIDGET_CLASS(klass);
 
+	obj_class->constructed  = hal_settings_dialog_constructed;
 	obj_class->finalize		= hal_settings_dialog_finalize;
 	obj_class->set_property = hal_settings_dialog_set_property;
 
