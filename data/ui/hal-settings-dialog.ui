@@ -134,6 +134,7 @@ Author: Tristan Partin
                       <object class="GtkEntry" id="harvest_api_key_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <signal name="changed" handler="on_harvest_api_key_entry_changed" object="HalSettingsDialog" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
