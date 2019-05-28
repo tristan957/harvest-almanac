@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
@@ -64,8 +66,21 @@ hal_application_settings(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVar
 
 	HalSettingsDialog *dialog =
 		hal_settings_dialog_new(GTK_WINDOW(priv->main_window), priv->settings);
-	gtk_dialog_run(GTK_DIALOG(dialog));
+	const GtkResponseType response = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	if (response == GTK_RESPONSE_APPLY) {
+		g_autofree gchar *harvest_api_key =
+			g_settings_get_string(priv->settings, SETTINGS_HARVEST_API_KEY);
+		GActionMap *map = G_ACTION_MAP(priv->main_window);
+		if (strlen(harvest_api_key) != 0) {
+			GAction *show_content = g_action_map_lookup_action(map, "show-content");
+			g_action_activate(show_content, NULL);
+		} else {
+			GAction *show_content = g_action_map_lookup_action(map, "hide-content");
+			g_action_activate(show_content, NULL);
+		}
+	}
 }
 
 static void

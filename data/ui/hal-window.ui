@@ -109,7 +109,7 @@ Author: Tristan Partin
                 </style>
               </object>
               <packing>
-                <property name="name">title</property>
+                <property name="name">application-title</property>
                 <property name="title" translatable="yes">Application Title</property>
               </packing>
             </child>
@@ -164,8 +164,8 @@ Author: Tristan Partin
             <property name="wrap">True</property>
           </object>
           <packing>
-            <property name="name">api-key</property>
-            <property name="title" translatable="yes">API Key</property>
+            <property name="name">harvest-api-key</property>
+            <property name="title" translatable="yes">Harvest API Key</property>
           </packing>
         </child>
         <child>
