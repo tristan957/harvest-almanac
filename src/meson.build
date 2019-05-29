@@ -28,6 +28,7 @@ configure_file(
 sources = [
     'main.c',
     'hal-application.c',
+    'hal-profile.c',
     'hal-settings-dialog.c',
     'hal-time-tracker.c',
     'hal-window.c',

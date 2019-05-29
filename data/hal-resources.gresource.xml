@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
 	<gresource prefix="/io/partin/tristan/HarvestAlmanac">
+		<file preprocess="xml-stripblanks">ui/hal-profile.ui</file>
 		<file preprocess="xml-stripblanks">ui/hal-settings-dialog.ui</file>
 		<file preprocess="xml-stripblanks">ui/hal-time-tracker.ui</file>
 		<file preprocess="xml-stripblanks">ui/hal-window.ui</file>
