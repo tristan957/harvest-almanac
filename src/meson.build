@@ -30,6 +30,7 @@ sources = [
     'hal-application.c',
     'hal-profile.c',
     'hal-settings-dialog.c',
+    'hal-time-entry.c',
     'hal-time-tracker.c',
     'hal-window.c',
 ]

@@ -1,6 +1,7 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
+#include "hal-time-entry.h"
 #include "hal-time-tracker.h"
 
 struct _HalTimeTracker
@@ -17,6 +18,7 @@ typedef struct HalTimeTrackerPrivate
 	GtkLabel *friday_time;
 	GtkLabel *saturday_time;
 	GtkLabel *sunday_time;
+	GtkListBox *time_entries;
 } HalTimeTrackerPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalTimeTracker, hal_time_tracker, GTK_TYPE_BOX)
@@ -31,8 +33,16 @@ enum HalTimeTrackerProps
 G_GNUC_UNUSED static GParamSpec *obj_properties[N_PROPS];
 
 static void
+hal_time_tracker_clear_entries(HalTimeTracker *self)
+{
+	G_GNUC_UNUSED HalTimeTrackerPrivate *priv = hal_time_tracker_get_instance_private(self);
+}
+
+static void
 hal_time_tracker_finalize(GObject *self)
 {
+	hal_time_tracker_clear_entries(HAL_TIME_TRACKER(self));
+
 	G_OBJECT_CLASS(hal_time_tracker_parent_class)->finalize(self);
 }
 
@@ -83,12 +93,17 @@ hal_time_tracker_class_init(HalTimeTrackerClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, friday_time);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, saturday_time);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, sunday_time);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, time_entries);
 }
 
 static void
 hal_time_tracker_init(HalTimeTracker *self)
 {
+	HalTimeTrackerPrivate *priv = hal_time_tracker_get_instance_private(self);
+
 	gtk_widget_init_template(GTK_WIDGET(self));
+
+	gtk_list_box_insert(priv->time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
 }
 
 HalTimeTracker *
