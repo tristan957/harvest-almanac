@@ -41,7 +41,7 @@ update_time_label(gpointer user_data)
 	HalTimeEntry *self		  = HAL_TIME_ENTRY(user_data);
 	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
 
-	if (g_cancellable_is_cancelled(self->cancellable)) {
+	if (self->cancellable == NULL || g_cancellable_is_cancelled(self->cancellable)) {
 		return FALSE;
 	}
 
@@ -63,7 +63,7 @@ on_status_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 		self->running = TRUE;
 		g_timer_continue(self->timer);
 		gtk_stack_set_visible_child_name(priv->status_stack, "stop");
-		self->cancellable = g_cancellable_new();
+		g_cancellable_reset(self->cancellable);
 		g_timeout_add(500, update_time_label, self);
 	} else {
 		self->running = FALSE;
@@ -78,10 +78,11 @@ hal_time_entry_finalize(GObject *obj)
 {
 	HalTimeEntry *self = HAL_TIME_ENTRY(obj);
 
-	if (self->cancellable != NULL && !g_cancellable_is_cancelled(self->cancellable)) {
+	if (!g_cancellable_is_cancelled(self->cancellable)) {
 		g_cancellable_cancel(self->cancellable);
 	}
 
+	g_object_unref(self->cancellable);
 	g_timer_destroy(self->timer);
 
 	G_OBJECT_CLASS(hal_time_entry_parent_class)->finalize(obj);
@@ -145,6 +146,7 @@ hal_time_entry_init(HalTimeEntry *self)
 	self->running = FALSE;
 	self->timer   = g_timer_new();
 	g_timer_stop(self->timer);
+	self->cancellable = g_cancellable_new();
 }
 
 HalTimeEntry *
