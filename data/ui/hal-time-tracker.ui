@@ -48,6 +48,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_monday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -94,6 +95,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_tuesday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -140,6 +142,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_wednesday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -186,6 +189,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_thursday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -232,6 +236,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_friday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -278,6 +283,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_saturday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -324,6 +330,7 @@ Author: Tristan Partin
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_sunday_button_clicked" object="day_stack" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -377,17 +384,105 @@ Author: Tristan Partin
       </packing>
     </child>
     <child>
-      <object class="HdyColumn">
+      <object class="GtkScrolledWindow">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="maximum_width">500</property>
-        <property name="linear_growth_width">500</property>
+        <property name="can_focus">True</property>
+        <property name="margin_top">10</property>
         <child>
-          <object class="GtkListBox" id="time_entries">
+          <object class="GtkViewport">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_top">20</property>
-            <property name="margin_bottom">20</property>
+            <child>
+              <object class="HdyColumn">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="maximum_width">500</property>
+                <property name="linear_growth_width">500</property>
+                <child>
+                  <object class="GtkStack" id="day_stack">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="transition_type">slide-left-right</property>
+                    <child>
+                      <object class="GtkListBox" id="monday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">monday</property>
+                        <property name="title" translatable="yes">Monday</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="tuesday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">tuesday</property>
+                        <property name="title" translatable="yes">Tuesday</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="wednesday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">wednesday</property>
+                        <property name="title" translatable="yes">Wednesday</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="thursday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">thursday</property>
+                        <property name="title" translatable="yes">Thursday</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="friday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">friday</property>
+                        <property name="title" translatable="yes">Friday</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="saturday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">saturday</property>
+                        <property name="title" translatable="yes">Saturday</property>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="sunday_time_entries">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="name">sunday</property>
+                        <property name="title" translatable="yes">Sunday</property>
+                        <property name="position">6</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>

@@ -20,8 +20,9 @@ typedef struct HalTimeEntryPrivate
 	GtkLabel *project;
 	GtkLabel *thursday_time;
 	GtkLabel *description;
-	GtkButton *status_button;
 	GtkStack *status_stack;
+	GtkButton *start_button;
+	GtkButton *stop_button;
 } HalTimeEntryPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalTimeEntry, hal_time_entry, GTK_TYPE_GRID)
@@ -133,15 +134,21 @@ hal_time_entry_class_init(HalTimeEntryClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, client);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, project);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, description);
-	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, status_button);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, status_stack);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, start_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeEntry, stop_button);
 	gtk_widget_class_bind_template_callback(wid_class, on_status_button_clicked);
 }
 
 static void
 hal_time_entry_init(HalTimeEntry *self)
 {
+	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
+
 	gtk_widget_init_template(GTK_WIDGET(self));
+
+	gtk_actionable_set_action_target(GTK_ACTIONABLE(priv->start_button), "t", (guint64) self);
+	gtk_actionable_set_action_target(GTK_ACTIONABLE(priv->stop_button), "t", (guint64) self);
 
 	self->running = FALSE;
 	self->timer   = g_timer_new();
@@ -153,4 +160,23 @@ HalTimeEntry *
 hal_time_entry_new()
 {
 	return g_object_new(HAL_TYPE_TIME_ENTRY, NULL);
+}
+
+gboolean
+hal_time_entry_is_running(HalTimeEntry *self)
+{
+	return self->running;
+}
+
+void
+hal_time_entry_stop(HalTimeEntry *self)
+{
+	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
+
+	if (self->running && !g_cancellable_is_cancelled(self->cancellable)) {
+		self->running = FALSE;
+		g_timer_stop(self->timer);
+		g_cancellable_cancel(self->cancellable);
+		gtk_stack_set_visible_child_name(priv->status_stack, "start");
+	}
 }

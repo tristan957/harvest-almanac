@@ -7,6 +7,7 @@
 #include "hal-config.h"
 #include "hal-resources.h"
 #include "hal-settings-dialog.h"
+#include "hal-time-entry.h"
 #include "hal-window.h"
 
 struct _HalApplication
@@ -32,9 +33,9 @@ hal_application_activate(GApplication *self)
 		priv->main_window = hal_window_new(self);
 	}
 
-	g_autoptr(GNotification) notification = g_notification_new("Harvest Almanac");
-	g_notification_set_body(notification, "Welcome to Harvest Almanac");
-	g_application_send_notification(self, "harvest-almanac", notification);
+	// g_autoptr(GNotification) notification = g_notification_new("Harvest Almanac");
+	// g_notification_set_body(notification, "Welcome to Harvest Almanac");
+	// g_application_send_notification(self, "harvest-almanac", notification);
 
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
 				 g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME), NULL);
@@ -84,6 +85,30 @@ hal_application_settings(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVar
 }
 
 static void
+hal_application_time_entry_start(G_GNUC_UNUSED GSimpleAction *action, GVariant *param,
+								 gpointer data)
+{
+	const guint64 address			  = g_variant_get_uint64(param);
+	G_GNUC_UNUSED HalTimeEntry *entry = HAL_TIME_ENTRY((HalTimeEntry *) address);
+
+	g_autoptr(GNotification) notification = g_notification_new("Harvest Almanac");
+	g_notification_set_body(notification, "Client -- Project timer started");
+	g_notification_add_button_with_target(notification, "Stop Timer", "app.time-entry-stop", "t",
+										  address, NULL);
+	g_application_send_notification(G_APPLICATION(data), "time-entry", notification);
+}
+
+static void
+hal_application_time_entry_stop(G_GNUC_UNUSED GSimpleAction *action, GVariant *param, gpointer data)
+{
+	const guint64 address = g_variant_get_uint64(param);
+	HalTimeEntry *entry   = HAL_TIME_ENTRY((HalTimeEntry *) address);
+
+	hal_time_entry_stop(entry);
+	g_application_withdraw_notification(G_APPLICATION(data), "time-entry");
+}
+
+static void
 hal_application_startup(GApplication *self)
 {
 	g_resources_register(hal_get_resource());
@@ -116,7 +141,13 @@ hal_application_class_init(HalApplicationClass *klass)
 
 static const GActionEntry app_entries[] = {
 	{.name = "about", .activate = hal_application_about},
-	{.name = "settings", .activate = hal_application_settings}};
+	{.name = "settings", .activate = hal_application_settings},
+	{.name			 = "time-entry-start",
+	 .activate		 = hal_application_time_entry_start,
+	 .parameter_type = "t"},
+	{.name			 = "time-entry-stop",
+	 .activate		 = hal_application_time_entry_stop,
+	 .parameter_type = "t"}};
 
 static void
 hal_application_init(HalApplication *self)

@@ -11,6 +11,13 @@ struct _HalTimeTracker
 
 typedef struct HalTimeTrackerPrivate
 {
+	GtkButton *monday_button;
+	GtkButton *tuesday_button;
+	GtkButton *wednesday_button;
+	GtkButton *thursday_button;
+	GtkButton *friday_button;
+	GtkButton *saturday_button;
+	GtkButton *sunday_button;
 	GtkLabel *monday_time;
 	GtkLabel *tuesday_time;
 	GtkLabel *wednesday_time;
@@ -18,7 +25,13 @@ typedef struct HalTimeTrackerPrivate
 	GtkLabel *friday_time;
 	GtkLabel *saturday_time;
 	GtkLabel *sunday_time;
-	GtkListBox *time_entries;
+	GtkListBox *monday_time_entries;
+	GtkListBox *tuesday_time_entries;
+	GtkListBox *wednesday_time_entries;
+	GtkListBox *thursday_time_entries;
+	GtkListBox *friday_time_entries;
+	GtkListBox *saturday_time_entries;
+	GtkListBox *sunday_time_entries;
 } HalTimeTrackerPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalTimeTracker, hal_time_tracker, GTK_TYPE_BOX)
@@ -36,6 +49,48 @@ static void
 hal_time_tracker_clear_entries(HalTimeTracker *self)
 {
 	G_GNUC_UNUSED HalTimeTrackerPrivate *priv = hal_time_tracker_get_instance_private(self);
+}
+
+static void
+on_monday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "monday");
+}
+
+static void
+on_tuesday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "tuesday");
+}
+
+static void
+on_wednesday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "wednesday");
+}
+
+static void
+on_thursday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "thursday");
+}
+
+static void
+on_friday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "friday");
+}
+
+static void
+on_saturday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "saturday");
+}
+
+static void
+on_sunday_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	gtk_stack_set_visible_child_name(GTK_STACK(user_data), "sunday");
 }
 
 static void
@@ -86,6 +141,13 @@ hal_time_tracker_class_init(HalTimeTrackerClass *klass)
 
 	gtk_widget_class_set_template_from_resource(
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-time-tracker.ui");
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, monday_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, tuesday_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, wednesday_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, thursday_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, friday_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, saturday_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, sunday_button);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, monday_time);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, tuesday_time);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, wednesday_time);
@@ -93,7 +155,20 @@ hal_time_tracker_class_init(HalTimeTrackerClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, friday_time);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, saturday_time);
 	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, sunday_time);
-	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, monday_time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, tuesday_time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, wednesday_time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, thursday_time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, friday_time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, saturday_time_entries);
+	gtk_widget_class_bind_template_child_private(wid_class, HalTimeTracker, sunday_time_entries);
+	gtk_widget_class_bind_template_callback(wid_class, on_monday_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_tuesday_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_wednesday_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_thursday_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_friday_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_saturday_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_sunday_button_clicked);
 }
 
 static void
@@ -103,7 +178,13 @@ hal_time_tracker_init(HalTimeTracker *self)
 
 	gtk_widget_init_template(GTK_WIDGET(self));
 
-	gtk_list_box_insert(priv->time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->monday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->tuesday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->wednesday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->thursday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->friday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->saturday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
+	gtk_list_box_insert(priv->sunday_time_entries, GTK_WIDGET(hal_time_entry_new()), -1);
 }
 
 HalTimeTracker *

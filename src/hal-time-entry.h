@@ -9,5 +9,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(HalTimeEntry, hal_time_entry, HAL, TIME_ENTRY, GtkGrid)
 
 HalTimeEntry *hal_time_entry_new(void);
+gboolean hal_time_entry_is_running(HalTimeEntry *self);
+void hal_time_entry_stop(HalTimeEntry *self);
 
 G_END_DECLS
