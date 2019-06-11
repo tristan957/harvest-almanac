@@ -3,7 +3,7 @@
 	<id>io.partin.tristan.HarvestAlmanac</id>
 	<licence>GPL-3.0</licence>
 	<description>
-		<p>Harvest for Linux</p>
+		<p>Harvest client for Linux</p>
 	</description>
 	<url type="homepage">https://git.sr.ht/~tristan957/harvest-almanac</url>
 	<screenshots>
