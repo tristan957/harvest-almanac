@@ -14,10 +14,12 @@ harvest_h = configure_file(
 )
 
 sources = [
+    'harvest-client.c',
 ]
 
 libharvest_glib_public_headers = [
-    harvest_h
+    harvest_h,
+    'harvest-client.h',
 ]
 
 install_headers(libharvest_glib_public_headers, subdir: 'harvest-glib')
@@ -27,7 +29,7 @@ pkgincludedir = join_paths(get_option('includedir'), 'harvest-glib')
 libharvest_glib_version = '1.0.0'
 
 c_args = [
-    '-DHARVEST_COMPILATION',
+    '-D__HARVEST_COMPILATION__',
 ]
 
 libharvest_glib = library(

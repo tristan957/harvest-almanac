@@ -43,7 +43,7 @@ update_time_label(gpointer user_data)
 	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
 
 	if (self->cancellable == NULL || g_cancellable_is_cancelled(self->cancellable)) {
-		return FALSE;
+		return G_SOURCE_REMOVE;
 	}
 
 	const gdouble elapsed	= g_timer_elapsed(self->timer, NULL);
@@ -51,7 +51,7 @@ update_time_label(gpointer user_data)
 	g_string_sprintf(label, "%d:%02d", (int) elapsed / 3600, ((int) elapsed % 3600) / 60);
 	gtk_label_set_text(priv->time, label->str);
 
-	return TRUE;
+	return G_SOURCE_CONTINUE;
 }
 
 static void

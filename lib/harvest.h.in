@@ -7,4 +7,7 @@
 
 #define __TLLT_CP_HEADER_INTERNAL__
 
+#include "harvest-client.h"
+#include "harvest-error.h"
+
 #undef __TLLT_CP_HEADER_INTERNAL__
