@@ -5,10 +5,9 @@
 #include <handy.h>
 
 #define HAL_TYPE_SETTINGS_DIALOG (hal_settings_dialog_get_type())
+G_DECLARE_FINAL_TYPE(HalSettingsDialog, hal_settings_dialog, HAL, SETTINGS_DIALOG, HdyDialog)
 
 G_BEGIN_DECLS
-
-G_DECLARE_FINAL_TYPE(HalSettingsDialog, hal_settings_dialog, HAL, SETTINGS_DIALOG, HdyDialog)
 
 HalSettingsDialog *hal_settings_dialog_new(GtkWindow *parent, GSettings *settings);
 
