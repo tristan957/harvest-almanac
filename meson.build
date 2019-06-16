@@ -15,10 +15,8 @@ project(
 c_args = [
     '-Wall',
     '-Wextra',
-    # '--pedantic', https://gitlab.gnome.org/GNOME/glib/issues/1755
     # Required to pick up hal-resources.h in some IDEs
     '-I' + join_paths(meson.build_root(), 'data'),
-    '-Wno-overlength-strings',
 ]
 
 cc = meson.get_compiler('c')
