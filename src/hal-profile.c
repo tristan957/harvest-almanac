@@ -45,8 +45,8 @@ hal_profile_get_property(GObject *obj, guint prop_id, G_GNUC_UNUSED GValue *val,
 }
 
 static void
-hal_profile_set_property(GObject *obj, guint prop_id, G_GNUC_UNUSED const GValue *val,
-						 GParamSpec *pspec)
+hal_profile_set_property(
+	GObject *obj, guint prop_id, G_GNUC_UNUSED const GValue *val, GParamSpec *pspec)
 {
 	switch (prop_id) {
 	case PROP_USER:

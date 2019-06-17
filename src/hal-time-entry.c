@@ -90,8 +90,8 @@ hal_time_entry_finalize(GObject *obj)
 }
 
 static void
-hal_time_entry_get_property(GObject *obj, guint prop_id, G_GNUC_UNUSED GValue *val,
-							GParamSpec *pspec)
+hal_time_entry_get_property(
+	GObject *obj, guint prop_id, G_GNUC_UNUSED GValue *val, GParamSpec *pspec)
 {
 	switch (prop_id) {
 	case PROP_CLIENT:
@@ -104,8 +104,8 @@ hal_time_entry_get_property(GObject *obj, guint prop_id, G_GNUC_UNUSED GValue *v
 }
 
 static void
-hal_time_entry_set_property(GObject *obj, guint prop_id, G_GNUC_UNUSED const GValue *val,
-							GParamSpec *pspec)
+hal_time_entry_set_property(
+	GObject *obj, guint prop_id, G_GNUC_UNUSED const GValue *val, GParamSpec *pspec)
 {
 	switch (prop_id) {
 	case PROP_CLIENT:

@@ -20,10 +20,10 @@ typedef struct HarvestBuffer
 G_BEGIN_DECLS
 
 HarvestClient *harvest_client_new();
-GObject *harvest_client_get_request(HarvestClient *self, const GType type, const char *endpoint,
-									GError **err);
-GObject *harvest_client_post_request(HarvestClient *self, const GType type, const char *endpoint,
-									 GObject *data, GError **err);
+GObject *harvest_client_get_request(
+	HarvestClient *self, const GType type, const char *endpoint, GError **err);
+GObject *harvest_client_post_request(
+	HarvestClient *self, const GType type, const char *endpoint, GObject *data, GError **err);
 size_t harvest_client_write_cb(char *ptr, size_t size, size_t nmemb, void *user_data);
 
 G_END_DECLS

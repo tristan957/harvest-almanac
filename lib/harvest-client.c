@@ -115,8 +115,8 @@ status_code_valid(const unsigned int status_code)
 }
 
 GObject *
-harvest_client_get_request(HarvestClient *self, const GType type, const char *endpoint,
-						   GError **err)
+harvest_client_get_request(
+	HarvestClient *self, const GType type, const char *endpoint, GError **err)
 {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
@@ -126,24 +126,24 @@ harvest_client_get_request(HarvestClient *self, const GType type, const char *en
 
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_URL, endpoint)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_URL: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
-	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_WRITEFUNCTION,
-									 harvest_client_write_cb)) != CURLE_OK) {
+	if ((req_code = curl_easy_setopt(
+			 self->handle, CURLOPT_WRITEFUNCTION, harvest_client_write_cb)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEFUNCTION: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_WRITEDATA, &buffer)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEDATA: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl-agent/tllt-cp")) !=
 		CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_USERAGENT: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
@@ -156,13 +156,13 @@ harvest_client_get_request(HarvestClient *self, const GType type, const char *en
 	}
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_HTTPHEADER, headers)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_HEADERDATA: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
 	if ((req_code = curl_easy_perform(self->handle)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to perform request: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
@@ -171,7 +171,7 @@ harvest_client_get_request(HarvestClient *self, const GType type, const char *en
 	if ((res_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code)) !=
 		CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to get status req_code: %s",
-					curl_easy_strerror(res_code));
+			curl_easy_strerror(res_code));
 		goto on_error;
 	}
 
@@ -195,8 +195,8 @@ on_error:
 }
 
 GObject *
-harvest_client_post_request(HarvestClient *self, const GType type, const char *endpoint,
-							GObject *data, GError **err)
+harvest_client_post_request(
+	HarvestClient *self, const GType type, const char *endpoint, GObject *data, GError **err)
 {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
@@ -206,12 +206,12 @@ harvest_client_post_request(HarvestClient *self, const GType type, const char *e
 
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_URL, endpoint)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_URL: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_POST, TRUE)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_POST: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
@@ -226,7 +226,7 @@ harvest_client_post_request(HarvestClient *self, const GType type, const char *e
 		if ((req_code = curl_easy_setopt(self->handle, CURLOPT_COPYPOSTFIELDS, deserialized)) !=
 			CURLE_OK) {
 			g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_COPYPOSTFIELDS: %s",
-						curl_easy_strerror(req_code));
+				curl_easy_strerror(req_code));
 			g_free(deserialized);
 			goto on_error;
 		}
@@ -234,22 +234,22 @@ harvest_client_post_request(HarvestClient *self, const GType type, const char *e
 		g_free(deserialized);
 	}
 
-	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_WRITEFUNCTION,
-									 harvest_client_write_cb)) != CURLE_OK) {
+	if ((req_code = curl_easy_setopt(
+			 self->handle, CURLOPT_WRITEFUNCTION, harvest_client_write_cb)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEFUNCTION: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_WRITEDATA, &buffer)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEDATA: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl/tllt-cp")) !=
 		CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_USERAGENT: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
@@ -263,13 +263,13 @@ harvest_client_post_request(HarvestClient *self, const GType type, const char *e
 	}
 	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_HTTPHEADER, headers)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_HEADEROPT: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
 	if ((req_code = curl_easy_perform(self->handle)) != CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to perform request: %s",
-					curl_easy_strerror(req_code));
+			curl_easy_strerror(req_code));
 		goto on_error;
 	}
 
@@ -278,7 +278,7 @@ harvest_client_post_request(HarvestClient *self, const GType type, const char *e
 	if ((res_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code)) !=
 		CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to get status req_code: %s",
-					curl_easy_strerror(res_code));
+			curl_easy_strerror(res_code));
 		goto on_error;
 	}
 

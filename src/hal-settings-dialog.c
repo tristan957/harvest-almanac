@@ -48,16 +48,16 @@ hal_settings_dialog_set_dirty(HalSettingsDialog *self)
 }
 
 static void
-on_prefer_dark_theme_switch_activate(GtkSwitch *widget, G_GNUC_UNUSED GParamSpec *pspec,
-									 gpointer user_data)
+on_prefer_dark_theme_switch_activate(
+	GtkSwitch *widget, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
 {
 	HalSettingsDialog *self		   = HAL_SETTINGS_DIALOG(user_data);
 	HalSettingsDialogPrivate *priv = hal_settings_dialog_get_instance_private(self);
 
 	hal_settings_dialog_set_dirty(self);
 
-	g_settings_set_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME,
-						   gtk_switch_get_active(widget));
+	g_settings_set_boolean(
+		priv->settings, SETTINGS_PREFER_DARK_THEME, gtk_switch_get_active(widget));
 }
 
 static void
@@ -80,7 +80,7 @@ on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 	g_settings_set_string(priv->settings, SETTINGS_HARVEST_API_KEY, g_strstrip(text));
 	g_settings_apply(priv->settings);
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
-				 g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME), NULL);
+		g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME), NULL);
 }
 
 static void
@@ -93,7 +93,7 @@ hal_settings_dialog_constructed(GObject *obj)
 
 	gtk_entry_set_text(priv->harvest_api_key_entry, key);
 	gtk_switch_set_active(priv->prefer_dark_theme_switch,
-						  g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME));
+		g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME));
 
 	priv->initial_state = FALSE;
 }
@@ -139,16 +139,16 @@ hal_settings_dialog_class_init(HalSettingsDialogClass *klass)
 
 	obj_properties[PROP_SETTINGS] =
 		g_param_spec_object("settings", _("Settings"), _("Application settings"), G_TYPE_SETTINGS,
-							G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_PRIVATE);
+			G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_PRIVATE);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 
 	gtk_widget_class_set_template_from_resource(
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-settings-dialog.ui");
-	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog,
-												 harvest_api_key_entry);
-	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog,
-												 prefer_dark_theme_switch);
+	gtk_widget_class_bind_template_child_private(
+		wid_class, HalSettingsDialog, harvest_api_key_entry);
+	gtk_widget_class_bind_template_child_private(
+		wid_class, HalSettingsDialog, prefer_dark_theme_switch);
 	gtk_widget_class_bind_template_child_private(wid_class, HalSettingsDialog, save_button);
 	gtk_widget_class_bind_template_callback(wid_class, on_harvest_api_key_entry_changed);
 	gtk_widget_class_bind_template_callback(wid_class, on_prefer_dark_theme_switch_activate);
@@ -169,6 +169,6 @@ hal_settings_dialog_init(HalSettingsDialog *self)
 HalSettingsDialog *
 hal_settings_dialog_new(GtkWindow *parent, GSettings *settings)
 {
-	return g_object_new(HAL_TYPE_SETTINGS_DIALOG, "transient-for", parent, "settings", settings,
-						NULL);
+	return g_object_new(
+		HAL_TYPE_SETTINGS_DIALOG, "transient-for", parent, "settings", settings, NULL);
 }

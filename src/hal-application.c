@@ -38,14 +38,14 @@ hal_application_activate(GApplication *self)
 	// g_application_send_notification(self, "harvest-almanac", notification);
 
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
-				 g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME), NULL);
+		g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME), NULL);
 
 	gtk_window_present(GTK_WINDOW(priv->main_window));
 }
 
 static void
-hal_application_about(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param,
-					  gpointer data)
+hal_application_about(
+	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
 {
 	static const char *authors[] = {"Tristan Partin"};
 
@@ -53,14 +53,14 @@ hal_application_about(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVarian
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
 	gtk_show_about_dialog(GTK_WINDOW(priv->main_window), "program-name", PACKAGE_NAME, "version",
-						  PACKAGE_VERSION, "license-type", PACKAGE_LICENSE, "website",
-						  PACKAGE_WEBSITE, "website-label", PACKAGE_WEBSITE_LABEL, "authors",
-						  authors, "logo-icon-name", "trophy-gold", NULL);
+		PACKAGE_VERSION, "license-type", PACKAGE_LICENSE, "website", PACKAGE_WEBSITE,
+		"website-label", PACKAGE_WEBSITE_LABEL, "authors", authors, "logo-icon-name", "trophy-gold",
+		NULL);
 }
 
 static void
-hal_application_settings(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param,
-						 gpointer data)
+hal_application_settings(
+	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
 {
 	HalApplication *self		= HAL_APPLICATION(data);
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
@@ -85,16 +85,16 @@ hal_application_settings(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVar
 }
 
 static void
-hal_application_time_entry_start(G_GNUC_UNUSED GSimpleAction *action, GVariant *param,
-								 gpointer data)
+hal_application_time_entry_start(
+	G_GNUC_UNUSED GSimpleAction *action, GVariant *param, gpointer data)
 {
 	const guint64 address			  = g_variant_get_uint64(param);
 	G_GNUC_UNUSED HalTimeEntry *entry = HAL_TIME_ENTRY((HalTimeEntry *) address);
 
 	g_autoptr(GNotification) notification = g_notification_new("Harvest Almanac");
 	g_notification_set_body(notification, "Client -- Project timer started");
-	g_notification_add_button_with_target(notification, "Stop Timer", "app.time-entry-stop", "t",
-										  address, NULL);
+	g_notification_add_button_with_target(
+		notification, "Stop Timer", "app.time-entry-stop", "t", address, NULL);
 	g_application_send_notification(G_APPLICATION(data), "time-entry", notification);
 }
 
@@ -139,15 +139,14 @@ hal_application_class_init(HalApplicationClass *klass)
 	app_class->startup  = hal_application_startup;
 }
 
-static const GActionEntry app_entries[] = {
-	{.name = "about", .activate = hal_application_about},
+static const GActionEntry app_entries[] = {{.name = "about", .activate = hal_application_about},
 	{.name = "settings", .activate = hal_application_settings},
-	{.name			 = "time-entry-start",
-	 .activate		 = hal_application_time_entry_start,
-	 .parameter_type = "t"},
-	{.name			 = "time-entry-stop",
-	 .activate		 = hal_application_time_entry_stop,
-	 .parameter_type = "t"}};
+	{.name				= "time-entry-start",
+		.activate		= hal_application_time_entry_start,
+		.parameter_type = "t"},
+	{.name				= "time-entry-stop",
+		.activate		= hal_application_time_entry_stop,
+		.parameter_type = "t"}};
 
 static void
 hal_application_init(HalApplication *self)
@@ -156,8 +155,8 @@ hal_application_init(HalApplication *self)
 
 	priv->settings = g_settings_new("io.partin.tristan.HarvestAlmanac");
 
-	g_action_map_add_action_entries(G_ACTION_MAP(self), app_entries, G_N_ELEMENTS(app_entries),
-									self);
+	g_action_map_add_action_entries(
+		G_ACTION_MAP(self), app_entries, G_N_ELEMENTS(app_entries), self);
 }
 
 HalApplication *

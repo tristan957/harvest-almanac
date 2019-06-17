@@ -6,7 +6,7 @@
 # Last Revision: 3/12/2018
 ---
 AccessModifierOffset: 0
-AlignAfterOpenBracket: true
+AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlines: Right
@@ -40,9 +40,9 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
-BreakBeforeInheritanceComma: false
 BreakBeforeTernaryOperators: true
-BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
 BreakStringLiterals: true
 ColumnLimit: 100
 CommentPragmas:  '\*\<'
@@ -94,4 +94,3 @@ SpacesInSquareBrackets: false
 TabWidth: 4
 UseTab: Always
 ...
-
