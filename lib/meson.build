@@ -15,11 +15,13 @@ harvest_h = configure_file(
 
 sources = [
     'harvest-client.c',
+    'harvest-user.c',
 ]
 
 libharvest_glib_public_headers = [
     harvest_h,
     'harvest-client.h',
+    'harvest-user.h',
 ]
 
 install_headers(libharvest_glib_public_headers, subdir: 'harvest-glib')
