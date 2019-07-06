@@ -43,6 +43,7 @@ libharvest_glib_public_headers = [
     'harvest-invoice.h',
     'harvest-invoice-item-category.h',
     'harvest-invoice-line-item.h',
+    'harvest-project.h'
     'harvest-task.h',
     'harvest-task-assignment.h',
     'harvest-time-entry.h',
