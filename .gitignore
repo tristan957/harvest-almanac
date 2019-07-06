@@ -9,3 +9,5 @@ build
 # Don't ignore wraps
 subprojects/*
 !subprojects/*.wrap
+
+.exrc

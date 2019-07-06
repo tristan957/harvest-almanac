@@ -29,7 +29,8 @@ G_DEFINE_TYPE_WITH_PRIVATE(HalTimeEntry, hal_time_entry, GTK_TYPE_GRID)
 
 enum HalTimeEntryProps
 {
-	PROP_CLIENT = 1,
+	PROP_0,
+	PROP_CLIENT,
 	PROP_ENTRY,
 	N_PROPS
 };

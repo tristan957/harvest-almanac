@@ -33,10 +33,6 @@ hal_application_activate(GApplication *self)
 		priv->main_window = hal_window_new(self);
 	}
 
-	// g_autoptr(GNotification) notification = g_notification_new("Harvest Almanac");
-	// g_notification_set_body(notification, "Welcome to Harvest Almanac");
-	// g_application_send_notification(self, "harvest-almanac", notification);
-
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
 		g_settings_get_boolean(priv->settings, SETTINGS_PREFER_DARK_THEME), NULL);
 

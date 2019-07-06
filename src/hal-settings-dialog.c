@@ -26,7 +26,8 @@ G_DEFINE_TYPE_WITH_PRIVATE(HalSettingsDialog, hal_settings_dialog, HDY_TYPE_DIAL
 
 enum HalSettingsDialogProps
 {
-	PROP_SETTINGS = 1,
+	PROP_0,
+	PROP_SETTINGS,
 	N_PROPS,
 };
 

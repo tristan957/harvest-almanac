@@ -21,7 +21,8 @@ G_DEFINE_TYPE_WITH_PRIVATE(HalProfile, hal_profile, GTK_TYPE_STACK)
 
 enum HalProfileProps
 {
-	PROP_USER = 1,
+	PROP_0,
+	PROP_USER,
 	N_PROPS
 };
 

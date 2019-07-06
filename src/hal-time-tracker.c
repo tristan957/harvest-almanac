@@ -38,7 +38,8 @@ G_DEFINE_TYPE_WITH_PRIVATE(HalTimeTracker, hal_time_tracker, GTK_TYPE_BOX)
 
 enum HalTimeTrackerProps
 {
-	PROP_CLIENT = 1,
+	PROP_0,
+	PROP_CLIENT,
 	PROP_USER,
 	N_PROPS
 };
@@ -102,8 +103,8 @@ hal_time_tracker_finalize(GObject *self)
 }
 
 static void
-hal_time_tracker_get_property(GObject *obj, guint prop_id, G_GNUC_UNUSED GValue *val,
-							  GParamSpec *pspec)
+hal_time_tracker_get_property(
+	GObject *obj, guint prop_id, G_GNUC_UNUSED GValue *val, GParamSpec *pspec)
 {
 	switch (prop_id) {
 	case PROP_CLIENT:
@@ -116,8 +117,8 @@ hal_time_tracker_get_property(GObject *obj, guint prop_id, G_GNUC_UNUSED GValue 
 }
 
 static void
-hal_time_tracker_set_property(GObject *obj, guint prop_id, G_GNUC_UNUSED const GValue *val,
-							  GParamSpec *pspec)
+hal_time_tracker_set_property(
+	GObject *obj, guint prop_id, G_GNUC_UNUSED const GValue *val, GParamSpec *pspec)
 {
 	switch (prop_id) {
 	case PROP_CLIENT:

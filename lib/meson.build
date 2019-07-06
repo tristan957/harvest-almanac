@@ -14,14 +14,40 @@ harvest_h = configure_file(
 )
 
 sources = [
+    'harvest-api-client.c',
     'harvest-client.c',
+    'harvest-creator.c',
+    'harvest-estimate.c',
+    'harvest-estimate-item-category.c',
+    'harvest-estimate-line-item.c',
+    'harvest-invoice.c',
+    'harvest-invoice-item-category.c',
+    'harvest-invoice-line-item.c',
+    'harvest-project.c',
+    'harvest-task.c',
+    'harvest-task-assignment.c',
+    'harvest-time-entry.c',
     'harvest-user.c',
+    'harvest-user-assignment.c',
 ]
 
 libharvest_glib_public_headers = [
     harvest_h,
+    'harvest-api-client.h',
     'harvest-client.h',
+    'harvest-creator.h',
+    'harvest-error.h',
+    'harvest-estimate.h',
+    'harvest-estimate-item-category.h',
+    'harvest-estimate-line-item.h',
+    'harvest-invoice.h',
+    'harvest-invoice-item-category.h',
+    'harvest-invoice-line-item.h',
+    'harvest-task.h',
+    'harvest-task-assignment.h',
+    'harvest-time-entry.h',
     'harvest-user.h',
+    'harvest-user-assignment.h',
 ]
 
 install_headers(libharvest_glib_public_headers, subdir: 'harvest-glib')

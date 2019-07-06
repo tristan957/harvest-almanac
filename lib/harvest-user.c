@@ -29,8 +29,8 @@ struct _HarvestUser
 	JsonArray *roles;
 	unsigned int num_roles;
 	char *avatar_url;
-	// TODO: created_at
-	// TODO: updated_at
+	GDateTime *created_at;
+	GDateTime *updated_at;
 };
 
 G_DEFINE_TYPE(HarvestUser, harvest_user, G_TYPE_OBJECT)
