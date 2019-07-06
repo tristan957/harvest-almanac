@@ -14,7 +14,6 @@
 		"*.ui": "xml",
 		"*.h.in": "c",
 	},
-	"C_Cpp.clang_format_path": "/usr/bin/clang-format", // until a new version of C/C++ is released with an upgraded clang-format,
 	"files.watcherExclude": {
 		"**/.git/objects/**": true,
 		"**/.git/subtree-cache/**": true,
