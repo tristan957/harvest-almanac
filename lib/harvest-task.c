@@ -48,6 +48,8 @@ harvest_task_finalize(GObject *obj)
 		g_date_time_unref(self->created_at);
 	if (self->updated_at != NULL)
 		g_date_time_unref(self->updated_at);
+
+	G_OBJECT_CLASS(harvest_task_parent_class)->finalize(obj);
 }
 
 static void
