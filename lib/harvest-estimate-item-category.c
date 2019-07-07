@@ -1,3 +1,5 @@
+#include <limits.h>
+
 #include <glib-object.h>
 #include <glib/gi18n.h>
 
@@ -7,8 +9,8 @@ struct _HarvestEstimateItemCategory
 {
 	int id;
 	char *name;
-	char *created_at;
-	char *updated_at;
+	GDateTime *created_at;
+	GDateTime *updated_at;
 };
 
 G_DEFINE_TYPE(HarvestEstimateItemCategory, harvest_estimate_item_category, G_TYPE_OBJECT)
@@ -31,8 +33,10 @@ harvest_estimate_item_category_finalize(GObject *obj)
 	HarvestEstimateItemCategory *self = HARVEST_ESTIMATE_ITEM_CATEGORY(obj);
 
 	g_free(self->name);
-	g_free(self->created_at);
-	g_free(self->updated_at);
+	if (self->created_at != NULL)
+		g_date_time_unref(self->created_at);
+	if (self->updated_at != NULL)
+		g_date_time_unref(self->updated_at);
 
 	G_OBJECT_CLASS(harvest_estimate_item_category_parent_class)->finalize(obj);
 }
@@ -51,10 +55,10 @@ harvest_estimate_item_category_get_property(
 		g_value_set_string(val, self->name);
 		break;
 	case PROP_CREATED_AT:
-		g_value_set_string(val, self->created_at);
+		g_value_set_boxed(val, self->created_at);
 		break;
 	case PROP_UPDATED_AT:
-		g_value_set_string(val, self->updated_at);
+		g_value_set_boxed(val, self->updated_at);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -77,12 +81,15 @@ harvest_estimate_item_category_set_property(
 		self->name = g_value_dup_string(val);
 		break;
 	case PROP_CREATED_AT:
-		g_free(self->created_at);
-		self->created_at = g_value_dup_string(val);
+		if (self->created_at != NULL)
+			g_date_time_unref(self->created_at);
+		self->created_at = g_value_dup_boxed(val);
 		break;
 	case PROP_UPDATED_AT:
-		g_free(self->updated_at);
-		self->updated_at = g_value_dup_string(val);
+
+		if (self->updated_at != NULL)
+			g_date_time_unref(self->updated_at);
+		self->updated_at = g_value_dup_boxed(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -104,11 +111,11 @@ harvest_estimate_item_category_class_init(HarvestEstimateItemCategoryClass *klas
 			0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_NAME]		= g_param_spec_string("name", _("Name"),
 		  _("The name of the estimate item category."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_CREATED_AT] = g_param_spec_string("created_at", _("Created At"),
-		_("Date and time the estimate item category was created."), NULL,
+	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created_at", _("Created At"),
+		_("Date and time the estimate item category was created."), G_TYPE_DATE_TIME,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_UPDATED_AT] = g_param_spec_string("updated_at", _("Updated At"),
-		_("Date and time the estimate item category was last updated."), NULL,
+	obj_properties[PROP_UPDATED_AT] = g_param_spec_boxed("updated_at", _("Updated At"),
+		_("Date and time the estimate item category was last updated."), G_TYPE_DATE_TIME,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
