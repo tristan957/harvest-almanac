@@ -16,8 +16,8 @@ struct _HarvestEstimateLineItem
 	int quantity;
 	double unit_price;
 	double amount;
-	gboolean taxed;
-	gboolean taxed2;
+	gboolean taxed : 1;
+	gboolean taxed2 : 1;
 };
 
 G_DEFINE_TYPE(HarvestEstimateLineItem, harvest_estimate_line_item, G_TYPE_OBJECT)

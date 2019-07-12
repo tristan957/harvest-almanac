@@ -12,10 +12,10 @@ struct _HarvestTask
 
 	int id;
 	char *name;
-	gboolean billable_by_default;
+	gboolean billable_by_default : 1;
 	double default_hourly_rate;
-	gboolean is_default;
-	gboolean is_active;
+	gboolean is_default : 1;
+	gboolean is_active : 1;
 	GDateTime *created_at;
 	GDateTime *updated_at;
 };

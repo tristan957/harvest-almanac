@@ -15,8 +15,8 @@ struct _HarvestInvoiceLineItem
 	int quantity;
 	double unit_price;
 	double amount;
-	gboolean taxed;
-	gboolean taxed2;
+	gboolean taxed : 1;
+	gboolean taxed2 : 1;
 };
 
 G_DEFINE_TYPE(HarvestInvoiceLineItem, harvest_invoice_line_item, G_TYPE_OBJECT)

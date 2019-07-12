@@ -13,8 +13,8 @@ struct _HarvestTaskAssignment
 	int id;
 	HarvestProject *project;
 	HarvestTask *task;
-	gboolean is_active;
-	gboolean billable;
+	gboolean is_active : 1;
+	gboolean billable : 1;
 	double hourly_rate;
 	double budget;
 	GDateTime *created_at;

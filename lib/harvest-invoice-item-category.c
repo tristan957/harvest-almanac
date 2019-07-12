@@ -12,8 +12,8 @@ struct _HarvestInvoiceItemCategory
 
 	int id;
 	char *name;
-	gboolean use_as_service;
-	gboolean use_as_expense;
+	gboolean use_as_service : 1;
+	gboolean use_as_expense : 1;
 	GDateTime *created_at;
 	GDateTime *updated_at;
 };

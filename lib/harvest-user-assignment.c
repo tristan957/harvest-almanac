@@ -15,9 +15,9 @@ struct _HarvestUserAssignment
 	int id;
 	HarvestProject *project;
 	HarvestUser *user;
-	gboolean is_active;
-	gboolean is_project_manager;
-	gboolean use_default_rates;
+	gboolean is_active : 1;
+	gboolean is_project_manager : 1;
+	gboolean use_default_rates : 1;
 	double hourly_rate;
 	double budget;
 	GDateTime *created_at;

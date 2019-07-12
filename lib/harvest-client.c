@@ -11,7 +11,7 @@ struct _HarvestClient
 
 	int id;
 	char *name;
-	gboolean is_active;
+	gboolean is_active : 1;
 	char *address;
 	char *currency;
 	GDateTime *created_at;
