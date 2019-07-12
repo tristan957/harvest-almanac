@@ -10,6 +10,8 @@
 
 struct _HarvestTaskAssignment
 {
+	GObject parent_instance;
+
 	int id;
 	HarvestProject *project;
 	HarvestTask *task;

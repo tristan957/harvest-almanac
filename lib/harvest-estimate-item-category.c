@@ -7,6 +7,8 @@
 
 struct _HarvestEstimateItemCategory
 {
+	GObject parent_instance;
+
 	int id;
 	char *name;
 	GDateTime *created_at;

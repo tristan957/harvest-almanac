@@ -9,6 +9,8 @@
 
 struct _HarvestUser
 {
+	GObject parent_instance;
+
 	int id;
 	char *first_name;
 	char *last_name;
@@ -26,8 +28,7 @@ struct _HarvestUser
 	int weekly_capacity;
 	double default_hourly_rate;
 	double cost_rate;
-	JsonArray *roles;
-	unsigned int num_roles;
+	GPtrArray *roles; // const char *
 	char *avatar_url;
 	GDateTime *created_at;
 	GDateTime *updated_at;
@@ -75,7 +76,23 @@ harvest_user_finalize(GObject *obj)
 	g_free(self->email);
 	g_free(self->telephone);
 	g_free(self->timezone);
+	if (self->roles != NULL) {
+		/**
+		 * Always remove the last one so that the array does not need to be resized. If we
+		 * always remove the last one in conjunction with g_ptr_array_remove_index_fast, then
+		 * the reverse order of the array should be preserved and we will be able to iterate
+		 * linearly.
+		 */
+		for (int i = self->roles->len - 1; i >= 0; i--)
+			g_free(g_ptr_array_remove_index_fast(self->roles, i));
+
+		g_ptr_array_unref(self->roles);
+	}
 	g_free(self->avatar_url);
+	if (self->created_at != NULL)
+		g_date_time_unref(self->created_at);
+	if (self->updated_at != NULL)
+		g_date_time_unref(self->updated_at);
 
 	G_OBJECT_CLASS(harvest_user_parent_class)->finalize(obj);
 }
@@ -138,10 +155,16 @@ harvest_user_get_property(GObject *obj, guint prop_id, GValue *val, GParamSpec *
 		g_value_set_double(val, self->cost_rate);
 		break;
 	case PROP_ROLES:
-		g_value_set_object(val, self->roles);
+		g_value_set_boxed(val, self->roles);
 		break;
 	case PROP_AVATAR_URL:
 		g_value_set_string(val, self->avatar_url);
+		break;
+	case PROP_CREATED_AT:
+		g_value_set_boxed(val, self->created_at);
+		break;
+	case PROP_UPDATED_AT:
+		g_value_set_boxed(val, self->updated_at);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -211,12 +234,33 @@ harvest_user_set_property(GObject *obj, guint prop_id, const GValue *val, GParam
 		self->cost_rate = g_value_get_double(val);
 		break;
 	case PROP_ROLES:
-		g_object_unref(self->roles);
-		self->roles = g_value_get_object(val);
+		if (self->roles != NULL) {
+			/**
+			 * Always remove the last one so that the array does not need to be resized. If we
+			 * always remove the last one in conjunction with g_ptr_array_remove_index_fast, then
+			 * the reverse order of the array should be preserved and we will be able to iterate
+			 * linearly.
+			 */
+			for (int i = self->roles->len - 1; i >= 0; i--)
+				g_free(g_ptr_array_remove_index_fast(self->roles, i));
+
+			g_ptr_array_unref(self->roles);
+		}
+		self->roles = g_value_dup_boxed(val);
 		break;
 	case PROP_AVATAR_URL:
 		g_free(self->avatar_url);
 		self->avatar_url = g_value_dup_string(val);
+		break;
+	case PROP_CREATED_AT:
+		if (self->created_at != NULL)
+			g_date_time_unref(self->created_at);
+		self->created_at = g_value_dup_boxed(val);
+		break;
+	case PROP_UPDATED_AT:
+		if (self->updated_at != NULL)
+			g_date_time_unref(self->updated_at);
+		self->updated_at = g_value_dup_boxed(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -285,8 +329,8 @@ harvest_user_class_init(HarvestUserClass *klass)
 		  "costs vs billable amount."),
 		0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_ROLES] =
-		g_param_spec_object("roles", _("Roles"), _("The role names assigned to this person."),
-			JSON_TYPE_ARRAY, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+		g_param_spec_boxed("roles", _("Roles"), _("The role names assigned to this person."),
+			G_TYPE_PTR_ARRAY, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_AVATAR_URL] = g_param_spec_string("avatar-url", _("Avatar URL"),
 		_("The URL to the user’s avatar image."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
