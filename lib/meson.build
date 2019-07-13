@@ -22,7 +22,6 @@ libharvest_glib_public_headers = [
     'harvest-api-client.h',
     'harvest-client.h',
     'harvest-creator.h',
-    'harvest-error.h',
     'harvest-estimate.h',
     'harvest-estimate-item-category.h',
     'harvest-estimate-line-item.h',
