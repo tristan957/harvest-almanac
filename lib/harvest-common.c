@@ -2,6 +2,7 @@
 
 #include "harvest-common.h"
 
+// Never gets unrefed
 static const GRegex *regex;
 static const unsigned int HARVEST_DATE_EXPECTED_MATCHES = 4;
 
