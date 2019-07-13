@@ -35,7 +35,8 @@
 			"buildsystem": "meson",
 			"config-opts": [
 				"-Dtests=false",
-				"-Dvapi=false"
+				"-Dvapi=false",
+				"-Dexamples=false"
 			],
 			"sources": [
 				{
