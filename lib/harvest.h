@@ -1,10 +1,5 @@
 #pragma once
 
-#mesondefine G_DISABLE_ASSERT
-#mesondefine G_DISABLE_CHECKS
-#mesondefine G_DISABLE_CAST_CHECKS
-#mesondefine G_ENABLE_DEBUG
-
 #define __TLLT_CP_HEADER_INTERNAL__
 
 #include "harvest-api-client.h"

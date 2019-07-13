@@ -1,21 +1,7 @@
-config_h = configuration_data()
-if get_option('buildtype') == 'release'
-    config_h.set('G_DISABLE_ASSERT', true)
-    config_h.set('G_DISABLE_CHECKS', true)
-    config_h.set('G_DISABLE_CAST_CHECKS', true)
-elif get_option('buildtype').startswith('debug')
-    config_h.set('G_ENABLE_DEBUG', true)
-endif
-
-harvest_h = configure_file(
-    input: 'harvest.h.in',
-    output: 'harvest.h',
-    configuration: config_h,
-)
-
 sources = [
     'harvest-api-client.c',
     'harvest-client.c',
+    'harvest-common.c',
     'harvest-creator.c',
     'harvest-estimate.c',
     'harvest-estimate-item-category.c',
@@ -32,7 +18,7 @@ sources = [
 ]
 
 libharvest_glib_public_headers = [
-    harvest_h,
+    'harvest.h',
     'harvest-api-client.h',
     'harvest-client.h',
     'harvest-creator.h',

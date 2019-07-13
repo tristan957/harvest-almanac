@@ -3,6 +3,7 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-project.h"
 #include "harvest-user-assignment.h"
@@ -24,7 +25,10 @@ struct _HarvestUserAssignment
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestUserAssignment, harvest_user_assignment, G_TYPE_OBJECT)
+static void harvest_user_assignment_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestUserAssignment, harvest_user_assignment, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_user_assignment_json_serializable_init))
 
 enum HarvestUserAssignmentProps
 {
@@ -43,6 +47,34 @@ enum HarvestUserAssignmentProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_user_assignment_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0("created_at", prop_name) == 0 || g_strcmp0("updated_at", prop_name) == 0) {
+		const gchar *ds = json_node_get_string(prop_node);
+		if (ds == NULL) {
+			g_value_set_boxed(val, NULL);
+
+			return TRUE;
+		}
+
+		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_user_assignment_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_user_assignment_deserialize_property;
+}
 
 static void
 harvest_user_assignment_finalize(GObject *obj)
