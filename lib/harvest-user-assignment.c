@@ -86,9 +86,9 @@ harvest_user_assignment_finalize(GObject *obj)
 	if (self->user != NULL)
 		g_object_unref(self->user);
 	if (self->created_at != NULL)
-		g_object_unref(self->created_at);
+		g_date_time_unref(self->created_at);
 	if (self->updated_at != NULL)
-		g_object_unref(self->updated_at);
+		g_date_time_unref(self->updated_at);
 
 	G_OBJECT_CLASS(harvest_user_assignment_parent_class)->finalize(obj);
 }
