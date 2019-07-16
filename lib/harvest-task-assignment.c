@@ -51,14 +51,7 @@ harvest_task_assignment_json_deserialize_property(JsonSerializable *serializable
 	const gchar *prop_name, GValue *val, GParamSpec *pspec, JsonNode *prop_node)
 {
 	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
-		const gchar *ds = json_node_get_string(prop_node);
-		if (ds == NULL) {
-			g_value_set_boxed(val, NULL);
-
-			return TRUE;
-		}
-
-		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
 		g_value_set_boxed(val, dt);
 
 		return TRUE;

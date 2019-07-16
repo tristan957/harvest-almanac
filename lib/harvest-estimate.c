@@ -3,8 +3,10 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-client.h"
+#include "harvest-common.h"
 #include "harvest-creator.h"
 #include "harvest-estimate-line-item.h"
 #include "harvest-estimate.h"
@@ -39,7 +41,10 @@ struct _HarvestEstimate
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestEstimate, harvest_estimate, G_TYPE_OBJECT)
+static void harvest_estimate_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestEstimate, harvest_estimate, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_estimate_json_serializable_init))
 
 enum HarvestEstimateProps
 {
@@ -74,6 +79,77 @@ enum HarvestEstimateProps
 static GParamSpec *obj_properties[N_PROPS];
 
 static void
+line_items_for_each(
+	G_GNUC_UNUSED JsonArray *array, G_GNUC_UNUSED guint index, JsonNode *node, gpointer user_data)
+{
+	g_ptr_array_add(user_data, json_gobject_deserialize(HARVEST_TYPE_ESTIMATE_LINE_ITEM, node));
+}
+
+static gboolean
+harvest_estimate_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "client") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CLIENT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "line_items") == 0) {
+		JsonArray *arr	 = json_node_get_array(prop_node);
+		const guint length = json_array_get_length(arr);
+		GPtrArray *roles   = g_ptr_array_sized_new(length);
+		json_array_foreach_element(arr, line_items_for_each, roles);
+		g_value_set_boxed(val, roles);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "creator") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CREATOR, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "state") == 0) {
+		const char *state = json_node_get_string(prop_node);
+
+		if (g_strcmp0(state, "accepted") == 0) {
+			g_value_set_int(val, HARVEST_ESTIMATE_STATE_ACCEPTED);
+		} else if (g_strcmp0(state, "declined") == 0) {
+			g_value_set_int(val, HARVEST_ESTIMATE_STATE_DECLINED);
+		} else if (g_strcmp0(state, "draft") == 0) {
+			g_value_set_int(val, HARVEST_ESTIMATE_STATE_DRAFT);
+		} else if (g_strcmp0(state, "sent")) {
+			g_value_set_int(val, HARVEST_ESTIMATE_STATE_SENT);
+		} else {
+			g_warn_if_reached();
+		}
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "issue_date") == 0) {
+		const GDateTime *dt
+			= g_date_time_new_from_abbreviated_date(json_node_get_string(prop_node));
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "sent_at") == 0 || g_strcmp0(prop_name, "accepted_at") == 0
+			   || g_strcmp0(prop_name, "declined_at") == 0
+			   || g_strcmp0(prop_name, "created_at") == 0
+			   || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_estimate_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_estimate_deserialize_property;
+}
+
+static void
 harvest_estimate_finalize(GObject *obj)
 {
 	HarvestEstimate *self = HARVEST_ESTIMATE(obj);
@@ -88,8 +164,8 @@ harvest_estimate_finalize(GObject *obj)
 		 * linearly.
 		 */
 		for (int i = self->line_items->len - 1; i >= 0; i--) {
-			HarvestEstimateLineItem *line_item =
-				HARVEST_ESTIMATE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
+			HarvestEstimateLineItem *line_item
+				= HARVEST_ESTIMATE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
 			if (line_item != NULL)
 				g_object_unref(line_item);
 		}
@@ -225,8 +301,8 @@ harvest_estimate_set_property(GObject *obj, guint prop_id, const GValue *val, GP
 			 * linearly.
 			 */
 			for (int i = self->line_items->len - 1; i >= 0; i--) {
-				HarvestEstimateLineItem *line_item =
-					HARVEST_ESTIMATE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
+				HarvestEstimateLineItem *line_item = HARVEST_ESTIMATE_LINE_ITEM(
+					g_ptr_array_remove_index_fast(self->line_items, i));
 				if (line_item != NULL)
 					g_object_unref(line_item);
 			}
@@ -336,8 +412,8 @@ harvest_estimate_class_init(HarvestEstimateClass *klass)
 	obj_properties[PROP_CLIENT] = g_param_spec_object("client", _("Client"),
 		_("An object containing estimate’s client id and name."), HARVEST_TYPE_CLIENT,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_LINE_ITEMS] =
-		g_param_spec_boxed("line_items", _("Line Items"), _("Array of estimate line items."),
+	obj_properties[PROP_LINE_ITEMS]
+		= g_param_spec_boxed("line_items", _("Line Items"), _("Array of estimate line items."),
 			G_TYPE_PTR_ARRAY, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_CREATOR]		= g_param_spec_object("creator", _("Creator"),
 		   _("An object containing the id and name of the person that created the estimate."),
@@ -364,12 +440,12 @@ harvest_estimate_class_init(HarvestEstimateClass *klass)
 	obj_properties[PROP_TAX2]			= g_param_spec_double("tax2", _("Tax 2"),
 		  _("This percentage is applied to the subtotal, including line items and discounts."), 0,
 		  DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_TAX2_AMOUNT] =
-		g_param_spec_double("tax2_amount", _("Tax2 Amount"), _("The amount calculated from tax2."),
-			0, DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_DISCOUNT]		 = g_param_spec_double("discount", _("Discount"),
-		   _("This percentage is subtracted from the subtotal."), 0, DBL_MAX, 0,
+	obj_properties[PROP_TAX2_AMOUNT]	= g_param_spec_double("tax2_amount", _("Tax2 Amount"),
+		   _("The amount calculated from tax2."), 0, DBL_MAX, 0,
 		   G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+	obj_properties[PROP_DISCOUNT]		= g_param_spec_double("discount", _("Discount"),
+		  _("This percentage is subtracted from the subtotal."), 0, DBL_MAX, 0,
+		  G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_DISCOUNT_AMOUNT] = g_param_spec_double("discount_amount",
 		_("Discount Amount"), _("The amount calcuated from discount."), 0, DBL_MAX, 0,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
@@ -385,11 +461,11 @@ harvest_estimate_class_init(HarvestEstimateClass *klass)
 		  _("The current state of the estimate: draft, sent, accepted, or declined."),
 		  HARVEST_ESTIMATE_STATE_DRAFT, HARVEST_ESTIMATE_STATE_DECLINED, HARVEST_ESTIMATE_STATE_DRAFT,
 		  G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_ISSUE_DATE] =
-		g_param_spec_boxed("issue_date", _("Issue Date"), _("Date the estimate was issued."),
+	obj_properties[PROP_ISSUE_DATE]
+		= g_param_spec_boxed("issue_date", _("Issue Date"), _("Date the estimate was issued."),
 			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_SENT_AT] =
-		g_param_spec_boxed("sent_at", _("Sent At"), _("Date and time the estimate was sent."),
+	obj_properties[PROP_SENT_AT]
+		= g_param_spec_boxed("sent_at", _("Sent At"), _("Date and time the estimate was sent."),
 			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_ACCEPTED_AT] = g_param_spec_boxed("accepted_at", _("Accepted At"),
 		_("Date and time the estimate was accepted."), G_TYPE_DATE_TIME,

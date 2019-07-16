@@ -1,5 +1,9 @@
+#include <float.h>
+#include <limits.h>
+
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-invoice-line-item.h"
 #include "harvest-project.h"
@@ -19,7 +23,10 @@ struct _HarvestInvoiceLineItem
 	gboolean taxed2 : 1;
 };
 
-G_DEFINE_TYPE(HarvestInvoiceLineItem, harvest_invoice_line_item, G_TYPE_OBJECT)
+static void harvest_invoice_line_item_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestInvoiceLineItem, harvest_invoice_line_item, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_invoice_line_item_json_serializable_init))
 
 enum HarvestInvoiceLineItemProps
 {
@@ -37,6 +44,27 @@ enum HarvestInvoiceLineItemProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_invoice_line_item_deserialize_property(JsonSerializable *serializable,
+	const gchar *prop_name, GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "project") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_PROJECT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_invoice_line_item_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_invoice_line_item_deserialize_property;
+}
 
 static void
 harvest_invoice_line_item_finalize(GObject *obj)

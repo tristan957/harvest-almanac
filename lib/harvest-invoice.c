@@ -6,6 +6,7 @@
 #include <json-glib/json-glib.h>
 
 #include "harvest-client.h"
+#include "harvest-common.h"
 #include "harvest-creator.h"
 #include "harvest-estimate-line-item.h"
 #include "harvest-estimate.h"
@@ -50,7 +51,10 @@ struct _HarvestInvoice
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestInvoice, harvest_invoice, G_TYPE_OBJECT)
+static void harvest_invoice_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestInvoice, harvest_invoice, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_invoice_json_serializable_init))
 
 enum HarvestInvoiceProps
 {
@@ -93,6 +97,103 @@ enum HarvestInvoiceProps
 static GParamSpec *obj_properties[N_PROPS];
 
 static void
+line_items_for_each(
+	G_GNUC_UNUSED JsonArray *array, G_GNUC_UNUSED guint index, JsonNode *node, gpointer user_data)
+{
+	g_ptr_array_add(user_data, json_gobject_deserialize(HARVEST_TYPE_INVOICE_LINE_ITEM, node));
+}
+
+static gboolean
+harvest_invoice_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "client") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CLIENT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "line_items") == 0) {
+		JsonArray *arr	 = json_node_get_array(prop_node);
+		const guint length = json_array_get_length(arr);
+		GPtrArray *roles   = g_ptr_array_sized_new(length);
+		json_array_foreach_element(arr, line_items_for_each, roles);
+		g_value_set_boxed(val, roles);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "estimate") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_ESTIMATE, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "creator") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CREATOR, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "payment_term") == 0) {
+		const char *payment_term = json_node_get_string(prop_node);
+
+		if (g_strcmp0(payment_term, "upon receipt") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_PAYMENT_TERM_UPON_RECEIPT);
+		} else if (g_strcmp0(payment_term, "net 15") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_PAYMENT_TERM_NET_15);
+		} else if (g_strcmp0(payment_term, "net 30") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_PAYMENT_TERM_NET_30);
+		} else if (g_strcmp0(payment_term, "net 45") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_PAYMENT_TERM_NET_45);
+		} else if (g_strcmp0(payment_term, "net 60") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_PAYMENT_TERM_NET_60);
+		} else if (g_strcmp0(payment_term, "custom") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_PAYMENT_TERM_CUSTOM);
+		} else {
+			g_warn_if_reached();
+		}
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "state") == 0) {
+		const char *state = json_node_get_string(prop_node);
+
+		if (g_strcmp0(state, "draft") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_STATE_DRAFT);
+		} else if (g_strcmp0(state, "open") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_STATE_OPEN);
+		} else if (g_strcmp0(state, "paid") == 0) {
+			g_value_set_int(val, HARVEST_INVOICE_STATE_PAID);
+		} else if (g_strcmp0(state, "closed")) {
+			g_value_set_int(val, HARVEST_INVOICE_STATE_CLOSED);
+		} else {
+			g_warn_if_reached();
+		}
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "period_start") == 0 || g_strcmp0(prop_name, "period_end") == 0
+			   || g_strcmp0(prop_name, "issue_date") == 0 || g_strcmp0(prop_name, "due_date") == 0
+			   || g_strcmp0(prop_name, "paid_date") == 0) {
+		const GDateTime *dt
+			= g_date_time_new_from_abbreviated_date(json_node_get_string(prop_node));
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "sent_at") == 0 || g_strcmp0(prop_name, "paid_at") == 0
+			   || g_strcmp0(prop_name, "closed_at") == 0 || g_strcmp0(prop_name, "created_at") == 0
+			   || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_invoice_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_invoice_deserialize_property;
+}
+
+static void
 harvest_invoice_finalize(GObject *obj)
 {
 	HarvestInvoice *self = HARVEST_INVOICE(obj);
@@ -107,8 +208,8 @@ harvest_invoice_finalize(GObject *obj)
 		 * linearly.
 		 */
 		for (int i = self->line_items->len - 1; i >= 0; i--) {
-			HarvestInvoiceLineItem *line_item =
-				HARVEST_INVOICE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
+			HarvestInvoiceLineItem *line_item
+				= HARVEST_INVOICE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
 			if (line_item != NULL)
 				g_object_unref(line_item);
 		}
@@ -277,8 +378,8 @@ harvest_invoice_set_property(GObject *obj, guint prop_id, const GValue *val, GPa
 			 * linearly.
 			 */
 			for (int i = self->line_items->len - 1; i >= 0; i--) {
-				HarvestInvoiceLineItem *line_item =
-					HARVEST_INVOICE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
+				HarvestInvoiceLineItem *line_item
+					= HARVEST_INVOICE_LINE_ITEM(g_ptr_array_remove_index_fast(self->line_items, i));
 				if (line_item != NULL)
 					g_object_unref(line_item);
 			}
@@ -455,53 +556,53 @@ harvest_invoice_class_init(HarvestInvoiceClass *klass)
 	obj_properties[PROP_TAX2]			= g_param_spec_double("tax2", _("Tax2"),
 		  _("This percentage is applied to the subtotal, including line items and discounts."), 0,
 		  DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_TAX2_AMOUNT] =
-		g_param_spec_double("tax2_amount", _("Tax2 Amount"), _("The amount calculated from tax2."),
-			0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_DISCOUNT]		 = g_param_spec_double("discount", _("Discount"),
-		   _("This percentage is subtracted from the subtotal."), 0, DBL_MAX, 0,
+	obj_properties[PROP_TAX2_AMOUNT]	= g_param_spec_double("tax2_amount", _("Tax2 Amount"),
+		   _("The amount calculated from tax2."), 0, DBL_MAX, 0,
 		   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_DISCOUNT]		= g_param_spec_double("discount", _("Discount"),
+		  _("This percentage is subtracted from the subtotal."), 0, DBL_MAX, 0,
+		  G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_DISCOUNT_AMOUNT] = g_param_spec_double("discount_amount",
 		_("Discount Amount"), _("The amount calcuated from discount."), 0, DBL_MAX, 0,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_SUBJECT]		 = g_param_spec_string("subject", _("Subject"),
 		_("The invoice subject."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_NOTES] =
-		g_param_spec_string("notes", _("Notes"), _("Any additional notes included on the invoice."),
-			NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_CURRENCY]	 = g_param_spec_string("currency", _("Currency"),
-		_("The currency code associated with this invoice."), NULL,
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_STATE]		  = g_param_spec_int("state", _("State"),
-		   _("The current state of the invoice: draft, open, paid, or closed."),
-		   HARVEST_INVOICE_STATE_DRAFT, HARVEST_INVOICE_STATE_CLOSED, HARVEST_INVOICE_STATE_DRAFT,
+	obj_properties[PROP_NOTES]			 = g_param_spec_string("notes", _("Notes"),
+		  _("Any additional notes included on the invoice."), NULL,
+		  G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_CURRENCY]		 = g_param_spec_string("currency", _("Currency"),
+		   _("The currency code associated with this invoice."), NULL,
 		   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_PERIOD_START] = g_param_spec_boxed("period_start", _("Period Start"),
-		_("Start of the period during which time entries were added to this invoice."),
-		G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_PERIOD_END]   = g_param_spec_boxed("period_end", _("Period End"),
-		  _("End of the period during which time entries were added to this invoice."),
-		  G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_ISSUE_DATE]   = g_param_spec_boxed("issue_date", _("Issue Date"),
-		  _("Date the invoice was issued."), G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_DUE_DATE]	 = g_param_spec_boxed("due_date", _("Due Date"),
-		_("Date the invoice is due."), G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_PAYMENT_TERM] = g_param_spec_int("payment_term", _("Payment Term"),
-		_("The timeframe in which the invoice should be paid. Options: upon receipt, net 15, net "
-		  "30, net 45, net 60, or custom."),
-		HARVEST_INVOICE_PAYMENT_TERM_UPON_RECEIPT, HARVEST_INVOICE_PAYMENT_TERM_CUSTOM,
-		HARVEST_INVOICE_PAYMENT_TERM_UPON_RECEIPT, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_SENT_AT] =
-		g_param_spec_boxed("sent_at", _("Sent At"), _("Date and time the invoice was sent."),
+	obj_properties[PROP_STATE]			 = g_param_spec_int("payment_term", _("State"),
+		  _("The current payment_term of the invoice: draft, open, paid, or closed."),
+		  HARVEST_INVOICE_STATE_DRAFT, HARVEST_INVOICE_STATE_CLOSED, HARVEST_INVOICE_STATE_DRAFT,
+		  G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_PERIOD_START]	= g_param_spec_boxed("period_start", _("Period Start"),
+		   _("Start of the period during which time entries were added to this invoice."),
+		   G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_PERIOD_END]		 = g_param_spec_boxed("period_end", _("Period End"),
+		 _("End of the period during which time entries were added to this invoice."),
+		 G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_ISSUE_DATE]		 = g_param_spec_boxed("issue_date", _("Issue Date"),
+		 _("Date the invoice was issued."), G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_DUE_DATE]		 = g_param_spec_boxed("due_date", _("Due Date"),
+		   _("Date the invoice is due."), G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_PAYMENT_TERM]	= g_param_spec_int("payment_term", _("Payment Term"),
+		   _("The timeframe in which the invoice should be paid. Options: upon receipt, net 15, net "
+			 "30, net 45, net 60, or custom."),
+		   HARVEST_INVOICE_PAYMENT_TERM_UPON_RECEIPT, HARVEST_INVOICE_PAYMENT_TERM_CUSTOM,
+		   HARVEST_INVOICE_PAYMENT_TERM_UPON_RECEIPT, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_SENT_AT]
+		= g_param_spec_boxed("sent_at", _("Sent At"), _("Date and time the invoice was sent."),
 			G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_PAID_AT] =
-		g_param_spec_boxed("paid_at", _("Paid At"), _("Date and time the invoice was paid."),
+	obj_properties[PROP_PAID_AT]
+		= g_param_spec_boxed("paid_at", _("Paid At"), _("Date and time the invoice was paid."),
 			G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_PAID_DATE] = g_param_spec_boxed("paid_date", _("Paid Date"),
-		_("Date the invoice was paid."), G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_CLOSED_AT] =
-		g_param_spec_boxed("clcosed_at", _("Closed At"), _("Date and time the invoice was closed."),
-			G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_PAID_DATE]  = g_param_spec_boxed("paid_date", _("Paid Date"),
+		 _("Date the invoice was paid."), G_TYPE_DATE_TIME, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_CLOSED_AT]  = g_param_spec_boxed("clcosed_at", _("Closed At"),
+		 _("Date and time the invoice was closed."), G_TYPE_DATE_TIME,
+		 G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created_at", _("Created At"),
 		_("Date and time the invoice was created."), G_TYPE_DATE_TIME,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);

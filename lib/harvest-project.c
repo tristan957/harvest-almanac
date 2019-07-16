@@ -3,8 +3,10 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-client.h"
+#include "harvest-common.h"
 #include "harvest-project.h"
 
 struct _HarvestProject
@@ -37,7 +39,10 @@ struct _HarvestProject
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestProject, harvest_project, G_TYPE_OBJECT)
+static void harvest_project_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestProject, harvest_project, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_project_json_serializable_init))
 
 enum HarvestProjectProps
 {
@@ -70,6 +75,39 @@ enum HarvestProjectProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_project_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "client") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CLIENT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "over_budget_notification_date") == 0
+			   || g_strcmp0(prop_name, "starts_on") == 0 || g_strcmp0(prop_name, "ends_on") == 0) {
+		const GDateTime *dt
+			= g_date_time_new_from_abbreviated_date(json_node_get_string(prop_node));
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_project_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_project_deserialize_property;
+}
 
 static void
 harvest_project_finalize(GObject *obj)
@@ -321,28 +359,28 @@ harvest_project_class_init(HarvestProjectClass *klass)
 	obj_properties[PROP_BUDGET_IS_MONTHLY] = g_param_spec_boolean("budget_is_monthly",
 		_("Budget is Monthly"), _("Option to have the budget reset every month."), FALSE,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_NOTIFY_WHEN_OVER_BUDGET] =
-		g_param_spec_boolean("notify_when_over_budget", _("Notify When Over Budget"),
+	obj_properties[PROP_NOTIFY_WHEN_OVER_BUDGET]
+		= g_param_spec_boolean("notify_when_over_budget", _("Notify When Over Budget"),
 			_("Whether project managers should be notified when the project goes over budget."),
 			FALSE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_OVER_BUDGET_NOTIFICATION_PERCENTAGE] = g_param_spec_double(
 		"over_budget_notification_percentage", _("Over Budget Notification Percentage"),
 		_("Percentage value used to trigger over budget email alerts."), 0, DBL_MAX, 0,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_OVER_BUDGET_NOTIFICATION_DATE] =
-		g_param_spec_boxed("over_budget_notification_date", _("Over Budget Notification Date"),
+	obj_properties[PROP_OVER_BUDGET_NOTIFICATION_DATE]
+		= g_param_spec_boxed("over_budget_notification_date", _("Over Budget Notification Date"),
 			_("Date of last over budget notification. If none have been sent, this will be null."),
 			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_SHOW_BUDGET_TO_ALL] =
-		g_param_spec_boolean("show_budget_to_all", _("Show Budget to All"),
+	obj_properties[PROP_SHOW_BUDGET_TO_ALL]
+		= g_param_spec_boolean("show_budget_to_all", _("Show Budget to All"),
 			_("Option to show project budget to all employees. Does not apply to Total Project Fee "
 			  "projects."),
 			FALSE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_COST_BUDGET] = g_param_spec_double("cost_budget", _("Cost Budget"),
 		_("The monetary budget for the project when budgeting by money."), 0, DBL_MAX, 0,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_COST_BUDGET_INCLUDE_EXPENSES] =
-		g_param_spec_boolean("cost_budget_includes_expenses", _("Cost Budget Includes Expenses"),
+	obj_properties[PROP_COST_BUDGET_INCLUDE_EXPENSES]
+		= g_param_spec_boolean("cost_budget_includes_expenses", _("Cost Budget Includes Expenses"),
 			_("Option for budget of Total Project Fees projects to include tracked expenses."),
 			FALSE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_FEE]   = g_param_spec_double("fee", _("Fee"),
@@ -350,8 +388,8 @@ harvest_project_class_init(HarvestProjectClass *klass)
 		  DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_NOTES] = g_param_spec_string(
 		"notes", _("Notes"), _("Project notes."), NULL, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_STARTS_ON] =
-		g_param_spec_boxed("starts_on", _("Starts On"), _("Date the project was started."),
+	obj_properties[PROP_STARTS_ON]
+		= g_param_spec_boxed("starts_on", _("Starts On"), _("Date the project was started."),
 			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_ENDS_ON]	= g_param_spec_boxed("ends_on", _("Ends On"),
 		   _("Date the project will end."), G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);

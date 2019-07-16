@@ -73,15 +73,17 @@ harvest_user_json_deserialize_property(JsonSerializable *serializable, const gch
 	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
 {
 	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
-		const gchar *ds = json_node_get_string(prop_node);
-		if (ds == NULL) {
-			g_value_set_boxed(val, NULL);
-
-			return TRUE;
-		}
-
-		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
 		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "roles") == 0) {
+		JsonArray *arr	 = json_node_get_array(prop_node);
+		const guint length = json_array_get_length(arr);
+		GPtrArray *roles   = g_ptr_array_sized_new(length);
+		for (guint i = 0; i < length; i++)
+			g_ptr_array_add(roles, (gpointer) json_array_get_string_element(arr, i));
+		g_value_set_boxed(val, roles);
 
 		return TRUE;
 	}

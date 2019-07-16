@@ -2,6 +2,7 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-estimate-item-category.h"
 
@@ -15,7 +16,11 @@ struct _HarvestEstimateItemCategory
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestEstimateItemCategory, harvest_estimate_item_category, G_TYPE_OBJECT)
+static void harvest_estimate_item_category_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestEstimateItemCategory, harvest_estimate_item_category, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(
+		JSON_TYPE_SERIALIZABLE, harvest_estimate_item_category_json_serializable_init))
 
 enum HarvestEstimateItemCategoryProps
 {
@@ -28,6 +33,27 @@ enum HarvestEstimateItemCategoryProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_estimate_item_category_deserialize_property(JsonSerializable *serializable,
+	const gchar *prop_name, GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_estimate_item_category_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_estimate_item_category_deserialize_property;
+}
 
 static void
 harvest_estimate_item_category_finalize(GObject *obj)
@@ -108,9 +134,9 @@ harvest_estimate_item_category_class_init(HarvestEstimateItemCategoryClass *klas
 	obj_class->get_property = harvest_estimate_item_category_get_property;
 	obj_class->set_property = harvest_estimate_item_category_set_property;
 
-	obj_properties[PROP_ID] =
-		g_param_spec_int("id", _("ID"), _("Unique ID for the estimate item category."), 0, INT_MAX,
-			0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_ID]
+		= g_param_spec_int("id", _("ID"), _("Unique ID for the estimate item category."), 0,
+			INT_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_NAME]		= g_param_spec_string("name", _("Name"),
 		  _("The name of the estimate item category."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created_at", _("Created At"),

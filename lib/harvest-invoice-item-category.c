@@ -1,8 +1,8 @@
-#include <float.h>
 #include <limits.h>
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-invoice-item-category.h"
 
@@ -18,7 +18,11 @@ struct _HarvestInvoiceItemCategory
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestInvoiceItemCategory, harvest_invoice_item_category, G_TYPE_OBJECT)
+static void harvest_invoice_item_category_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestInvoiceItemCategory, harvest_invoice_item_category, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(
+		JSON_TYPE_SERIALIZABLE, harvest_invoice_item_category_json_serializable_init))
 
 enum HarvestInvoiceItemCategoryProps
 {
@@ -33,6 +37,27 @@ enum HarvestInvoiceItemCategoryProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_invoice_item_category_deserialize_property(JsonSerializable *serializable,
+	const gchar *prop_name, GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_invoice_item_category_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_invoice_item_category_deserialize_property;
+}
 
 static void
 harvest_invoice_item_category_finalize(GObject *obj)
@@ -122,18 +147,18 @@ harvest_invoice_item_category_class_init(HarvestInvoiceItemCategoryClass *klass)
 	obj_class->get_property = harvest_invoice_item_category_get_property;
 	obj_class->set_property = harvest_invoice_item_category_set_property;
 
-	obj_properties[PROP_ID] =
-		g_param_spec_int("id", _("ID"), ("Unique ID for the invoice item category."), 0, INT_MAX, 0,
-			G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+	obj_properties[PROP_ID]
+		= g_param_spec_int("id", _("ID"), ("Unique ID for the invoice item category."), 0, INT_MAX,
+			0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_NAME] = g_param_spec_string("name", _("name"),
 		("The name of the invoice item category."), NULL, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_USE_AS_SERVICE] =
-		g_param_spec_boolean("use_as_service", _("Use as Service"),
+	obj_properties[PROP_USE_AS_SERVICE]
+		= g_param_spec_boolean("use_as_service", _("Use as Service"),
 			("Whether this invoice item category is used for billable hours when generating an "
 			 "invoice."),
 			FALSE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_USE_AS_EXPENSE] =
-		g_param_spec_boolean("use_as_expense", _("Use as Expense"),
+	obj_properties[PROP_USE_AS_EXPENSE]
+		= g_param_spec_boolean("use_as_expense", _("Use as Expense"),
 			("Whether this invoice item category is used for expenses when generating an invoice."),
 			FALSE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created_at", _("Created At"),
