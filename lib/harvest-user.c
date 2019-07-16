@@ -34,7 +34,10 @@ struct _HarvestUser
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestUser, harvest_user, G_TYPE_OBJECT)
+static void harvest_user_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestUser, harvest_user, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_user_json_serializable_init))
 
 enum HarvestUserProps
 {
@@ -64,6 +67,34 @@ enum HarvestUserProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_user_json_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const gchar *ds = json_node_get_string(prop_node);
+		if (ds == NULL) {
+			g_value_set_boxed(val, NULL);
+
+			return TRUE;
+		}
+
+		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_user_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_user_json_deserialize_property;
+}
 
 static void
 harvest_user_finalize(GObject *obj)
@@ -276,8 +307,8 @@ harvest_user_class_init(HarvestUserClass *klass)
 	obj_class->get_property = harvest_user_get_property;
 	obj_class->set_property = harvest_user_set_property;
 
-	obj_properties[PROP_ID] =
-		g_param_spec_int("id", _("ID"), _("User ID"), 0, INT_MAX, 0, G_PARAM_READWRITE);
+	obj_properties[PROP_ID]
+		= g_param_spec_int("id", _("ID"), _("User ID"), 0, INT_MAX, 0, G_PARAM_READWRITE);
 	obj_properties[PROP_FIRST_NAME] = g_param_spec_string("first-name", _("First Name"),
 		_("The first name of the user."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_LAST_NAME]  = g_param_spec_string("last-name", _("Last Name"),
@@ -304,32 +335,32 @@ harvest_user_class_init(HarvestUserClass *klass)
 		_("Whether the user can see billable rates on projects. Only applicable to project "
 		  "managers."),
 		FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_CAN_CREATE_PROJECTS] =
-		g_param_spec_boolean("can-create-projects", _("Can Create Projects"),
+	obj_properties[PROP_CAN_CREATE_PROJECTS]
+		= g_param_spec_boolean("can-create-projects", _("Can Create Projects"),
 			_("Whether the user can create projects. Only applicable to project managers."), FALSE,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_CAN_CREATE_INVOICES] =
-		g_param_spec_boolean("can-create-invoices", _("Can Create Invoices"),
+	obj_properties[PROP_CAN_CREATE_INVOICES]
+		= g_param_spec_boolean("can-create-invoices", _("Can Create Invoices"),
 			_("Whether the user can create invoices. Only applicable to project managers."), FALSE,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_IS_ACTIVE] = g_param_spec_boolean("is-active", _("Is Active"),
 		_("Whether the user is active or archived."), FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_WEEKLY_CAPACITY] =
-		g_param_spec_double("weekly-capacity", _("Weekly Capacity"),
+	obj_properties[PROP_WEEKLY_CAPACITY]
+		= g_param_spec_double("weekly-capacity", _("Weekly Capacity"),
 			_("The number of hours per week this person is available to work in seconds, in half "
 			  "hour increments. For example, if a person’s capacity is 35 hours, the API will "
 			  "return 126000 seconds."),
 			0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_DEFAULT_HOURLY_RATE] =
-		g_param_spec_double("default-hourly-rate", _("Default Hourly Rate"),
+	obj_properties[PROP_DEFAULT_HOURLY_RATE]
+		= g_param_spec_double("default-hourly-rate", _("Default Hourly Rate"),
 			_("The billable rate to use for this user when they are added to a project."), 0,
 			DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_COST_RATE] = g_param_spec_double("cost-rate", _("Cost Rate"),
 		_("The cost rate to use for this user when calculating a project’s "
 		  "costs vs billable amount."),
 		0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_ROLES] =
-		g_param_spec_boxed("roles", _("Roles"), _("The role names assigned to this person."),
+	obj_properties[PROP_ROLES]
+		= g_param_spec_boxed("roles", _("Roles"), _("The role names assigned to this person."),
 			G_TYPE_PTR_ARRAY, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_AVATAR_URL] = g_param_spec_string("avatar-url", _("Avatar URL"),
 		_("The URL to the user’s avatar image."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);

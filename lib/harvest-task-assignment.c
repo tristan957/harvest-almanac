@@ -3,6 +3,7 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-project.h"
 #include "harvest-task-assignment.h"
@@ -23,7 +24,10 @@ struct _HarvestTaskAssignment
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestTaskAssignment, harvest_task_assignment, G_TYPE_OBJECT)
+static void harvest_task_assignment_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestTaskAssignment, harvest_task_assignment, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_task_assignment_json_serializable_init))
 
 enum HarvestTaskAssignmentProps
 {
@@ -41,6 +45,44 @@ enum HarvestTaskAssignmentProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_task_assignment_json_deserialize_property(JsonSerializable *serializable,
+	const gchar *prop_name, GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const gchar *ds = json_node_get_string(prop_node);
+		if (ds == NULL) {
+			g_value_set_boxed(val, NULL);
+
+			return TRUE;
+		}
+
+		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "project") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_PROJECT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "task") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_TASK, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_task_assignment_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_task_assignment_json_deserialize_property;
+}
 
 static void
 harvest_task_assignment_finalize(GObject *obj)
@@ -153,8 +195,8 @@ harvest_task_assignment_class_init(HarvestTaskAssignmentClass *klass)
 	obj_class->get_property = harvest_task_assignment_get_property;
 	obj_class->set_property = harvest_task_assignment_set_property;
 
-	obj_properties[PROP_ID] =
-		g_param_spec_int("id", _("ID"), _("Unique ID for the task assignment."), 0, INT_MAX, 0,
+	obj_properties[PROP_ID]
+		= g_param_spec_int("id", _("ID"), _("Unique ID for the task assignment."), 0, INT_MAX, 0,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_PROJECT]	 = g_param_spec_object("project", _("Project"),
 		_("An object containing the id, name, and code of the associated project."),

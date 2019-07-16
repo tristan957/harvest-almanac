@@ -2,6 +2,7 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-client.h"
 
@@ -18,7 +19,10 @@ struct _HarvestClient
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestClient, harvest_client, G_TYPE_OBJECT)
+static void harvest_client_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestClient, harvest_client, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_client_json_serializable_init))
 
 enum HarvestClientProps
 {
@@ -34,6 +38,34 @@ enum HarvestClientProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_client_json_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const gchar *ds = json_node_get_string(prop_node);
+		if (ds == NULL) {
+			g_value_set_boxed(val, NULL);
+
+			return TRUE;
+		}
+
+		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_client_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_client_json_deserialize_property;
+}
 
 static void
 harvest_client_finalize(GObject *obj)

@@ -3,6 +3,7 @@
 
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-task.h"
 
@@ -20,7 +21,10 @@ struct _HarvestTask
 	GDateTime *updated_at;
 };
 
-G_DEFINE_TYPE(HarvestTask, harvest_task, G_TYPE_OBJECT)
+static void harvest_task_json_serializable_init(JsonSerializableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(HarvestTask, harvest_task, G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_task_json_serializable_init))
 
 enum HarvestTaskProps
 {
@@ -37,6 +41,27 @@ enum HarvestTaskProps
 };
 
 static GParamSpec *obj_properties[N_PROPS];
+
+static gboolean
+harvest_task_json_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
+	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
+{
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
+		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	}
+
+	return json_serializable_default_deserialize_property(
+		serializable, prop_name, val, pspec, prop_node);
+}
+
+static void
+harvest_task_json_serializable_init(JsonSerializableIface *iface)
+{
+	iface->deserialize_property = harvest_task_json_deserialize_property;
+}
 
 static void
 harvest_task_finalize(GObject *obj)
@@ -140,13 +165,13 @@ harvest_task_class_init(HarvestTaskClass *klass)
 		  INT_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_NAME] = g_param_spec_string(
 		"name", _("Name"), _("The name of the task."), NULL, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_BILLABLE_BY_DEFAULT] =
-		g_param_spec_boolean("billable_by_default", _("Billable by Default"),
+	obj_properties[PROP_BILLABLE_BY_DEFAULT]
+		= g_param_spec_boolean("billable_by_default", _("Billable by Default"),
 			_("Used in determining whether default tasks should be marked billable when creating a "
 			  "new project."),
 			FALSE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_DEFAULT_HOURLY_RATE] =
-		g_param_spec_double("default_hourly_rate", _("Default Hourly Rate"),
+	obj_properties[PROP_DEFAULT_HOURLY_RATE]
+		= g_param_spec_double("default_hourly_rate", _("Default Hourly Rate"),
 			_("The hourly rate to use for this task when it is added to a project."), 0, DBL_MAX, 0,
 			G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_IS_DEFAULT] = g_param_spec_boolean("is_default", _("Is Default"),
@@ -155,9 +180,9 @@ harvest_task_class_init(HarvestTaskClass *klass)
 	obj_properties[PROP_IS_ACTIVE]  = g_param_spec_boolean("is_active", _("Is Active"),
 		 _("Whether this task is active or archived."), FALSE,
 		 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_CREATED_AT] =
-		g_param_spec_boxed("created_at", _("Created At"), _("Date and time the task was created."),
-			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created_at", _("Created At"),
+		_("Date and time the task was created."), G_TYPE_DATE_TIME,
+		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_UPDATED_AT] = g_param_spec_boxed("updated_at", _("Created At"),
 		_("Date and time the task was last updated."), G_TYPE_DATE_TIME,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);

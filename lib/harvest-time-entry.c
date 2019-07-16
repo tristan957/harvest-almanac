@@ -90,26 +90,52 @@ harvest_time_entry_deserialize_property(JsonSerializable *serializable, const gc
 	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
 {
 	if (g_strcmp0(prop_name, "spent_date") == 0) {
-		const gchar *ds = json_node_get_string(prop_node);
-		if (ds == NULL) {
-			g_value_set_boxed(val, NULL);
-
-			return TRUE;
-		}
-
-		const GDateTime *dt = g_date_time_new_from_abbreviated_date(ds);
+		const GDateTime *dt
+			= g_date_time_new_from_abbreviated_date(json_node_get_string(prop_node));
 		g_value_set_boxed(val, dt);
+
 		return TRUE;
-	} else if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at")) {
-		const gchar *ds = json_node_get_string(prop_node);
-		if (ds == NULL) {
-			g_value_set_boxed(val, NULL);
-
-			return TRUE;
-		}
-
-		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+	} else if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0
+			   || g_strcmp0(prop_name, "timer_started_at") == 0
+			   || g_strcmp0(prop_name, "started_time") == 0
+			   || g_strcmp0(prop_name, "ended_time") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
 		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "user") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_USER, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "user_assignment") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_USER_ASSIGNMENT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "client") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CLIENT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "project") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_PROJECT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "task") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_TASK, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "task_assignment") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_TASK_ASSIGNMENT, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "invoice") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_INVOICE, prop_node);
+		g_value_set_object(val, obj);
 
 		return TRUE;
 	}
@@ -412,8 +438,8 @@ harvest_time_entry_class_init(HarvestTimeEntryClass *klass)
 	obj_properties[PROP_IS_BILLED]		 = g_param_spec_boolean("is_billed", _("Is Billed"),
 		  _("Whether or not the time entry has been marked as invoiced."), FALSE,
 		  G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_TIMER_STARTED_AT] =
-		g_param_spec_boxed("timer_started_at", _("Timer Started At"),
+	obj_properties[PROP_TIMER_STARTED_AT]
+		= g_param_spec_boxed("timer_started_at", _("Timer Started At"),
 			_("Date and time the timer was started (if tracking by duration). Use the ISO 8601 "
 			  "Format."),
 			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
@@ -435,9 +461,9 @@ harvest_time_entry_class_init(HarvestTimeEntryClass *klass)
 	obj_properties[PROP_BILLABLE_RATE] = g_param_spec_double("billable_rate", _("Billable Rate"),
 		_("The billable rate for the time entry."), 0, DBL_MAX, 0,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-	obj_properties[PROP_COST_RATE] =
-		g_param_spec_double("cost_rate", _("Cost Rate"), _("The cost rate for the time entry."), 0,
-			DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+	obj_properties[PROP_COST_RATE]
+		= g_param_spec_double("cost_rate", _("Cost Rate"), _("The cost rate for the time entry."),
+			0, DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created_at", _("Created At"),
 		_("Date and time the time entry was created. Use the ISO 8601 Format."), G_TYPE_DATE_TIME,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE);

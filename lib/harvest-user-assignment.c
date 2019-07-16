@@ -52,16 +52,19 @@ static gboolean
 harvest_user_assignment_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
 	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
 {
-	if (g_strcmp0("created_at", prop_name) == 0 || g_strcmp0("updated_at", prop_name) == 0) {
-		const gchar *ds = json_node_get_string(prop_node);
-		if (ds == NULL) {
-			g_value_set_boxed(val, NULL);
-
-			return TRUE;
-		}
-
-		const GDateTime *dt = g_date_time_new_from_iso8601(ds, NULL);
+	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
 		g_value_set_boxed(val, dt);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "user") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_USER, prop_node);
+		g_value_set_object(val, obj);
+
+		return TRUE;
+	} else if (g_strcmp0(prop_name, "project") == 0) {
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_PROJECT, prop_node);
+		g_value_set_object(val, obj);
 
 		return TRUE;
 	}
@@ -193,8 +196,8 @@ harvest_user_assignment_class_init(HarvestUserAssignmentClass *klass)
 	obj_class->get_property = harvest_user_assignment_get_property;
 	obj_class->set_property = harvest_user_assignment_set_property;
 
-	obj_properties[PROP_ID] =
-		g_param_spec_int("id", _("ID"), _("Unique ID for the user assignment."), 0, INT_MAX, 0,
+	obj_properties[PROP_ID]
+		= g_param_spec_int("id", _("ID"), _("Unique ID for the user assignment."), 0, INT_MAX, 0,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_PROJECT]   = g_param_spec_object("project", _("Project"),
 		  _("An object containing the id, name, and code of the associated project."),
@@ -205,8 +208,8 @@ harvest_user_assignment_class_init(HarvestUserAssignmentClass *klass)
 	obj_properties[PROP_IS_ACTIVE] = g_param_spec_boolean("is_active", _("Is Active"),
 		_("Whether the user assignment is active or archived."), FALSE,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	obj_properties[PROP_IS_PROJECT_MANAGER] =
-		g_param_spec_boolean("is_project_manager", _("Is Project Manager"),
+	obj_properties[PROP_IS_PROJECT_MANAGER]
+		= g_param_spec_boolean("is_project_manager", _("Is Project Manager"),
 			_("Determines if the user has project manager permissions for the project."), FALSE,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_USE_DEFAULT_RATES] = g_param_spec_boolean("use_default_rates",
