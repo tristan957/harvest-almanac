@@ -5,9 +5,9 @@
 #include <glib/gi18n.h>
 #include <json-glib/json-glib.h>
 
-#include "harvest-project.h"
 #include "harvest-user-assignment.h"
 #include "harvest-user.h"
+#include "project/objects/harvest-project.h"
 
 struct _HarvestUserAssignment
 {

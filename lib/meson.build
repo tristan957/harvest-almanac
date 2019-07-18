@@ -1,39 +1,38 @@
 sources = [
-    'harvest-api-client.c',
-    'harvest-client.c',
-    'harvest-common.c',
-    'harvest-creator.c',
-    'harvest-estimate.c',
-    'harvest-estimate-item-category.c',
-    'harvest-estimate-line-item.c',
-    'harvest-invoice.c',
-    'harvest-invoice-item-category.c',
-    'harvest-invoice-line-item.c',
-    'harvest-project.c',
-    'harvest-task.c',
-    'harvest-task-assignment.c',
-    'harvest-time-entry.c',
-    'harvest-user.c',
-    'harvest-user-assignment.c',
+    'client/objects/harvest-client.c',
+    'estimate/objects/harvest-estimate.c',
+    'estimate/objects/harvest-estimate-item-category.c',
+    'estimate/objects/harvest-estimate-line-item.c',
+    'invoice/objects/harvest-invoice.c',
+    'invoice/objects/harvest-invoice-item-category.c',
+    'invoice/objects/harvest-invoice-line-item.c',
+    'project/objects/harvest-project.c',
+    'shared/harvest-api-client.c',
+    'shared/harvest-common.c',
+    'shared/objects/harvest-creator.c',
+    'task/objects/harvest-task.c',
+    'task/objects/harvest-task-assignment.c',
+    'timesheet/objects/harvest-time-entry.c',
+    'user/objects/harvest-user.c',
+    'user/objects/harvest-user-assignment.c',
 ]
 
 libharvest_glib_public_headers = [
-    'harvest.h',
-    'harvest-api-client.h',
-    'harvest-client.h',
-    'harvest-creator.h',
-    'harvest-estimate.h',
-    'harvest-estimate-item-category.h',
-    'harvest-estimate-line-item.h',
-    'harvest-invoice.h',
-    'harvest-invoice-item-category.h',
-    'harvest-invoice-line-item.h',
-    'harvest-project.h',
-    'harvest-task.h',
-    'harvest-task-assignment.h',
-    'harvest-time-entry.h',
-    'harvest-user.h',
-    'harvest-user-assignment.h',
+    'client/objects/harvest-client.h',
+    'estimate/objects/harvest-estimate.h',
+    'estimate/objects/harvest-estimate-item-category.h',
+    'estimate/objects/harvest-estimate-line-item.h',
+    'invoice/objects/harvest-invoice.h',
+    'invoice/objects/harvest-invoice-item-category.h',
+    'invoice/objects/harvest-invoice-line-item.h',
+    'project/objects/harvest-project.h',
+    'shared/harvest-api-client.h',
+    'shared/objects/harvest-creator.h',
+    'task/objects/harvest-task.h',
+    'task/objects/harvest-task-assignment.h',
+    'timesheet/objects/harvest-time-entry.h',
+    'user/objects/harvest-user.h',
+    'user/objects/harvest-user-assignment.h',
 ]
 
 install_headers(libharvest_glib_public_headers, subdir: 'harvest-glib')
@@ -42,14 +41,9 @@ pkgincludedir = join_paths(get_option('includedir'), 'harvest-glib')
 
 libharvest_glib_version = '1.0.0'
 
-c_args = [
-    '-D__HARVEST_COMPILATION__',
-]
-
 libharvest_glib = library(
     'harvest-glib',
     sources,
-    c_args: c_args,
     version: libharvest_glib_version,
     dependencies: [
         libgio_dep,

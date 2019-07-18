@@ -5,15 +5,15 @@
 #include <glib/gi18n.h>
 #include <json-glib/json-glib.h>
 
-#include "harvest-client.h"
-#include "harvest-common.h"
-#include "harvest-invoice.h"
-#include "harvest-project.h"
-#include "harvest-task-assignment.h"
-#include "harvest-task.h"
-#include "harvest-time-entry.h"
-#include "harvest-user-assignment.h"
-#include "harvest-user.h"
+#include "client/objects/harvest-client.h"
+#include "invoice/objects/harvest-invoice.h"
+#include "project/objects/harvest-project.h"
+#include "shared/harvest-common.h"
+#include "task/objects/harvest-task-assignment.h"
+#include "task/objects/harvest-task.h"
+#include "timesheet/objects/harvest-time-entry.h"
+#include "user/objects/harvest-user-assignment.h"
+#include "user/objects/harvest-user.h"
 
 struct _HarvestTimeEntry
 {

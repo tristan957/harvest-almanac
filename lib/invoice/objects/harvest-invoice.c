@@ -5,13 +5,13 @@
 #include <glib/gi18n.h>
 #include <json-glib/json-glib.h>
 
-#include "harvest-client.h"
-#include "harvest-common.h"
-#include "harvest-creator.h"
-#include "harvest-estimate-line-item.h"
-#include "harvest-estimate.h"
+#include "client/objects/harvest-client.h"
+#include "estimate/objects/harvest-estimate-line-item.h"
+#include "estimate/objects/harvest-estimate.h"
 #include "harvest-invoice-line-item.h"
 #include "harvest-invoice.h"
+#include "shared/harvest-common.h"
+#include "shared/objects/harvest-creator.h"
 
 struct _HarvestInvoice
 {

@@ -6,7 +6,7 @@
 #include <json-glib/json-glib.h>
 
 #include "harvest-invoice-line-item.h"
-#include "harvest-project.h"
+#include "project/objects/harvest-project.h"
 
 struct _HarvestInvoiceLineItem
 {
