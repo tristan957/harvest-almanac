@@ -1,6 +1,5 @@
-[wrap-file]
-directory = glib-2.60.2
+[wrap-git]
+directory = glib
 
-source_url = https://gitlab.gnome.org/GNOME/glib/-/archive/2.60.2/glib-2.60.2.tar.gz
-source_filename = glib-2.60.2.tar.gz
-source_hash = 014ea6004a504fbbf5d9dd2b9ab13186400d3c68b4e442532482d2bf6955cfef
+url = https://gitlab.gnome.org/GNOME/glib
+revision = glib-2-60
