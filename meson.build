@@ -6,7 +6,7 @@ project(
         'GPL-3.0-only',
     ],
     default_options: [
-        'c_std=gnu11', # Symptom of statically compiling with wraps
+        'c_std=gnu11', # Enable GCC extensions
         'buildtype=debugoptimized',
         'warning_level=1',
     ],
