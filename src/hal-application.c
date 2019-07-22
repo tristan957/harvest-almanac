@@ -61,14 +61,14 @@ hal_application_settings(
 	HalApplication *self		= HAL_APPLICATION(data);
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
-	HalSettingsDialog *dialog =
-		hal_settings_dialog_new(GTK_WINDOW(priv->main_window), priv->settings);
+	HalSettingsDialog *dialog
+		= hal_settings_dialog_new(GTK_WINDOW(priv->main_window), priv->settings);
 	const GtkResponseType response = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 
 	if (response == GTK_RESPONSE_APPLY) {
-		g_autofree gchar *harvest_api_key =
-			g_settings_get_string(priv->settings, SETTINGS_HARVEST_API_KEY);
+		g_autofree gchar *harvest_api_key
+			= g_settings_get_string(priv->settings, SETTINGS_HARVEST_API_KEY);
 		GActionMap *map = G_ACTION_MAP(priv->main_window);
 		if (strlen(harvest_api_key) != 0) {
 			GAction *show_content = g_action_map_lookup_action(map, "show-content");
