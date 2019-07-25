@@ -9,6 +9,7 @@ G_DECLARE_FINAL_TYPE(HalSettingsDialog, hal_settings_dialog, HAL, SETTINGS_DIALO
 
 G_BEGIN_DECLS
 
-HalSettingsDialog *hal_settings_dialog_new(GtkWindow *parent, GSettings *settings);
+HalSettingsDialog *hal_settings_dialog_new(
+	GtkWindow *parent, GSettings *settings) G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
