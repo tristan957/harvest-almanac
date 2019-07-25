@@ -1,8 +1,11 @@
 #pragma once
 
-
 #include <curl/curl.h>
 #include <glib-object.h>
+
+#include "shared/requests/harvest-request.h"
+
+G_BEGIN_DECLS
 
 #define HARVEST_API_URL_V2 "https://api.harvestapp.com/v2"
 #define HARVEST_TYPE_API_CLIENT (harvest_api_client_get_type())
@@ -14,13 +17,7 @@ typedef struct HarvestBuffer
 	size_t len;
 } HarvestBuffer;
 
-G_BEGIN_DECLS
-
 HarvestApiClient *harvest_api_client_new() G_GNUC_WARN_UNUSED_RESULT;
-GObject *harvest_client_get_request(
-	HarvestApiClient *self, const GType type, const char *endpoint, GError **err);
-GObject *harvest_client_post_request(
-	HarvestApiClient *self, const GType type, const char *endpoint, GObject *data, GError **err);
-size_t harvest_api_client_write_cb(char *ptr, size_t size, size_t nmemb, void *user_data);
+GObject *harvest_api_client_execute_request(HarvestApiClient *self, HarvestRequest *request);
 
 G_END_DECLS

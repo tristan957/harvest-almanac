@@ -17,6 +17,7 @@ sources = [
     'task/objects/harvest-task.c',
     'task/objects/harvest-task-assignment.c',
     'timesheet/objects/harvest-time-entry.c',
+    'timesheet/requests/harvest-late-request.c',
     'user/objects/harvest-user.c',
     'user/objects/harvest-user-assignment.c',
 ]
@@ -31,6 +32,7 @@ libharvest_glib_public_headers = [
     'invoice/objects/harvest-invoice-line-item.h',
     'project/objects/harvest-project.h',
     'shared/harvest-api-client.h',
+    'shared/harvest-http.h',
     'shared/harvest-pageable.c',
     'shared/objects/harvest-creator.h',
     'shared/requests/harvest-request.h',
@@ -39,6 +41,7 @@ libharvest_glib_public_headers = [
     'task/objects/harvest-task.h',
     'task/objects/harvest-task-assignment.h',
     'timesheet/objects/harvest-time-entry.h',
+    'timesheet/requests/harvest-late-request.h',
     'user/objects/harvest-user.h',
     'user/objects/harvest-user-assignment.h',
 ]

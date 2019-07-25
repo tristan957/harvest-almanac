@@ -104,6 +104,31 @@ harvest_api_client_new()
 	return g_object_new(HARVEST_TYPE_API_CLIENT, "server", HARVEST_API_URL_V2, NULL);
 }
 
+size_t
+harvest_api_client_write_cb(char *content, size_t size, size_t nmemb, void *user_data)
+{
+	const size_t real_size = size * nmemb;
+	HarvestBuffer *buffer  = user_data;
+
+	if (buffer->buf == NULL) {
+		buffer->buf = g_malloc(1);
+		g_return_val_if_fail(buffer->buf != NULL, 0);
+		buffer->buf[0] = 0;
+		buffer->len	= 0;
+	}
+
+	const size_t new_len = strlen(buffer->buf) + buffer->len;
+	buffer->buf			 = g_realloc(buffer->buf, new_len + real_size + 1);
+	g_return_val_if_fail(buffer->buf != NULL, 0);
+
+	memcpy(&buffer->buf[buffer->len], content, real_size);
+
+	buffer->len += real_size;
+	buffer->buf[buffer->len] = 0;
+
+	return real_size;
+}
+
 static gboolean
 status_code_valid(const unsigned int status_code)
 {
@@ -129,8 +154,9 @@ harvest_api_client_get_request(
 			curl_easy_strerror(req_code));
 		goto on_error;
 	}
-	if ((req_code = curl_easy_setopt(
-			 self->handle, CURLOPT_WRITEFUNCTION, harvest_api_client_write_cb)) != CURLE_OK) {
+	if ((req_code
+			= curl_easy_setopt(self->handle, CURLOPT_WRITEFUNCTION, harvest_api_client_write_cb))
+		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEFUNCTION: %s",
 			curl_easy_strerror(req_code));
 		goto on_error;
@@ -140,8 +166,8 @@ harvest_api_client_get_request(
 			curl_easy_strerror(req_code));
 		goto on_error;
 	}
-	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl-agent/tllt-cp")) !=
-		CURLE_OK) {
+	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl-agent/tllt-cp"))
+		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_USERAGENT: %s",
 			curl_easy_strerror(req_code));
 		goto on_error;
@@ -168,8 +194,8 @@ harvest_api_client_get_request(
 
 	long status_code  = 0;
 	CURLcode res_code = CURLE_OK;
-	if ((res_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code)) !=
-		CURLE_OK) {
+	if ((res_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code))
+		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to get status req_code: %s",
 			curl_easy_strerror(res_code));
 		goto on_error;
@@ -223,8 +249,8 @@ harvest_api_client_post_request(
 			goto on_error;
 		}
 
-		if ((req_code = curl_easy_setopt(self->handle, CURLOPT_COPYPOSTFIELDS, deserialized)) !=
-			CURLE_OK) {
+		if ((req_code = curl_easy_setopt(self->handle, CURLOPT_COPYPOSTFIELDS, deserialized))
+			!= CURLE_OK) {
 			g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_COPYPOSTFIELDS: %s",
 				curl_easy_strerror(req_code));
 			g_free(deserialized);
@@ -234,8 +260,9 @@ harvest_api_client_post_request(
 		g_free(deserialized);
 	}
 
-	if ((req_code = curl_easy_setopt(
-			 self->handle, CURLOPT_WRITEFUNCTION, harvest_api_client_write_cb)) != CURLE_OK) {
+	if ((req_code
+			= curl_easy_setopt(self->handle, CURLOPT_WRITEFUNCTION, harvest_api_client_write_cb))
+		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEFUNCTION: %s",
 			curl_easy_strerror(req_code));
 		goto on_error;
@@ -246,8 +273,8 @@ harvest_api_client_post_request(
 		goto on_error;
 	}
 
-	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl/tllt-cp")) !=
-		CURLE_OK) {
+	if ((req_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl/tllt-cp"))
+		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_USERAGENT: %s",
 			curl_easy_strerror(req_code));
 		goto on_error;
@@ -275,8 +302,8 @@ harvest_api_client_post_request(
 
 	long status_code  = 0;
 	CURLcode res_code = CURLE_OK;
-	if ((res_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code)) !=
-		CURLE_OK) {
+	if ((res_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code))
+		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to get status req_code: %s",
 			curl_easy_strerror(res_code));
 		goto on_error;
@@ -309,29 +336,4 @@ on_error:
 	g_free(buffer.buf);
 
 	return NULL;
-}
-
-size_t
-harvest_api_client_write_cb(char *content, size_t size, size_t nmemb, void *user_data)
-{
-	const size_t real_size = size * nmemb;
-	HarvestBuffer *buffer  = user_data;
-
-	if (buffer->buf == NULL) {
-		buffer->buf = g_malloc(1);
-		g_return_val_if_fail(buffer->buf != NULL, 0);
-		buffer->buf[0] = 0;
-		buffer->len	= 0;
-	}
-
-	const size_t new_len = strlen(buffer->buf) + buffer->len;
-	buffer->buf			 = g_realloc(buffer->buf, new_len + real_size + 1);
-	g_return_val_if_fail(buffer->buf != NULL, 0);
-
-	memcpy(&buffer->buf[buffer->len], content, real_size);
-
-	buffer->len += real_size;
-	buffer->buf[buffer->len] = 0;
-
-	return real_size;
 }
