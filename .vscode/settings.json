@@ -13,6 +13,7 @@
 		"*.xml.in": "xml",
 		"*.ui": "xml",
 		"*.h.in": "c",
+		"*.h": "c"
 	},
 	"files.watcherExclude": {
 		"**/.git/objects/**": true,
