@@ -8,7 +8,6 @@ packages:
   - make
   - git
   - libhandy-devel
-  - libgit2-devel
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
