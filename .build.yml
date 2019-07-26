@@ -9,7 +9,7 @@ packages:
   - flex
   - bison
 secrets:
-  - 87bade00-cb5e-4458-a090-adb7b53c2831
+  - 520a69bd-fd94-4ee0-8c55-6b5019b85ac7
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
   - https://git.sr.ht/~sircmpwn/annotatec
