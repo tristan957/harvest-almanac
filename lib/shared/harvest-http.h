@@ -6,7 +6,6 @@ G_BEGIN_DECLS
 
 typedef enum HttpMethod
 {
-	HTTP_METHOD_UNKNOWN,
 	HTTP_METHOD_GET,
 	HTTP_METHOD_POST,
 	HTTP_METHOD_UPDATE,
@@ -16,7 +15,6 @@ typedef enum HttpMethod
 
 typedef enum HttpStatusCode
 {
-	HTTP_STATUS_UNKNOWN,
 	HTTP_STATUS_OK					   = 200,
 	HTTP_STATUS_CREATED				   = 201,
 	HTTP_STATUS_ACCEPTED			   = 202,
