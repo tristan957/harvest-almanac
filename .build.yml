@@ -3,7 +3,7 @@ packages:
   - curl-dev
   - gtk+3.0-dev
   - meson
-  - json-glib
+  - json-glib-dev
   - libhandy-dev
   # annotatec deps
   - flex
