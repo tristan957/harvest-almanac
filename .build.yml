@@ -9,7 +9,7 @@ packages:
   - flex
   - bison
 secrets:
-  - 520a69bd-fd94-4ee0-8c55-6b5019b85ac7
+  - 0758e096-e96e-42dd-9370-d64cc766f75e
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
   - https://git.sr.ht/~sircmpwn/annotatec
@@ -27,7 +27,7 @@ tasks:
   - annotate: |
       cd harvest-almanac
       find . -name "*.c" | xargs \
-        annotatec -gC "cpp -std=gnu11 -D HANDY_USE_UNSTABLE_API \
+        annotatec -gC "cpp -std=gnu11 -U __GNUC__ -D HANDY_USE_UNSTABLE_API \
           -Ilib -Ibuild/src -Ibuild/data $(pkg-config --cflags gio-2.0 \
           json-glib-1.0 gtk+-3.0 libhandy-0.0 libcurl)" > annotations.json
       cat annotations.json
