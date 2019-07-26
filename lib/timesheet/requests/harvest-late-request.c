@@ -69,18 +69,6 @@ harvest_late_request_finalize(GObject *obj)
 	G_OBJECT_CLASS(harvest_late_request_parent_class)->finalize(obj);
 }
 
-G_GNUC_CONST static inline HttpMethod
-harvest_late_request_get_http_method(void)
-{
-	return HTTP_METHOD_GET;
-}
-
-G_GNUC_CONST static inline const char *
-harvest_late_request_get_endpoint(G_GNUC_UNUSED HarvestLATERequest *self)
-{
-	return "/time_entries";
-}
-
 G_GNUC_CONST G_GNUC_WARN_UNUSED_RESULT static const char *
 harvest_late_request_serialize_params(HarvestLATERequest *self)
 {
@@ -94,20 +82,6 @@ harvest_late_request_serialize_params(HarvestLATERequest *self)
 		g_string_append_printf(string, "&client_id=%d", self->client_id);
 
 	return g_strdup_printf(string->str);
-}
-
-G_GNUC_CONST static inline gboolean
-harvest_late_request_status_code_valid(const HttpStatusCode status)
-{
-	if (status == HTTP_STATUS_OK)
-		return TRUE;
-	return FALSE;
-}
-
-G_GNUC_CONST static inline GType
-harvest_late_request_get_response_type(void)
-{
-	return G_TYPE_NONE;
 }
 
 static void
@@ -150,20 +124,11 @@ harvest_late_request_set_property(GObject *obj, guint prop_id, const GValue *val
 static void
 harvest_late_request_class_init(HarvestLATERequestClass *klass)
 {
-	GObjectClass *obj_class		   = G_OBJECT_CLASS(klass);
-	HarvestRequestClass *req_class = HARVEST_REQUEST_CLASS(klass);
+	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 
-	obj_class->finalize		   = harvest_late_request_finalize;
-	obj_class->get_property	= harvest_late_request_get_property;
-	obj_class->set_property	= harvest_late_request_set_property;
-	req_class->get_http_method = harvest_late_request_get_http_method;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-	req_class->get_endpoint		= harvest_late_request_get_endpoint;
-	req_class->serialize_params = harvest_late_request_serialize_params;
-#pragma GCC diagnostic pop
-	req_class->status_code_valid = harvest_late_request_status_code_valid;
-	req_class->get_response_type = harvest_late_request_get_response_type;
+	obj_class->finalize		= harvest_late_request_finalize;
+	obj_class->get_property = harvest_late_request_get_property;
+	obj_class->set_property = harvest_late_request_set_property;
 
 	obj_properties[PROP_USER_ID] = g_param_spec_int(
 		"user_id", _("User ID"), _(""), 0, INT_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
@@ -192,6 +157,11 @@ harvest_late_request_new(const char *first_prop_name, ...)
 	HarvestLATERequest *self = HARVEST_LATE_REQUEST(
 		g_object_new_valist(HARVEST_TYPE_LATE_REQUEST, first_prop_name, var_args));
 	va_end(var_args);
+
+	g_autoptr(GString) endpoint = g_string_new("/time_entries");
+	g_object_set(self, "http-method", HTTP_METHOD_GET, "endpoint", endpoint->str, "query-params",
+		harvest_late_request_serialize_params(self), "expected-status", HTTP_STATUS_OK,
+		"response-type", G_TYPE_NONE, NULL);
 
 	return self;
 }
