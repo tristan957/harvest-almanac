@@ -18,6 +18,7 @@ HttpMethod harvest_request_get_http_method(HarvestRequest *self) G_GNUC_CONST;
 const char *harvest_request_get_endpoint(HarvestRequest *self) G_GNUC_CONST;
 const char *harvest_request_get_query_params(
 	HarvestRequest *self) G_GNUC_CONST G_GNUC_WARN_UNUSED_RESULT;
+GObject *harvest_request_get_data(HarvestRequest *self) G_GNUC_CONST;
 HttpStatusCode harvest_request_get_expected_status(HarvestRequest *self) G_GNUC_CONST;
 GType harvest_request_get_response_type(HarvestRequest *self) G_GNUC_CONST;
 
