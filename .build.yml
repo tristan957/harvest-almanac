@@ -1,12 +1,9 @@
 image: fedora/30
 packages:
-  - gcc
   - libcurl-devel
   - gtk3-devel
   - meson
   - json-glib-devel
-  - make
-  - git
   - libhandy-devel
   # annotatec deps
   - flex
