@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <glib-object.h>
 
 #define PACKAGE_DOMAIN 0

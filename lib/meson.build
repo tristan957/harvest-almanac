@@ -1,4 +1,5 @@
 sources = [
+    'harvest-api-client.c',
     'client/objects/harvest-client.c',
     'estimate/objects/harvest-estimate.c',
     'estimate/objects/harvest-estimate-item-category.c',
@@ -7,7 +8,6 @@ sources = [
     'invoice/objects/harvest-invoice-item-category.c',
     'invoice/objects/harvest-invoice-line-item.c',
     'project/objects/harvest-project.c',
-    'shared/harvest-api-client.c',
     'shared/harvest-common.c',
     'shared/harvest-pageable.c',
     'shared/objects/harvest-creator.c',
@@ -23,6 +23,8 @@ sources = [
 ]
 
 libharvest_glib_public_headers = [
+    'harvest-api-client.h',
+    'harvest-error.h',
     'client/objects/harvest-client.h',
     'estimate/objects/harvest-estimate.h',
     'estimate/objects/harvest-estimate-item-category.h',
@@ -31,7 +33,6 @@ libharvest_glib_public_headers = [
     'invoice/objects/harvest-invoice-item-category.h',
     'invoice/objects/harvest-invoice-line-item.h',
     'project/objects/harvest-project.h',
-    'shared/harvest-api-client.h',
     'shared/harvest-http.h',
     'shared/harvest-pageable.c',
     'shared/objects/harvest-creator.h',

@@ -9,8 +9,8 @@
 
 #include "harvest-api-client.h"
 #include "harvest-error.h"
-#include "harvest-http.h"
-#include "requests/harvest-request.h"
+#include "shared/harvest-http.h"
+#include "shared/requests/harvest-request.h"
 
 #define HARVEST_API_URL_V2 "https://api.harvestapp.com/v2"
 
