@@ -8,6 +8,7 @@ packages:
   - make
   - git
   - libhandy-devel
+  - libgit2-devel
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
@@ -17,3 +18,12 @@ tasks:
   - build: |
       cd harvest-almanac
       ninja -C build
+  # - annotate: |
+  #     cd harvest-almanac
+  #     find . -name "*.c" | xargs \
+  #       annotatec -gC "cpp -std=gnu11 -Iinclude $(pkg-config --cflags libgit2)" > annotations.json
+  #     curl -X PUT \
+  #       -H "Authorization: token $OAUTH_TOKEN" \
+  #       -H "Content-Type: application/json" \
+  #       -d ./annotations.json \
+  #       "https://git.sr.ht/api/~tristan957/repos/harvest-almanac/annotate"
