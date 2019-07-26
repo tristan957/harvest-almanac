@@ -1,10 +1,10 @@
-image: fedora/30
+image: alpine/edge
 packages:
-  - libcurl-devel
-  - gtk3-devel
+  - curl-dev
+  - gtk+3.0-dev
   - meson
-  - json-glib-devel
-  - libhandy-devel
+  - json-glib
+  - libhandy-dev
   # annotatec deps
   - flex
   - bison
