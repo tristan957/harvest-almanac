@@ -2,14 +2,14 @@
 
 #include <glib-object.h>
 
+G_BEGIN_DECLS
+
 #define PACKAGE_DOMAIN 0
 
 typedef enum HarvestErrorCode
 {
 	ERROR_CURL,
 	ERROR_JSON,
-} TlltCpErrorCode;
-
-G_BEGIN_DECLS
+} HarvestCpErrorCode;
 
 G_END_DECLS
