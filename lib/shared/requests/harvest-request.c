@@ -3,6 +3,7 @@
 
 #include "harvest-request.h"
 #include "shared/harvest-http.h"
+#include "shared/responses/harvest-response.h"
 
 typedef struct _HarvestRequestPrivate
 {
@@ -11,7 +12,7 @@ typedef struct _HarvestRequestPrivate
 	char *query_params;
 	GObject *data;
 	HttpStatusCode expected_status;
-	GType response_type;
+	HarvestResponse *response;
 } HarvestRequestPrivate;
 
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(HarvestRequest, harvest_request, G_TYPE_OBJECT)
@@ -24,7 +25,7 @@ enum HarvestRequestProps
 	PROP_QUERY_PARAMS,
 	PROP_DATA,
 	PROP_EXPECTED_STATUS,
-	PROP_RESPONSE_TYPE,
+	PROP_RESPONSE,
 	N_PROPS,
 };
 
@@ -40,6 +41,8 @@ harvest_request_finalize(GObject *obj)
 	g_free(priv->query_params);
 	if (priv->data != NULL)
 		g_object_unref(priv->data);
+	if (priv->response != NULL)
+		g_object_unref(priv->response);
 
 	G_OBJECT_CLASS(harvest_request_parent_class)->finalize(obj);
 }
@@ -66,8 +69,8 @@ harvest_request_get_property(GObject *obj, guint prop_id, GValue *val, GParamSpe
 	case PROP_EXPECTED_STATUS:
 		g_value_set_int(val, priv->expected_status);
 		break;
-	case PROP_RESPONSE_TYPE:
-		g_value_set_uint64(val, priv->response_type);
+	case PROP_RESPONSE:
+		g_value_set_object(val, priv->response);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -100,8 +103,10 @@ harvest_request_set_property(GObject *obj, guint prop_id, const GValue *val, GPa
 	case PROP_EXPECTED_STATUS:
 		priv->expected_status = g_value_get_int(val);
 		break;
-	case PROP_RESPONSE_TYPE:
-		priv->response_type = g_value_get_uint64(val);
+	case PROP_RESPONSE:
+		if (priv->response != NULL)
+			g_object_unref(priv->response);
+		priv->response = g_value_dup_object(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -133,9 +138,9 @@ harvest_request_class_init(HarvestRequestClass *klass)
 		_("The expected status code the response should come back with."), HTTP_STATUS_OK,
 		HTTP_STATUS_GATEWAY_TIMEOUT, HTTP_STATUS_OK,
 		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_PRIVATE);
-	obj_properties[PROP_RESPONSE_TYPE]   = g_param_spec_uint64("response-type", _("Response Type"),
-		  _("The GType of the response body."), G_TYPE_NONE, __UINT64_MAX__, G_TYPE_NONE,
-		  G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_PRIVATE);
+	obj_properties[PROP_RESPONSE]		 = g_param_spec_object("response", _("Response"),
+		   _("An object containing meta information of the response."), HARVEST_TYPE_RESPONSE,
+		   G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_PRIVATE);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
@@ -184,10 +189,10 @@ harvest_request_get_expected_status(HarvestRequest *self)
 	return priv->expected_status;
 }
 
-GType
-harvest_request_get_response_type(HarvestRequest *self)
+HarvestResponse *
+harvest_request_get_response(HarvestRequest *self)
 {
 	HarvestRequestPrivate *priv = harvest_request_get_instance_private(self);
 
-	return priv->response_type;
+	return priv->response;
 }

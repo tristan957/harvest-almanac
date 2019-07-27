@@ -11,6 +11,7 @@
 #include "harvest-error.h"
 #include "shared/harvest-http.h"
 #include "shared/requests/harvest-request.h"
+#include "shared/responses/harvest-response.h"
 
 #define HARVEST_API_URL_V2 "https://api.harvestapp.com/v2"
 
@@ -185,7 +186,7 @@ harvest_api_client_before_execution(HarvestApiClient *self, HarvestRequest *req,
 	}
 
 	// If the request expects a body, add the appropriate header
-	if (harvest_request_get_response_type(req) != G_TYPE_NONE)
+	if (harvest_response_get_body_type(harvest_request_get_response(req)) != G_TYPE_NONE)
 		*headers = curl_slist_append(*headers, "Accept: application/json");
 
 	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_HTTPHEADER, *headers)) != CURLE_OK) {
@@ -214,7 +215,7 @@ harvest_api_client_after_execution(
 	}
 
 	GObject *body_obj = NULL;
-	GType type		  = harvest_request_get_response_type(req);
+	GType type		  = harvest_response_get_body_type(harvest_request_get_response(req));
 	if (type != G_TYPE_NONE) {
 		body_obj = json_gobject_from_data(type, buffer->buf, -1, err);
 	}

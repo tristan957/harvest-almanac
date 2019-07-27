@@ -3,6 +3,7 @@
 #include <glib-object.h>
 
 #include "shared/harvest-http.h"
+#include "shared/responses/harvest-response.h"
 
 G_BEGIN_DECLS
 
@@ -20,6 +21,6 @@ const char *harvest_request_get_query_params(
 	HarvestRequest *self) G_GNUC_CONST G_GNUC_WARN_UNUSED_RESULT;
 GObject *harvest_request_get_data(HarvestRequest *self) G_GNUC_CONST;
 HttpStatusCode harvest_request_get_expected_status(HarvestRequest *self) G_GNUC_CONST;
-GType harvest_request_get_response_type(HarvestRequest *self) G_GNUC_CONST;
+HarvestResponse *harvest_request_get_response(HarvestRequest *self) G_GNUC_CONST;
 
 G_END_DECLS

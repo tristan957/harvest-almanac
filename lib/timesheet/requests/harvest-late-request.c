@@ -3,6 +3,7 @@
 
 #include "harvest-late-request.h"
 #include "shared/harvest-http.h"
+#include "shared/responses/harvest-response.h"
 
 struct _HarvestLATERequest
 {
@@ -159,9 +160,10 @@ harvest_late_request_new(const char *first_prop_name, ...)
 	va_end(var_args);
 
 	g_autoptr(GString) endpoint = g_string_new("/time_entries");
+	HarvestResponse *response   = harvest_response_new(G_TYPE_NONE);
 	g_object_set(self, "http-method", HTTP_METHOD_GET, "endpoint", endpoint->str, "query-params",
-		harvest_late_request_serialize_params(self), "expected-status", HTTP_STATUS_OK,
-		"response-type", G_TYPE_NONE, NULL);
+		harvest_late_request_serialize_params(self), "expected-status", HTTP_STATUS_OK, "response",
+		response, NULL);
 
 	return self;
 }
