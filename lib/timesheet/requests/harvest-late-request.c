@@ -160,7 +160,7 @@ harvest_late_request_new(const char *first_prop_name, ...)
 	va_end(var_args);
 
 	g_autoptr(GString) endpoint = g_string_new("/time_entries");
-	HarvestResponseMetadata *response_metadata
+	g_autoptr(HarvestResponseMetadata) response_metadata
 		= harvest_response_metadata_new(G_TYPE_NONE, HTTP_STATUS_OK);
 	g_object_set(self, "http-method", HTTP_METHOD_GET, "endpoint", endpoint->str, "query-params",
 		harvest_late_request_serialize_params(self), "response-metadata", response_metadata, NULL);
