@@ -11,7 +11,7 @@
 #include "harvest-error.h"
 #include "shared/harvest-http.h"
 #include "shared/requests/harvest-request.h"
-#include "shared/responses/harvest-response.h"
+#include "shared/responses/harvest-response-metadata.h"
 
 #define HARVEST_API_URL_V2 "https://api.harvestapp.com/v2"
 
@@ -186,7 +186,8 @@ harvest_api_client_before_execution(HarvestApiClient *self, HarvestRequest *req,
 	}
 
 	// If the request expects a body, add the appropriate header
-	if (harvest_response_get_body_type(harvest_request_get_response(req)) != G_TYPE_NONE)
+	if (harvest_response_metadata_get_body_type(harvest_request_get_response_metadata(req))
+		!= G_TYPE_NONE)
 		*headers = curl_slist_append(*headers, "Accept: application/json");
 
 	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_HTTPHEADER, *headers)) != CURLE_OK) {
@@ -200,8 +201,10 @@ static GObject *
 harvest_api_client_after_execution(
 	HarvestApiClient *self, HarvestRequest *req, HarvestBuffer *buffer, GError **err)
 {
-	long status_code   = 0;
-	CURLcode curl_code = CURLE_OK;
+	HarvestResponseMetadata *response_metadata = harvest_request_get_response_metadata(req);
+	long status_code						   = 0;
+	CURLcode curl_code						   = CURLE_OK;
+
 	if ((curl_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code))
 		!= CURLE_OK) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to get status req_code: %s",
@@ -209,13 +212,13 @@ harvest_api_client_after_execution(
 		return NULL;
 	}
 
-	if (status_code != harvest_request_get_expected_status(req)) {
+	if (status_code != harvest_response_metadata_get_expected_status(response_metadata)) {
 		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Invalid response code of %ld", status_code);
 		return NULL;
 	}
 
 	GObject *body_obj = NULL;
-	GType type		  = harvest_response_get_body_type(harvest_request_get_response(req));
+	GType type		  = harvest_response_metadata_get_body_type(response_metadata);
 	if (type != G_TYPE_NONE) {
 		body_obj = json_gobject_from_data(type, buffer->buf, -1, err);
 	}

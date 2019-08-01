@@ -3,7 +3,7 @@
 
 #include "harvest-request.h"
 #include "shared/harvest-http.h"
-#include "shared/responses/harvest-response.h"
+#include "shared/responses/harvest-response-metadata.h"
 
 typedef struct _HarvestRequestPrivate
 {
@@ -12,7 +12,7 @@ typedef struct _HarvestRequestPrivate
 	char *query_params;
 	GObject *data;
 	HttpStatusCode expected_status;
-	HarvestResponse *response;
+	HarvestResponseMetadata *response_metadata;
 } HarvestRequestPrivate;
 
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(HarvestRequest, harvest_request, G_TYPE_OBJECT)
@@ -25,7 +25,7 @@ enum HarvestRequestProps
 	PROP_QUERY_PARAMS,
 	PROP_DATA,
 	PROP_EXPECTED_STATUS,
-	PROP_RESPONSE,
+	PROP_RESPONSE_METADATA,
 	N_PROPS,
 };
 
@@ -41,8 +41,8 @@ harvest_request_finalize(GObject *obj)
 	g_free(priv->query_params);
 	if (priv->data != NULL)
 		g_object_unref(priv->data);
-	if (priv->response != NULL)
-		g_object_unref(priv->response);
+	if (priv->response_metadata != NULL)
+		g_object_unref(priv->response_metadata);
 
 	G_OBJECT_CLASS(harvest_request_parent_class)->finalize(obj);
 }
@@ -66,11 +66,8 @@ harvest_request_get_property(GObject *obj, guint prop_id, GValue *val, GParamSpe
 	case PROP_DATA:
 		g_value_set_object(val, priv->data);
 		break;
-	case PROP_EXPECTED_STATUS:
-		g_value_set_int(val, priv->expected_status);
-		break;
-	case PROP_RESPONSE:
-		g_value_set_object(val, priv->response);
+	case PROP_RESPONSE_METADATA:
+		g_value_set_object(val, priv->response_metadata);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -100,13 +97,10 @@ harvest_request_set_property(GObject *obj, guint prop_id, const GValue *val, GPa
 			g_object_unref(priv->data);
 		priv->data = g_value_dup_object(val);
 		break;
-	case PROP_EXPECTED_STATUS:
-		priv->expected_status = g_value_get_int(val);
-		break;
-	case PROP_RESPONSE:
-		if (priv->response != NULL)
-			g_object_unref(priv->response);
-		priv->response = g_value_dup_object(val);
+	case PROP_RESPONSE_METADATA:
+		if (priv->response_metadata != NULL)
+			g_object_unref(priv->response_metadata);
+		priv->response_metadata = g_value_dup_object(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -134,13 +128,9 @@ harvest_request_class_init(HarvestRequestClass *klass)
 	obj_properties[PROP_DATA]
 		= g_param_spec_object("data", _("Data"), _("The data to send in the body of the request."),
 			G_TYPE_OBJECT, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_PRIVATE);
-	obj_properties[PROP_EXPECTED_STATUS] = g_param_spec_int("expected-status", _("Expected Status"),
-		_("The expected status code the response should come back with."), HTTP_STATUS_OK,
-		HTTP_STATUS_GATEWAY_TIMEOUT, HTTP_STATUS_OK,
+	obj_properties[PROP_RESPONSE_METADATA] = g_param_spec_object("response-metadata", _("Response"),
+		_("An object containing meta information of the response."), HARVEST_TYPE_RESPONSE_METADATA,
 		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_PRIVATE);
-	obj_properties[PROP_RESPONSE]		 = g_param_spec_object("response", _("Response"),
-		   _("An object containing meta information of the response."), HARVEST_TYPE_RESPONSE,
-		   G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_PRIVATE);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
@@ -181,18 +171,10 @@ harvest_request_get_data(HarvestRequest *self)
 	return priv->data;
 }
 
-HttpStatusCode
-harvest_request_get_expected_status(HarvestRequest *self)
+HarvestResponseMetadata *
+harvest_request_get_response_metadata(HarvestRequest *self)
 {
 	HarvestRequestPrivate *priv = harvest_request_get_instance_private(self);
 
-	return priv->expected_status;
-}
-
-HarvestResponse *
-harvest_request_get_response(HarvestRequest *self)
-{
-	HarvestRequestPrivate *priv = harvest_request_get_instance_private(self);
-
-	return priv->response;
+	return priv->response_metadata;
 }
