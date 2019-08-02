@@ -31,6 +31,7 @@ json_glib_dep = dependency('json-glib-1.0', version: '>= 1.2', required: true, f
 libgtk_dep = dependency('gtk+-3.0', version: '>= 3.22', required: true, fallback: ['gtk', 'libgtk_dep'])
 libhandy_dep = dependency('libhandy-0.0', version: '>= 0.0.9', required: true, fallback: ['libhandy', 'libhandy_dep'])
 libcurl_dep = dependency('libcurl', version: '>= 7.52', required: true)
+libsoup_dep = dependency('libsoup-2.4', version: '>= 2.66.2', required: true, fallback: ['libsoup', 'libsoup_dep'])
 
 subdir('data')
 subdir('lib')

@@ -63,6 +63,7 @@ libharvest_glib = library(
         libgio_dep,
         libcurl_dep,
         json_glib_dep,
+        libsoup_dep,
     ],
     install: true,
 )

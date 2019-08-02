@@ -5,6 +5,7 @@ packages:
   - meson
   - json-glib-dev
   - libhandy-dev
+  - libsoup-dev
   # annotatec deps
   - flex
   - bison
