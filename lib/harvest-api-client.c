@@ -2,10 +2,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <curl/curl.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <json-glib/json-glib.h>
+#include <libsoup/soup.h>
 
 #include "harvest-api-client.h"
 #include "harvest-error.h"
@@ -15,25 +15,26 @@
 
 #define HARVEST_API_URL_V2 "https://api.harvestapp.com/v2"
 
-typedef struct HarvestBuffer
-{
-	char *buf;
-	size_t len;
-} HarvestBuffer;
-
+// TODO: Add access token and account id to struct for apply Authorization and Harvest-Account-Id
+// headers
 struct _HarvestApiClient
 {
 	GObject parent_instance;
 
-	CURL *handle;
+	SoupSession *session;
 	const char *server;
+	char *application_name;
+	char *contact_info;
 };
 
 G_DEFINE_TYPE(HarvestApiClient, harvest_api_client, G_TYPE_OBJECT)
 
 enum HarvestApiClientProps
 {
-	PROP_SERVER = 1,
+	PROP_0,
+	PROP_SERVER,
+	PROP_APPLICATION_NAME,
+	PROP_CONTACT_INFO,
 	N_PROPS,
 };
 
@@ -47,6 +48,12 @@ harvest_api_client_get_property(GObject *obj, guint prop_id, GValue *val, GParam
 	switch (prop_id) {
 	case PROP_SERVER:
 		g_value_set_string(val, self->server);
+		break;
+	case PROP_APPLICATION_NAME:
+		g_value_set_string(val, self->application_name);
+		break;
+	case PROP_CONTACT_INFO:
+		g_value_set_string(val, self->contact_info);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -63,6 +70,14 @@ harvest_api_client_set_property(GObject *obj, guint prop_id, const GValue *val, 
 	case PROP_SERVER:
 		self->server = g_value_get_string(val);
 		break;
+	case PROP_APPLICATION_NAME:
+		g_free(self->application_name);
+		self->application_name = g_value_dup_string(val);
+		break;
+	case PROP_CONTACT_INFO:
+		g_free(self->contact_info);
+		self->contact_info = g_value_dup_string(val);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 		break;
@@ -70,14 +85,37 @@ harvest_api_client_set_property(GObject *obj, guint prop_id, const GValue *val, 
 }
 
 static void
+harvest_api_client_constructed(GObject *obj)
+{
+	HarvestApiClient *self = HARVEST_API_CLIENT(obj);
+
+	g_autoptr(GString) user_agent = g_string_new(NULL);
+	g_string_append_printf(user_agent, "%s (%s)", self->application_name, self->contact_info);
+	self->session
+		= soup_session_new_with_options(SOUP_SESSION_MAX_CONNS_PER_HOST, 4, SOUP_SESSION_USER_AGENT,
+			user_agent->str, SOUP_SESSION_ADD_FEATURE_BY_TYPE, SOUP_TYPE_CONTENT_SNIFFER, NULL);
+
+	SoupLoggerLogLevel log_level = SOUP_LOGGER_LOG_NONE;
+#ifdef HARVEST_GLIB_DEBUG
+#	ifdef HARVEST_GLIB_LIBSOUP_LOG_BODY
+	log_level = SOUP_LOGGER_LOG_BODY;
+#	elif HARVEST_GLIB_LIBSOUP_LOG_HEADERS
+	log_level = SOUP_LOGGER_LOG_HEADERS;
+#	elif HARVEST_GLIB_LIBSOUP_LOG_MINIMAL
+	log_level = SOUP_LOGGER_LOG_MINIMAL;
+#	endif
+#endif
+	g_autoptr(SoupLogger) logger = soup_logger_new(log_level, -1);
+	soup_session_add_feature(self->session, SOUP_SESSION_FEATURE(logger));
+}
+
+static void
 harvest_api_client_finalize(GObject *obj)
 {
 	HarvestApiClient *self = HARVEST_API_CLIENT(obj);
 
-	if (self->handle != NULL) {
-		curl_global_cleanup();
-		curl_easy_cleanup(self->handle);
-	}
+	g_free(self->application_name);
+	g_free(self->contact_info);
 
 	G_OBJECT_CLASS(harvest_api_client_parent_class)->finalize(obj);
 }
@@ -87,245 +125,60 @@ harvest_api_client_class_init(HarvestApiClientClass *klass)
 {
 	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 
+	obj_class->constructed  = harvest_api_client_constructed;
 	obj_class->finalize		= harvest_api_client_finalize;
 	obj_class->get_property = harvest_api_client_get_property;
 	obj_class->set_property = harvest_api_client_set_property;
 
 	obj_properties[PROP_SERVER] = g_param_spec_string(
 		"server", _("Server"), _("Location of the server"), NULL, G_PARAM_READWRITE);
+	obj_properties[PROP_APPLICATION_NAME] = g_param_spec_string("application-name",
+		_("Application Name"), _("Application name to use in the user agent string."), NULL,
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+	obj_properties[PROP_CONTACT_INFO]	 = g_param_spec_string("contact-url", _("Contact URL"),
+		_("URL or email where Harvest can contact you in the case of misuse of their API."), NULL,
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
 
 static void
-harvest_api_client_init(HarvestApiClient *self)
-{
-	const CURLcode req_code = curl_global_init(CURL_GLOBAL_ALL);
-	g_return_if_fail(req_code == CURLE_OK);
-	self->handle = curl_easy_init();
-	g_warn_if_fail(self->handle != NULL);
-}
+harvest_api_client_init(G_GNUC_UNUSED HarvestApiClient *self)
+{}
 
 HarvestApiClient *
-harvest_api_client_new(const HarvestApiVersion version)
+harvest_api_client_new(
+	const HarvestApiVersion version, const char *application_name, const char *contact_info)
 {
+	g_return_val_if_fail(application_name != NULL && contact_info != NULL, NULL);
+
 	switch (version) {
 	case HARVEST_API_V2:
-		return g_object_new(HARVEST_TYPE_API_CLIENT, "server", HARVEST_API_URL_V2, NULL);
+		return g_object_new(HARVEST_TYPE_API_CLIENT, "server", HARVEST_API_URL_V2,
+			"application-name", application_name, "contact-info", contact_info, NULL);
 	default:
-		g_warn_if_reached();
+		g_return_val_if_reached(NULL);
 	}
 
 	return NULL;
 }
 
-static size_t
-harvest_api_client_write_cb(char *content, size_t size, size_t nmemb, void *user_data)
-{
-	const size_t real_size = size * nmemb;
-	HarvestBuffer *buffer  = user_data;
-
-	if (buffer->buf == NULL) {
-		buffer->buf = g_malloc(1);
-		g_return_val_if_fail(buffer->buf != NULL, 0);
-		buffer->buf[0] = 0;
-		buffer->len	= 0;
-	}
-
-	const size_t new_len = strlen(buffer->buf) + buffer->len;
-	buffer->buf			 = g_realloc(buffer->buf, new_len + real_size + 1);
-	g_return_val_if_fail(buffer->buf != NULL, 0);
-
-	memcpy(&buffer->buf[buffer->len], content, real_size);
-
-	buffer->len += real_size;
-	buffer->buf[buffer->len] = 0;
-
-	return real_size;
-}
-
-static void
-harvest_api_client_before_execution(HarvestApiClient *self, HarvestRequest *req,
-	HarvestBuffer *buffer, struct curl_slist **headers, GError **err)
-{
-	CURLcode curl_code = 0;
-
-	g_autoptr(GString) url = g_string_new(self->server);
-	g_string_append(url, harvest_request_get_endpoint(req));
-	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_URL, url->str)) != CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_URL: %s",
-			curl_easy_strerror(curl_code));
-		return;
-	}
-
-	if ((curl_code
-			= curl_easy_setopt(self->handle, CURLOPT_WRITEFUNCTION, harvest_api_client_write_cb))
-		!= CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEFUNCTION: %s",
-			curl_easy_strerror(curl_code));
-		return;
-	}
-
-	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_WRITEDATA, buffer)) != CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_WRITEDATA: %s",
-			curl_easy_strerror(curl_code));
-		return;
-	}
-
-	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, "libcurl-agent/tllt-cp"))
-		!= CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_USERAGENT: %s",
-			curl_easy_strerror(curl_code));
-		return;
-	}
-
-	// If the request has a body, add the appropriate headers
-	if (harvest_request_get_data(req) != NULL) {
-		*headers = curl_slist_append(*headers, "Content-Type: application/json");
-		*headers = curl_slist_append(*headers, "charsets: utf-8");
-	}
-
-	// If the request expects a body, add the appropriate header
-	if (harvest_response_metadata_get_body_type(harvest_request_get_response_metadata(req))
-		!= G_TYPE_NONE)
-		*headers = curl_slist_append(*headers, "Accept: application/json");
-
-	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_HTTPHEADER, *headers)) != CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_HEADERDATA: %s",
-			curl_easy_strerror(curl_code));
-		return;
-	}
-}
-
-static GObject *
-harvest_api_client_after_execution(
-	HarvestApiClient *self, HarvestRequest *req, HarvestBuffer *buffer, GError **err)
-{
-	HarvestResponseMetadata *response_metadata = harvest_request_get_response_metadata(req);
-	long status_code						   = 0;
-	CURLcode curl_code						   = CURLE_OK;
-
-	if ((curl_code = curl_easy_getinfo(self->handle, CURLINFO_RESPONSE_CODE, &status_code))
-		!= CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to get status req_code: %s",
-			curl_easy_strerror(curl_code));
-		return NULL;
-	}
-
-	if (status_code != harvest_response_metadata_get_expected_status(response_metadata)) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Invalid response code of %ld", status_code);
-		return NULL;
-	}
-
-	GObject *body_obj = NULL;
-	GType type		  = harvest_response_metadata_get_body_type(response_metadata);
-	if (type != G_TYPE_NONE) {
-		body_obj = json_gobject_from_data(type, buffer->buf, -1, err);
-	}
-
-	return body_obj;
-}
-
 static GObject *
 harvest_api_client_get_request(HarvestApiClient *self, HarvestRequest *req, GError **err)
 {
-	HarvestBuffer buffer	   = {.buf = NULL, .len = 0};
-	struct curl_slist *headers = NULL;
-	CURLcode curl_code		   = CURLE_OK;
-
-	harvest_api_client_before_execution(self, req, &buffer, &headers, err);
-	if (err != NULL || *err != NULL)
-		goto on_error;
-
-	if ((curl_code = curl_easy_perform(self->handle)) != CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to perform request: %s",
-			curl_easy_strerror(curl_code));
-		goto on_error;
-	}
-
-	GObject *body_obj = harvest_api_client_after_execution(self, req, &buffer, err);
-	if (err != NULL || *err != NULL)
-		goto on_error;
-
-	curl_slist_free_all(headers);
-	curl_easy_reset(self->handle);
-	g_free(buffer.buf);
-
-	return body_obj;
-
-on_error:
-	curl_slist_free_all(headers);
-	curl_easy_reset(self->handle);
-	g_free(buffer.buf);
-
 	return NULL;
 }
 
 static GObject *
 harvest_api_client_post_request(HarvestApiClient *self, HarvestRequest *req, GError **err)
 {
-	HarvestBuffer buffer	   = {.buf = NULL, .len = 0};
-	struct curl_slist *headers = NULL;
-	CURLcode curl_code		   = CURLE_OK;
-
-	harvest_api_client_before_execution(self, req, &buffer, &headers, err);
-	if (err != NULL || *err != NULL)
-		goto on_error;
-
-	if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_POST, TRUE)) != CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_POST: %s",
-			curl_easy_strerror(curl_code));
-		goto on_error;
-	}
-
-	GObject *data = harvest_request_get_data(req);
-	if (data != NULL) {
-		gsize length	   = 0;
-		char *deserialized = json_gobject_to_data(data, &length);
-		if (deserialized == NULL || length == 0) {
-			g_set_error(err, PACKAGE_DOMAIN, ERROR_JSON, "Failed to deserialize object to JSON");
-			goto on_error;
-		}
-
-		if ((curl_code = curl_easy_setopt(self->handle, CURLOPT_COPYPOSTFIELDS, deserialized))
-			!= CURLE_OK) {
-			g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to set CURLOPT_COPYPOSTFIELDS: %s",
-				curl_easy_strerror(curl_code));
-			g_free(deserialized);
-			goto on_error;
-		}
-
-		g_free(deserialized);
-	}
-
-	if ((curl_code = curl_easy_perform(self->handle)) != CURLE_OK) {
-		g_set_error(err, PACKAGE_DOMAIN, ERROR_CURL, "Failed to perform request: %s",
-			curl_easy_strerror(curl_code));
-		goto on_error;
-	}
-
-	GObject *body_obj = harvest_api_client_after_execution(self, req, &buffer, err);
-	if (err != NULL || *err != NULL)
-		goto on_error;
-
-	curl_slist_free_all(headers);
-	curl_easy_reset(self->handle);
-	g_free(buffer.buf);
-
-	return body_obj;
-
-on_error:
-	curl_slist_free_all(headers);
-	curl_easy_reset(self->handle);
-	g_free(buffer.buf);
-
 	return NULL;
 }
 
 GObject *
 harvest_api_client_execute_request(HarvestApiClient *self, HarvestRequest *req, GError **err)
 {
-	g_return_val_if_fail(self != NULL && req != NULL, NULL);
+	g_return_val_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req), NULL);
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	switch (harvest_request_get_http_method(req)) {

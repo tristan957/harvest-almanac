@@ -12,10 +12,11 @@ G_DECLARE_FINAL_TYPE(HarvestApiClient, harvest_api_client, HARVEST, API_CLIENT, 
 
 typedef enum HarvestApiVersion
 {
-	HARVEST_API_V2,
+	HARVEST_API_V2 = 2,
 } HarvestApiVersion;
 
-HarvestApiClient *harvest_api_client_new(const HarvestApiVersion version) G_GNUC_WARN_UNUSED_RESULT;
+HarvestApiClient *harvest_api_client_new(const HarvestApiVersion version,
+	const char *application_name, const char *contact_info) G_GNUC_WARN_UNUSED_RESULT;
 GObject *harvest_api_client_execute_request(
 	HarvestApiClient *self, HarvestRequest *req, GError **err);
 

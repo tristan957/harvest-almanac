@@ -61,7 +61,6 @@ libharvest_glib = library(
     version: libharvest_glib_version,
     dependencies: [
         libgio_dep,
-        libcurl_dep,
         json_glib_dep,
         libsoup_dep,
     ],
