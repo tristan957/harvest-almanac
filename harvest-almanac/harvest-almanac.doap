@@ -1,0 +1,26 @@
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:gnome="http://api.gnome.org/doap-extensions#"
+         xmlns="http://usefulinc.com/ns/doap#">
+
+  <name xml:lang="en">Harvest Almanac</name>
+  <shortdesc xml:lang="en">A Harvest client for Linux</shortdesc>
+  <description>If you have used Harvest in the past, you have probably used their
+Mobile, Mac, and/or Windows clients. Unfortunately, Harvest does not provide
+a Linux client. Harvest Almanac aims to be the client for Linux.
+  </description>
+
+  <homepage rdf:resource="https://git.sr.ht/~tristan957/harvest-almanac" />
+  <download-page rdf:resource="https://git.sr.ht/~tristan957/harvest-almanac/refs" />
+  <bug-database rdf:resource="https://todo.sr.ht/~tristan957/harvest-almanac" />
+
+  <category rdf:resource="http://api.gnome.org/doap-extensions#core" />
+  <programming-language>C</programming-language>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Tristan Partin</foaf:name>
+    </foaf:Person>
+  </maintainer>
+</Project>

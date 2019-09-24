@@ -1,0 +1,12 @@
+*.ui#
+*.ui~
+.env
+.flatpak*
+.vscode/
+build
+*.http
+.exrc
+
+# Don't ignore wraps
+subprojects/*
+!subprojects/*.wrap

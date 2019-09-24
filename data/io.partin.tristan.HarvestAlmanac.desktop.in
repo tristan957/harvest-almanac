@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Harvest Almanac
+Comment=Harvest for Linux
+Keywords=harvest;time
+Exec=harvest-almanac
+Terminal=false
+Type=Application
+Categories=GTK
+StartupNotify=true
+X-GNOME-UsesNotifications=true
+

@@ -1,0 +1,35 @@
+image: alpine/edge
+packages:
+  - gtk+3.0-dev
+  - meson
+  - json-glib-dev
+  - libhandy-dev
+  - libsoup-dev
+  - libsecret-dev
+  # annotatec deps
+  - flex
+  - bison
+secrets:
+  - 92357bf7-1b44-4630-999e-fca4a120c50b
+sources:
+  - https://git.sr.ht/~tristan957/harvest-almanac
+  - https://git.sr.ht/~sircmpwn/annotatec
+tasks:
+  - setup: |
+      cd harvest-almanac
+      CC=gcc meson -Dwerror=true -Dbuildtype=release build
+  - build: |
+      cd harvest-almanac
+      ninja -C build
+  - annotatec: |
+      cd annotatec
+      make
+      sudo make install PREFIX=/usr
+  - annotate: |
+      cd harvest-almanac
+      find . -name "*.c" | xargs \
+        annotatec -gC "cpp -std=gnu11 -U __GNUC__ -D__HARVEST_COMPILATION__ \
+          -D HANDY_USE_UNSTABLE_API -Iharvest-glib -Iharvest-alamnac -Ibuild/data \
+          $(pkg-config --cflags gio-2.0 json-glib-1.0 gtk+-3.0 \
+          libhandy-0.0 libsoup-2.4 libsecret-1)" > annotations.json
+      ~/upload-annotations annotations.json tristan957 harvest-almanac

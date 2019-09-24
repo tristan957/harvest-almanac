@@ -1,0 +1,6 @@
+[wrap-file]
+directory = gtk-3.24.11
+
+source_url = https://gitlab.gnome.org/GNOME/gtk/-/archive/3.24.11/gtk-3.24.11.tar.gz
+source_filename = gtk-3.24.11.tar.gz
+source_hash = 456c6b6e316c96fa8cabf72cf216325c9f8c2db8f9e658b0f4d54a67ceaf1d93
