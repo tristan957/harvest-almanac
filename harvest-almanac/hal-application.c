@@ -153,13 +153,30 @@ hal_application_class_init(HalApplicationClass *klass)
 	app_class->startup  = hal_application_startup;
 }
 
-static const GActionEntry app_entries[] = {{.name = "about", .activate = hal_application_about},
-	{.name = "preferences", .activate = hal_application_preferences},
-	{.name				= "time-entry-start",
+// clang-format off
+static const GActionEntry app_entries[] = {
+	{
+		.name = "about", .activate = hal_application_about
+	},
+	{
+		.name = "preferences", .activate = hal_application_preferences
+	},
+	{
+		.name			= "time-entry-start",
 		.activate		= hal_application_time_entry_start,
-		.parameter_type = "t"},
-	{.name = "time-entry-stop", .activate = hal_application_time_entry_stop, .parameter_type = "t"},
-	{.name = "check-settings", .activate = hal_application_create_client}};
+		.parameter_type = "t"
+	},
+	{
+		.name = "time-entry-stop",
+		.activate = hal_application_time_entry_stop,
+		.parameter_type = "t"
+	},
+	{
+		.name = "check-settings",
+		.activate = hal_application_create_client
+	}
+};
+// clang-format on
 
 static void
 hal_application_init(HalApplication *self)
