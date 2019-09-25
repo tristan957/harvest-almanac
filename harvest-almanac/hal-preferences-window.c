@@ -41,8 +41,17 @@ static GParamSpec *obj_properties[N_PROPS];
 const SecretSchema *
 hal_get_secret_schema(void)
 {
-	static const SecretSchema *hal_schema = {"io.partin.tristan.HarvestAlmanac", SECRET_SCHEMA_NONE,
-		{{"email", SECRET_SCHEMA_ATTRIBUTE_STRING}}};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+	// clang-format off
+	static const SecretSchema hal_schema = {
+		"io.partin.tristan.HarvestAlmanac", SECRET_SCHEMA_NONE,
+		{
+			{"email", SECRET_SCHEMA_ATTRIBUTE_STRING}
+		}
+	};
+	// clang-format on
+#pragma GCC diagnostic pop
 
 	return &hal_schema;
 }
