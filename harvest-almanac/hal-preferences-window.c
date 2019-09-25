@@ -45,9 +45,13 @@ hal_get_secret_schema(void)
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 	// clang-format off
 	static const SecretSchema hal_schema = {
-		"io.partin.tristan.HarvestAlmanac", SECRET_SCHEMA_NONE,
-		{
-			{"email", SECRET_SCHEMA_ATTRIBUTE_STRING}
+		.name  = "io.partin.tristan.HarvestAlmanac",
+		.flags = SECRET_SCHEMA_NONE,
+		.attributes = {
+			{
+				.name = "email",
+				.type = SECRET_SCHEMA_ATTRIBUTE_STRING
+			}
 		}
 	};
 	// clang-format on
