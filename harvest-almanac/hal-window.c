@@ -110,9 +110,18 @@ hal_window_class_init(HalWindowClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, title_label);
 }
 
-static const GActionEntry win_entries[]
-	= {{.name = "show-content", .activate = hal_window_show_content},
-		{.name = "hide-content", .activate = hal_window_hide_content}};
+// clang-format off
+static const GActionEntry win_entries[] = {
+	{
+		.name 	  = "show-content",
+		.activate = hal_window_show_content
+	},
+	{
+		.name 	  = "hide-content",
+		.activate = hal_window_hide_content
+	}
+};
+// clang-format on
 
 static void
 hal_window_init(HalWindow *self)
