@@ -148,8 +148,7 @@ hal_preferences_window_init(HalPreferencesWindow *self)
 }
 
 HalPreferencesWindow *
-hal_preferences_window_new(GtkWindow *parent, GSettings *settings)
+hal_preferences_window_new(GSettings *settings)
 {
-	return g_object_new(
-		HAL_TYPE_PREFERENCES_WINDOW, "transient-for", parent, "settings", settings, NULL);
+	return g_object_new(HAL_TYPE_PREFERENCES_WINDOW, "settings", settings, NULL);
 }

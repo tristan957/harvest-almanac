@@ -67,11 +67,9 @@ static void
 hal_application_preferences(
 	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
 {
-	HalApplication *self		= HAL_APPLICATION(data);
-	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
+	HalApplication *self = HAL_APPLICATION(data);
 
-	HalPreferencesWindow *preferences_window
-		= hal_preferences_window_new(GTK_WINDOW(priv->main_window), self->settings);
+	HalPreferencesWindow *preferences_window = hal_preferences_window_new(self->settings);
 	gtk_window_present(GTK_WINDOW(preferences_window));
 }
 

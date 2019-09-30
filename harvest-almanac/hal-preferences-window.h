@@ -14,7 +14,6 @@ G_BEGIN_DECLS
 
 const SecretSchema *hal_get_secret_schema(void) G_GNUC_CONST;
 
-HalPreferencesWindow *hal_preferences_window_new(
-	GtkWindow *parent, GSettings *settings) G_GNUC_WARN_UNUSED_RESULT;
+HalPreferencesWindow *hal_preferences_window_new(GSettings *settings) G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
