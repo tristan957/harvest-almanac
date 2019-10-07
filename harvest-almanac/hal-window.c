@@ -13,6 +13,11 @@
 struct _HalWindow
 {
 	GtkApplicationWindow parent_instance;
+
+	/**
+	 * user_validated keeps the view switchers from being visible when the user is not validated.
+	 */
+	gboolean user_validated : 1;
 };
 
 typedef struct HalWindowPrivate
@@ -42,9 +47,6 @@ hal_window_show_content(
 	 */
 
 	gtk_stack_set_visible_child_name(GTK_STACK(priv->profile), "profile");
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_wide_switcher), TRUE);
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_narrow_switcher), TRUE);
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_switcher_bar), TRUE);
 }
 
 static void
@@ -56,9 +58,6 @@ hal_window_hide_content(
 
 	gtk_stack_set_visible_child_name(priv->function_stack, "profile");
 	gtk_stack_set_visible_child_name(GTK_STACK(priv->profile), "harvest-api-access-token");
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_wide_switcher), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_narrow_switcher), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_switcher_bar), FALSE);
 }
 
 static void
@@ -73,10 +72,19 @@ hal_window_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 	HalWindow *self		   = HAL_WINDOW(widget);
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
 
-	hdy_squeezer_set_child_enabled(
-		priv->function_squeezer, GTK_WIDGET(priv->function_wide_switcher), allocation->width > 600);
-	hdy_squeezer_set_child_enabled(priv->function_squeezer,
-		GTK_WIDGET(priv->function_narrow_switcher), allocation->width > 400);
+	if (self->user_validated) {
+		hdy_squeezer_set_child_enabled(priv->function_squeezer,
+			GTK_WIDGET(priv->function_wide_switcher), allocation->width > 600);
+		hdy_squeezer_set_child_enabled(priv->function_squeezer,
+			GTK_WIDGET(priv->function_narrow_switcher), allocation->width > 400);
+	} else {
+		hdy_squeezer_set_child_enabled(
+			priv->function_squeezer, GTK_WIDGET(priv->title_label), TRUE);
+		hdy_squeezer_set_child_enabled(
+			priv->function_squeezer, GTK_WIDGET(priv->function_wide_switcher), FALSE);
+		hdy_squeezer_set_child_enabled(
+			priv->function_squeezer, GTK_WIDGET(priv->function_narrow_switcher), FALSE);
+	}
 
 	GTK_WIDGET_CLASS(hal_window_parent_class)->size_allocate(widget, allocation);
 }
@@ -85,7 +93,11 @@ static gboolean
 hal_window_is_title_label_visible(
 	G_GNUC_UNUSED GBinding *binding, const GValue *from_value, GValue *to_value, gpointer user_data)
 {
-	g_value_set_boolean(to_value, g_value_get_object(from_value) == user_data);
+	HalWindow *self		   = HAL_WINDOW(user_data);
+	HalWindowPrivate *priv = hal_window_get_instance_private(self);
+
+	g_value_set_boolean(
+		to_value, g_value_get_object(from_value) == priv->title_label && self->user_validated);
 
 	return TRUE;
 }
@@ -160,13 +172,11 @@ hal_window_init(HalWindow *self)
 		g_action_activate(show_content, NULL);
 	}
 
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_wide_switcher), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_narrow_switcher), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->function_switcher_bar), FALSE);
+	self->user_validated = FALSE;
 
 	g_object_bind_property_full(priv->function_squeezer, "visible-child",
 		priv->function_switcher_bar, "reveal", G_BINDING_SYNC_CREATE,
-		hal_window_is_title_label_visible, NULL, priv->title_label, NULL);
+		hal_window_is_title_label_visible, NULL, self, NULL);
 }
 
 HalWindow *
