@@ -1,5 +1,5 @@
 [wrap-file]
-directory = json-glib-1.4.4.tar.gz
+directory = json-glib-1.4.4
 
 source_url = https://gitlab.gnome.org/GNOME/json-glib/-/archive/1.4.4/json-glib-1.4.4.tar.gz
 source_filename = json-glib-1.4.4.tar.gz
