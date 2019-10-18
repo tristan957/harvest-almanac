@@ -51,6 +51,7 @@
 			"builddir": true,
 			"buildsystem": "meson",
 			"config-opts": [
+				"-Dwarning_level=3",
 				"-Dbuildtype=release"
 			],
 			"sources": [

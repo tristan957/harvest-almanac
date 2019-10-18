@@ -13,7 +13,7 @@ sources:
 tasks:
   - setup: |
       cd harvest-almanac
-      CC=gcc meson -Dwerror=true -Dbuildtype=release build
+      CC=gcc meson -Dwarning_level=3 -Dbuildtype=release build
   - build: |
       cd harvest-almanac
       ninja -C build
