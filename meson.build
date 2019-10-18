@@ -8,15 +8,16 @@ project(
     default_options: [
         'c_std=gnu11', # Enable GCC extensions
         'buildtype=debugoptimized',
-        'warning_level=1',
     ],
 )
 
 c_args = [
     '-Wall',
-    '-Wextra',
-    # Required to pick up hal-resources.h in some IDEs
+    '-Werror',
+    # Required to pick up hal-resources.h, config.h in some IDEs
     '-I' + join_paths(meson.build_root(), 'data'),
+    '-I' + join_paths(meson.build_root(), 'harvest-almanac'),
+    '-I' + join_paths(meson.build_root(), 'harvest-glib'),
 ]
 
 cc = meson.get_compiler('c')
