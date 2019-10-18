@@ -6,14 +6,10 @@ packages:
   - libhandy-dev
   - libsoup-dev
   - libsecret-dev
-  # annotatec deps
-  - flex
-  - bison
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
-  - https://git.sr.ht/~sircmpwn/annotatec
 tasks:
   - setup: |
       cd harvest-almanac
