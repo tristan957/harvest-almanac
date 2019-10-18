@@ -1,15 +1,18 @@
+harvest_almanac_version = '1.0.0'
+
 harvest_almanac_config_h = configuration_data({
-    'PACKAGE_NAME': '"@0@"'.format('Harvest Almanac'),
-    'PACKAGE_VERSION': '"@0@"'.format(meson.project_version()),
-    'GETTEXT_PACKAGE': '"@0@"'.format(meson.project_name()),
-    'LOCALEDIR': '"@0@"'.format(join_paths(get_option('prefix'), get_option('localedir'))),
-    'LIBDIR': '"@0@"'.format(join_paths(get_option('prefix'), get_option('libdir'))),
-    'PACKAGE_LICENSE': 'GTK_LICENSE_GPL_3_0_ONLY',
-    'PACKAGE_WEBSITE': '"@0@"'.format('https://git.sr.ht/~tristan957/harvest-almanac'),
-    'PACKAGE_WEBSITE_LABEL': '"@0@"'.format('Repository'),
+    'package_name': 'Harvest Almanac',
+    'package_version': meson.project_version(),
+    'package_license': 'GTK_LICENSE_GPL_3_0_ONLY',
+    'package_website': 'https://git.sr.ht/~tristan957/harvest-almanac',
+    'package_website_label': 'Repository',
+    'gettext_package': 'meson.project_name()',
+    'localedir': join_paths(get_option('prefix'), get_option('localedir')),
+    'libdir': join_paths(get_option('prefix'), get_option('libdir')),
 })
 
 configure_file(
+    input: 'config.h.in',
     output: 'config.h',
     configuration: harvest_almanac_config_h,
 )

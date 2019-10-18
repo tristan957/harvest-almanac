@@ -9,6 +9,7 @@
 #include <glib/gi18n-lib.h>
 #include <json-glib/json-glib.h>
 
+#include "harvest-api-client.h"
 #include "harvest-user.h"
 
 struct _HarvestUser
@@ -385,3 +386,9 @@ harvest_user_class_init(HarvestUserClass *klass)
 static void
 harvest_user_init(G_GNUC_UNUSED HarvestUser *self)
 {}
+
+HarvestUser *
+harvest_user_get_me(G_GNUC_UNUSED HarvestApiClient *client)
+{
+	return NULL;
+}

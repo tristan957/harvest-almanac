@@ -14,6 +14,7 @@ struct _HalPreferencesWindow
 {
 	HdyPreferencesWindow parent_instance;
 
+	gboolean dirty : 1;
 	GSettings *settings;
 };
 
@@ -24,6 +25,7 @@ typedef struct HalPreferencesWindowPrivate
 	GtkSwitch *prefer_dark_theme_switch;
 	GtkSpinButton *soup_max_connections_spin;
 	GtkComboBoxText *soup_logger_level_combo;
+	GtkButton *save_button;
 } HalPreferencesWindowPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(
@@ -60,13 +62,25 @@ hal_get_secret_schema(void)
 	return &hal_schema;
 }
 
-static void
-on_prefer_dark_theme_switch_activate(
-	GtkSwitch *widget, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+static void G_GNUC_UNUSED
+hal_preferences_window_set_dirty(HalPreferencesWindow *self)
 {
-	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
-	g_settings_set_boolean(self->settings, "prefer-dark-theme", gtk_switch_get_active(widget));
+	gboolean dirty = FALSE;
+	// check the state for each preferences widget and set dirty appropriately
+	gtk_widget_set_sensitive(GTK_WIDGET(priv->save_button), dirty);
+	self->dirty = dirty;
+}
+
+static void
+on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(user_data);
+	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
+
+	g_settings_set_boolean(
+		self->settings, "prefer-dark-theme", gtk_switch_get_active(priv->prefer_dark_theme_switch));
 }
 
 static void
@@ -138,13 +152,22 @@ hal_preferences_window_class_init(HalPreferencesWindowClass *klass)
 		wid_class, HalPreferencesWindow, soup_max_connections_spin);
 	gtk_widget_class_bind_template_child_private(
 		wid_class, HalPreferencesWindow, soup_logger_level_combo);
-	gtk_widget_class_bind_template_callback(wid_class, on_prefer_dark_theme_switch_activate);
+	gtk_widget_class_bind_template_child_private(wid_class, HalPreferencesWindow, save_button);
+	gtk_widget_class_bind_template_callback(wid_class, on_save_button_clicked);
 }
 
 static void
 hal_preferences_window_init(HalPreferencesWindow *self)
 {
+	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
+
 	gtk_widget_init_template(GTK_WIDGET(self));
+
+	HdyHeaderBar *header_bar = HDY_HEADER_BAR(gtk_window_get_titlebar(GTK_WINDOW(self)));
+	hdy_header_bar_pack_start(header_bar, GTK_WIDGET(priv->save_button));
+	gtk_widget_show_all(GTK_WIDGET(header_bar));
+
+	self->dirty = FALSE;
 }
 
 HalPreferencesWindow *

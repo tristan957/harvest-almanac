@@ -1,3 +1,15 @@
+harvest_glib_version = '1.0.0'
+
+harvest_glib_config_h = configuration_data({
+    'gettext_package': 'harvest-glib',
+})
+
+configure_file(
+    input: 'config.h.in',
+    output: 'config.h',
+    configuration: harvest_glib_config_h,
+)
+
 harvest_glib_sources = [
     'harvest-api-client.c',
     'harvest-client.c',
@@ -55,20 +67,34 @@ harvest_glib_public_headers = [
 
 install_headers(harvest_glib_public_headers, subdir: 'harvest-glib')
 
-harvest_glib_version = '1.0.0'
+harvest_glib_c_args = [
+    '-D__HARVEST_COMPILATION__',
+]
+
+if get_option('buildtype') == 'release'
+    harvest_glib_c_args += [
+        '-DG_DISABLE_ASSERT',
+        '-DG_DISABLE_CHECKS',
+        '-DG_DISABLE_CAST_CHECKS',
+    ]
+elif get_option('buildtype').startswith('debug')
+    harvest_glib_c_args += [
+        '-DG_ENABLE_DEBUG',
+    ]
+endif
+
+harvest_glib_dependencies = [
+    libgio_dep,
+    json_glib_dep,
+    libsoup_dep,
+]
 
 harvest_glib = library(
     'harvest-glib',
     harvest_glib_sources,
     version: harvest_glib_version,
-    c_args: [
-        '-D__HARVEST_COMPILATION__',
-    ],
-    dependencies: [
-        libgio_dep,
-        json_glib_dep,
-        libsoup_dep,
-    ],
+    c_args: harvest_glib_c_args,
+    dependencies: harvest_glib_dependencies,
     install: true,
 )
 
@@ -90,7 +116,6 @@ pkg.generate(
     requires_private: [
         libgio_dep,
         json_glib_dep,
-        libsecret_dep,
     ],
 	url: 'https://git.sr.ht/~tristan957/harvest-almanac',
 )

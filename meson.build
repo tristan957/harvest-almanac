@@ -1,9 +1,9 @@
 project(
     'harvest-almanac',
     'c',
-    version: '1.0.0',
     license: [
         'GPL-3.0-only',
+        'LGPL-3.0-only',
     ],
     default_options: [
         'c_std=gnu11', # Enable GCC extensions
