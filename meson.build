@@ -6,14 +6,12 @@ project(
         'LGPL-3.0-only',
     ],
     default_options: [
-        'c_std=gnu11', # Enable GCC extensions
+        'c_std=gnu18', # Enable GCC extensions
         'buildtype=debugoptimized',
     ],
 )
 
 c_args = [
-    '-Wall',
-    '-Werror',
     # Required to pick up hal-resources.h, config.h in some IDEs
     '-I' + join_paths(meson.build_root(), 'data'),
     '-I' + join_paths(meson.build_root(), 'harvest-almanac'),

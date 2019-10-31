@@ -52,7 +52,8 @@
 			"buildsystem": "meson",
 			"config-opts": [
 				"-Dwerror=true",
-				"-Dbuildtype=release"
+				"-Dbuildtype=release",
+				"-Dwarning_level=2"
 			],
 			"sources": [
 				{
