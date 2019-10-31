@@ -16,7 +16,7 @@
 			<summary>Soup Logger level</summary>
 			<description>Level at which to log HTTP activity within the application.</description>
 		</key>
-		<key name="soup-max-conns" type="u">
+		<key name="soup-max-connections" type="u">
 			<default>4</default>
 			<summary>Soup Max Connections</summary>
 			<description>Max number of connections to keep open in the HTTP client.</description>

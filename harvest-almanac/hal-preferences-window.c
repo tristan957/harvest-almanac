@@ -10,6 +10,9 @@
 
 #include "hal-preferences-window.h"
 
+#define HAL_DEFAULT_SOUP_MAX_CONNECTIONS 4
+#define HAL_DEFAULT_SOUP_LOGGER_LEVEL 0
+
 struct _HalPreferencesWindow
 {
 	HdyPreferencesWindow parent_instance;
@@ -63,14 +66,88 @@ hal_get_secret_schema(void)
 }
 
 static void G_GNUC_UNUSED
-hal_preferences_window_set_dirty(HalPreferencesWindow *self)
+hal_preferences_window_set_dirty(HalPreferencesWindow *self, gboolean dirty)
 {
 	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
-	gboolean dirty = FALSE;
-	// check the state for each preferences widget and set dirty appropriately
-	gtk_widget_set_sensitive(GTK_WIDGET(priv->save_button), dirty);
 	self->dirty = dirty;
+	gtk_widget_set_sensitive(GTK_WIDGET(priv->save_button), dirty);
+}
+
+static void
+on_prefer_dark_theme_switch_notify_active(
+	GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+{
+	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+
+	if (gtk_switch_get_active(GTK_SWITCH(obj))
+		!= g_settings_get_boolean(self->settings, "prefer-dark-theme")) {
+		hal_preferences_window_set_dirty(self, TRUE);
+	} else {
+		hal_preferences_window_set_dirty(self, FALSE);
+	}
+}
+
+static void
+on_harvest_api_access_token_entry_changed(GtkEditable *widget, gpointer user_data)
+{
+	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+
+	g_autofree const char *access_token
+		= g_settings_get_string(self->settings, "harvest-api-access-token");
+
+	if (!g_str_equal(gtk_entry_get_text(GTK_ENTRY(widget)), access_token)) {
+		hal_preferences_window_set_dirty(self, TRUE);
+	} else {
+		hal_preferences_window_set_dirty(self, FALSE);
+	}
+}
+
+static void
+on_harvest_api_contact_email_entry_changed(GtkEditable *widget, gpointer user_data)
+{
+	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+
+	g_autofree const char *contact_email
+		= g_settings_get_string(self->settings, "harvest-api-contact-email");
+
+	if (!g_str_equal(gtk_entry_get_text(GTK_ENTRY(widget)), contact_email)) {
+		hal_preferences_window_set_dirty(self, TRUE);
+	} else {
+		hal_preferences_window_set_dirty(self, FALSE);
+	}
+}
+
+static void
+on_soup_logger_level_combo_changed(GtkComboBox *widget, gpointer user_data)
+{
+	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+
+	g_autoptr(GVariant) variant		= g_settings_get_value(self->settings, "soup-logger-level");
+	unsigned char soup_logger_level = HAL_DEFAULT_SOUP_LOGGER_LEVEL;
+	g_variant_get(variant, "y", &soup_logger_level);
+
+	if ((unsigned char) gtk_combo_box_get_active(widget) != soup_logger_level) {
+		hal_preferences_window_set_dirty(self, TRUE);
+	} else {
+		hal_preferences_window_set_dirty(self, FALSE);
+	}
+}
+
+static void
+on_soup_max_connections_spin_value_changed(GtkSpinButton *widget, gpointer user_data)
+{
+	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+
+	g_autoptr(GVariant) variant	 = g_settings_get_value(self->settings, "soup-max-connections");
+	guint32 soup_max_connections = HAL_DEFAULT_SOUP_MAX_CONNECTIONS;
+	g_variant_get(variant, "u", &soup_max_connections);
+
+	if ((guint32) gtk_spin_button_get_value_as_int(widget) != soup_max_connections) {
+		hal_preferences_window_set_dirty(self, TRUE);
+	} else {
+		hal_preferences_window_set_dirty(self, FALSE);
+	}
 }
 
 static void
@@ -79,8 +156,21 @@ on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(user_data);
 	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
+	GVariant *soup_logger_level = g_variant_new(
+		"y", gtk_combo_box_get_active(GTK_COMBO_BOX(priv->soup_logger_level_combo)));
+	GVariant *soup_max_connections
+		= g_variant_new("u", gtk_spin_button_get_value_as_int(priv->soup_max_connections_spin));
+
 	g_settings_set_boolean(
 		self->settings, "prefer-dark-theme", gtk_switch_get_active(priv->prefer_dark_theme_switch));
+	g_settings_set_string(self->settings, "harvest-api-access-token",
+		gtk_entry_get_text(priv->harvest_api_access_token_entry));
+	g_settings_set_string(self->settings, "harvest-api-contact-email",
+		gtk_entry_get_text(priv->harvest_api_contact_email));
+	g_settings_set_value(self->settings, "soup-logger-level", soup_logger_level);
+	g_settings_set_value(self->settings, "soup-max-connections", soup_max_connections);
+
+	hal_preferences_window_set_dirty(self, FALSE);
 }
 
 static void
@@ -89,11 +179,26 @@ hal_preferences_window_constructed(GObject *obj)
 	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(obj);
 	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
-	g_autofree const char *key = g_settings_get_string(self->settings, "harvest-api-access-token");
+	g_autofree const char *access_token
+		= g_settings_get_string(self->settings, "harvest-api-access-token");
+	g_autofree const char *contact_email
+		= g_settings_get_string(self->settings, "harvest-api-contact-email");
+	g_autoptr(GVariant) soup_max_connections_variant
+		= g_settings_get_value(self->settings, "soup-max-connections");
+	guint32 soup_max_connections = HAL_DEFAULT_SOUP_MAX_CONNECTIONS;
+	g_variant_get(soup_max_connections_variant, "u", &soup_max_connections);
+	g_autoptr(GVariant) soup_logger_level_variant
+		= g_settings_get_value(self->settings, "soup-logger-level");
+	unsigned char soup_logger_level = HAL_DEFAULT_SOUP_LOGGER_LEVEL;
+	g_variant_get(soup_logger_level_variant, "y", &soup_logger_level);
 
-	gtk_entry_set_text(priv->harvest_api_access_token_entry, key);
+	gtk_entry_set_text(priv->harvest_api_access_token_entry, access_token);
 	gtk_switch_set_active(priv->prefer_dark_theme_switch,
 		g_settings_get_boolean(self->settings, "prefer-dark-theme"));
+	gtk_entry_set_text(priv->harvest_api_contact_email, contact_email);
+	gtk_spin_button_set_value(priv->soup_max_connections_spin, (gdouble) soup_max_connections);
+	gtk_combo_box_set_active(
+		GTK_COMBO_BOX(priv->soup_logger_level_combo), (gint) soup_logger_level);
 }
 
 static void
@@ -127,10 +232,10 @@ hal_preferences_window_set_property(
 static void
 hal_preferences_window_class_init(HalPreferencesWindowClass *klass)
 {
-	GObjectClass *obj_class   = G_OBJECT_CLASS(klass);
+	GObjectClass *obj_class	  = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *wid_class = GTK_WIDGET_CLASS(klass);
 
-	obj_class->constructed  = hal_preferences_window_constructed;
+	obj_class->constructed	= hal_preferences_window_constructed;
 	obj_class->finalize		= hal_preferences_window_finalize;
 	obj_class->set_property = hal_preferences_window_set_property;
 
@@ -154,6 +259,11 @@ hal_preferences_window_class_init(HalPreferencesWindowClass *klass)
 		wid_class, HalPreferencesWindow, soup_logger_level_combo);
 	gtk_widget_class_bind_template_child_private(wid_class, HalPreferencesWindow, save_button);
 	gtk_widget_class_bind_template_callback(wid_class, on_save_button_clicked);
+	gtk_widget_class_bind_template_callback(wid_class, on_prefer_dark_theme_switch_notify_active);
+	gtk_widget_class_bind_template_callback(wid_class, on_harvest_api_access_token_entry_changed);
+	gtk_widget_class_bind_template_callback(wid_class, on_harvest_api_contact_email_entry_changed);
+	gtk_widget_class_bind_template_callback(wid_class, on_soup_logger_level_combo_changed);
+	gtk_widget_class_bind_template_callback(wid_class, on_soup_max_connections_spin_value_changed);
 }
 
 static void
@@ -167,7 +277,7 @@ hal_preferences_window_init(HalPreferencesWindow *self)
 	hdy_header_bar_pack_start(header_bar, GTK_WIDGET(priv->save_button));
 	gtk_widget_show_all(GTK_WIDGET(header_bar));
 
-	self->dirty = FALSE;
+	hal_preferences_window_set_dirty(self, FALSE);
 }
 
 HalPreferencesWindow *

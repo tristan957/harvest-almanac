@@ -27,6 +27,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="valign">center</property>
+                    <signal name="notify::active" handler="on_prefer_dark_theme_switch_notify_active" object="HalPreferencesWindow" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -50,6 +51,7 @@
                     <property name="visibility">False</property>
                     <property name="invisible_char">•</property>
                     <property name="input_purpose">password</property>
+                    <signal name="changed" handler="on_harvest_api_access_token_entry_changed" object="HalPreferencesWindow" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -63,6 +65,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="valign">center</property>
+                    <signal name="changed" handler="on_harvest_api_contact_email_entry_changed" object="HalPreferencesWindow" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -90,6 +93,7 @@
                     <property name="adjustment">soup_max_connections_adjustment</property>
                     <property name="valign">center</property>
                     <property name="visible">True</property>
+                    <signal name="value-changed" handler="on_soup_max_connections_spin_value_changed" object="HalPreferencesWindow" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -104,6 +108,7 @@
                     <property name="can_focus">False</property>
                     <property name="valign">center</property>
                     <property name="active">0</property>
+                    <signal name="changed" handler="on_soup_logger_level_combo_changed" object="HalPreferencesWindow" swapped="no"/>
                     <items>
                       <item id="0" translatable="yes">None</item>
                       <item id="1" translatable="yes">Minimal</item>
@@ -128,6 +133,7 @@
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="receives_default">True</property>
+    <signal name="clicked" handler="on_save_button_clicked" object="HalPreferencesWindow" swapped="no"/>
     <style>
       <class name="suggested-action"/>
     </style>
