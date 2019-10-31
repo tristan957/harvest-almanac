@@ -11,7 +11,7 @@
 G_BEGIN_DECLS
 
 #define HARVEST_TYPE_RESPONSE (harvest_response_get_type())
-G_DECLARE_FINAL_TYPE(HarvestResponse, harvest_response, HARVEST, RESPONSE, GObject);
+G_DECLARE_FINAL_TYPE(HarvestResponse, harvest_response, HARVEST, RESPONSE, GObject)
 
 struct _HarvestResponse
 {
