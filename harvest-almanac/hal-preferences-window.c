@@ -19,6 +19,10 @@ struct _HalPreferencesWindow
 
 	gboolean dirty : 1;
 	GSettings *settings;
+	// Cache the access token to prevent extra libsecret lookups
+	char *cached_access_token;
+	// Cancel libsecret operations on window close
+	GCancellable *cancellable;
 };
 
 typedef struct HalPreferencesWindowPrivate
@@ -52,12 +56,7 @@ hal_get_secret_schema(void)
 	static const SecretSchema hal_schema = {
 		.name  = "io.partin.tristan.HarvestAlmanac",
 		.flags = SECRET_SCHEMA_NONE,
-		.attributes = {
-			{
-				.name = "email",
-				.type = SECRET_SCHEMA_ATTRIBUTE_STRING
-			}
-		}
+		.attributes = {}
 	};
 	// clang-format on
 #pragma GCC diagnostic pop
@@ -93,10 +92,8 @@ on_harvest_api_access_token_entry_changed(GtkEditable *widget, gpointer user_dat
 {
 	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
 
-	g_autofree const char *access_token
-		= g_settings_get_string(self->settings, "harvest-api-access-token");
-
-	if (!g_str_equal(gtk_entry_get_text(GTK_ENTRY(widget)), access_token)) {
+	if (!g_str_equal(gtk_entry_get_text(GTK_ENTRY(widget)),
+			self->cached_access_token == NULL ? "" : self->cached_access_token)) {
 		hal_preferences_window_set_dirty(self, TRUE);
 	} else {
 		hal_preferences_window_set_dirty(self, FALSE);
@@ -151,6 +148,46 @@ on_soup_max_connections_spin_value_changed(GtkSpinButton *widget, gpointer user_
 }
 
 static void
+on_harvest_api_access_token_stored(
+	G_GNUC_UNUSED GObject *source, GAsyncResult *result, gpointer user_data)
+{
+	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
+
+	g_autoptr(GError) err = NULL;
+
+	secret_password_store_finish(result, &err);
+	if (err != NULL) {
+		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed storing Harvest API access token: %s",
+			err->message);
+		hal_preferences_window_set_dirty(self, TRUE);
+	} else {
+		hal_preferences_window_set_dirty(self, FALSE);
+	}
+}
+
+static void
+on_harvest_api_access_token_lookup(
+	G_GNUC_UNUSED GObject *source, GAsyncResult *result, gpointer user_data)
+{
+	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(user_data);
+	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
+
+	g_autoptr(GError) err = NULL;
+
+	gchar *access_token = secret_password_lookup_finish(result, &err);
+	if (err != NULL) {
+		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to lookup Harvest API access token: %s",
+			access_token);
+	} else if (access_token == NULL) {
+		self->cached_access_token = NULL;
+	} else {
+		self->cached_access_token = g_strdup(access_token);
+		gtk_entry_set_text(priv->harvest_api_access_token_entry, access_token);
+		secret_password_free(access_token);
+	}
+}
+
+static void
 on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 {
 	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(user_data);
@@ -161,16 +198,17 @@ on_save_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 	GVariant *soup_max_connections
 		= g_variant_new("u", gtk_spin_button_get_value_as_int(priv->soup_max_connections_spin));
 
+	// Update the cache
+	self->cached_access_token = g_strdup(gtk_entry_get_text(priv->harvest_api_access_token_entry));
+	secret_password_store(hal_get_secret_schema(), SECRET_COLLECTION_DEFAULT,
+		"Harvest API Access Token", self->cached_access_token, self->cancellable,
+		on_harvest_api_access_token_stored, self, NULL);
 	g_settings_set_boolean(
 		self->settings, "prefer-dark-theme", gtk_switch_get_active(priv->prefer_dark_theme_switch));
-	g_settings_set_string(self->settings, "harvest-api-access-token",
-		gtk_entry_get_text(priv->harvest_api_access_token_entry));
 	g_settings_set_string(self->settings, "harvest-api-contact-email",
 		gtk_entry_get_text(priv->harvest_api_contact_email));
 	g_settings_set_value(self->settings, "soup-logger-level", soup_logger_level);
 	g_settings_set_value(self->settings, "soup-max-connections", soup_max_connections);
-
-	hal_preferences_window_set_dirty(self, FALSE);
 }
 
 static void
@@ -179,8 +217,6 @@ hal_preferences_window_constructed(GObject *obj)
 	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(obj);
 	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
-	g_autofree const char *access_token
-		= g_settings_get_string(self->settings, "harvest-api-access-token");
 	g_autofree const char *contact_email
 		= g_settings_get_string(self->settings, "harvest-api-contact-email");
 	g_autoptr(GVariant) soup_max_connections_variant
@@ -192,7 +228,8 @@ hal_preferences_window_constructed(GObject *obj)
 	unsigned char soup_logger_level = HAL_DEFAULT_SOUP_LOGGER_LEVEL;
 	g_variant_get(soup_logger_level_variant, "y", &soup_logger_level);
 
-	gtk_entry_set_text(priv->harvest_api_access_token_entry, access_token);
+	secret_password_lookup(
+		hal_get_secret_schema(), self->cancellable, on_harvest_api_access_token_lookup, self, NULL);
 	gtk_switch_set_active(priv->prefer_dark_theme_switch,
 		g_settings_get_boolean(self->settings, "prefer-dark-theme"));
 	gtk_entry_set_text(priv->harvest_api_contact_email, contact_email);
@@ -206,7 +243,11 @@ hal_preferences_window_finalize(GObject *obj)
 {
 	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(obj);
 
-	g_object_unref(self->settings);
+	g_cancellable_cancel(self->cancellable);
+
+	if (self->settings != NULL)
+		g_object_unref(self->settings);
+	g_free(self->cached_access_token);
 
 	G_OBJECT_CLASS(hal_preferences_window_parent_class)->finalize(obj);
 }
@@ -219,9 +260,8 @@ hal_preferences_window_set_property(
 
 	switch (prop_id) {
 	case PROP_SETTINGS:
-		if (self->settings != NULL) {
+		if (self->settings != NULL)
 			g_object_unref(self->settings);
-		}
 		self->settings = g_value_dup_object(val);
 		break;
 	default:
@@ -277,6 +317,7 @@ hal_preferences_window_init(HalPreferencesWindow *self)
 	hdy_header_bar_pack_start(header_bar, GTK_WIDGET(priv->save_button));
 	gtk_widget_show_all(GTK_WIDGET(header_bar));
 
+	self->cancellable = g_cancellable_new();
 	hal_preferences_window_set_dirty(self, FALSE);
 }
 
