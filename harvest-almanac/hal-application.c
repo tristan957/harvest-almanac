@@ -91,7 +91,7 @@ static void
 hal_application_time_entry_stop(G_GNUC_UNUSED GSimpleAction *action, GVariant *param, gpointer data)
 {
 	const guint64 address = g_variant_get_uint64(param);
-	HalTimeEntry *entry   = HAL_TIME_ENTRY((HalTimeEntry *) address);
+	HalTimeEntry *entry	  = HAL_TIME_ENTRY((HalTimeEntry *) address);
 
 	hal_time_entry_stop(entry);
 	g_application_withdraw_notification(G_APPLICATION(data), "time-entry");
@@ -118,7 +118,7 @@ hal_application_create_client(
 		"Harvest Almanac (tristan dot partin at gmail dot com)", SOUP_SESSION_ADD_FEATURE_BY_TYPE,
 		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
 
-	self->client = harvest_api_client_v2_new(session, harvest_api_access_token, harvest_account_id);
+	self->client = harvest_api_client_new(session, harvest_api_access_token, harvest_account_id);
 }
 
 static void
@@ -148,7 +148,7 @@ hal_application_class_init(HalApplicationClass *klass)
 
 	obj_class->finalize = hal_application_finalize;
 	app_class->activate = hal_application_activate;
-	app_class->startup  = hal_application_startup;
+	app_class->startup	= hal_application_startup;
 }
 
 // clang-format off

@@ -16,9 +16,9 @@
 #include "harvest-response-metadata.h"
 #include "harvest-response.h"
 
-#define HARVEST_API_URL_V2 "https://api.harvestapp.com/v2"
+#define HARVEST_API_URL "https://api.harvestapp.com/v2"
 
-static HarvestApiClient *v2_instance;
+static HarvestApiClient *instance;
 
 typedef struct HarvestAsyncCallbackData
 {
@@ -149,17 +149,17 @@ harvest_api_client_init(G_GNUC_UNUSED HarvestApiClient *self)
 {}
 
 HarvestApiClient *
-harvest_api_client_v2_new(SoupSession *session, const char *access_token, unsigned int account_id)
+harvest_api_client_new(SoupSession *session, const char *access_token, unsigned int account_id)
 {
 	g_return_val_if_fail(
 		!SOUP_IS_SESSION(session) || access_token == NULL || account_id == 0, NULL);
 
-	if (v2_instance != NULL) {
-		v2_instance = g_object_new(HARVEST_TYPE_API_CLIENT, "session", session, "server",
-			HARVEST_API_URL_V2, "access-token", access_token, "account-id", account_id, NULL);
+	if (instance != NULL) {
+		instance = g_object_new(HARVEST_TYPE_API_CLIENT, "session", session, "server",
+			HARVEST_API_URL, "access-token", access_token, "account-id", account_id, NULL);
 	}
 
-	return v2_instance;
+	return instance;
 }
 
 static void
@@ -172,7 +172,7 @@ harvest_api_client_async_callback(
 
 	if (data->body_type != G_TYPE_NONE) {
 		g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
-		g_autoptr(GBytes) bytes   = soup_buffer_get_as_bytes(buf);
+		g_autoptr(GBytes) bytes	  = soup_buffer_get_as_bytes(buf);
 
 		gsize size				= 0;
 		gconstpointer body_data = g_bytes_get_data(bytes, &size);
@@ -191,14 +191,14 @@ harvest_api_client_execute_request_async(
 	g_return_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req));
 
 	g_autoptr(SoupMessage) msg = NULL;
-	g_autoptr(GString) uri	 = g_string_new(NULL);
+	g_autoptr(GString) uri	   = g_string_new(NULL);
 	g_string_append_printf(uri, "%s%s", self->server, harvest_request_get_endpoint(req));
 	gboolean response_has_body = harvest_request_get_data(req) != NULL;
 	char *body				   = NULL;
 	gsize len				   = 0;
 	if (response_has_body) {
 		body = json_gobject_to_data(harvest_request_get_data(req), &len);
-		len  = strlen(body);
+		len	 = strlen(body);
 	}
 
 	switch (harvest_request_get_http_method(req)) {

@@ -17,14 +17,9 @@ G_DECLARE_FINAL_TYPE(HarvestApiClient, harvest_api_client, HARVEST, API_CLIENT, 
 
 typedef gboolean (*HarvestAsyncCallback)(HarvestResponse *response);
 
-typedef enum HarvestApiVersion
-{
-	HARVEST_API_V2 = 2,
-} HarvestApiVersion;
-
-HarvestApiClient *harvest_api_client_v2_new(SoupSession *session, const char *access_token,
+HarvestApiClient *harvest_api_client_new(SoupSession *session, const char *access_token,
 	unsigned int account_id) G_GNUC_WARN_UNUSED_RESULT;
-HarvestApiClient *harvest_api_client_get_instance(const HarvestApiVersion version) G_GNUC_CONST;
+HarvestApiClient *harvest_api_client_get_instance() G_GNUC_CONST;
 void harvest_api_client_execute_request_async(
 	HarvestApiClient *self, HarvestRequest *req, HarvestAsyncCallback callback, gpointer user_data);
 
