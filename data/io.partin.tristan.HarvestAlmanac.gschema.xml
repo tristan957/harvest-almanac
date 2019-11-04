@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="harvest-almanac">
 	<schema id="io.partin.tristan.HarvestAlmanac" path="/io/partin/tristan/HarvestAlmanac/">
-		<key name="harvest-api-access-token" type="s">
-			<default>""</default>
-			<summary>Harvest API Access Token</summary>
-			<description>Harvest API access token for issuing requests. Must be set.</description>
-		</key>
 		<key name="prefer-dark-theme" type="b">
 			<default>true</default>
 			<summary>Prefer a dark theme</summary>
