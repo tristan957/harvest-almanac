@@ -1,11 +1,7 @@
-# The Return0Software C/C++ Coding Standard
-#
 # How to run executable: https://clang.llvm.org/docs/ClangFormat.html
 # Style options: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-#
-# Last Revision: 3/12/2018
 ---
-AccessModifierOffset: 0
+AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
@@ -80,7 +76,7 @@ SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCpp11BracedList: false
+SpaceBeforeCpp11BracedList: true
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
