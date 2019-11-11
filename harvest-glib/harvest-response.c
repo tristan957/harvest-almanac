@@ -93,8 +93,9 @@ harvest_response_class_init(HarvestResponseClass *klass)
 		= g_param_spec_boxed("error", _("Error"), _("Why the request errored out."), G_TYPE_ERROR,
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_STATUS_CODE] = g_param_spec_int("status-code", _("Status Code"),
-		_("Status code the response came back with"), HTTP_STATUS_OK, HTTP_STATUS_GATEWAY_TIMEOUT,
-		HTTP_STATUS_OK, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		_("Status code the response came back with"), HTTP_STATUS_OK,
+		HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK,
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }

@@ -1,4 +1,5 @@
 #include "config.h"
+
 #define G_LOG_DOMAIN "HarvestLATERequest"
 
 #include <limits.h>
@@ -75,7 +76,7 @@ harvest_late_request_finalize(GObject *obj)
 	G_OBJECT_CLASS(harvest_late_request_parent_class)->finalize(obj);
 }
 
-G_GNUC_CONST G_GNUC_WARN_UNUSED_RESULT static const char *
+static const char *G_GNUC_CONST G_GNUC_WARN_UNUSED_RESULT
 harvest_late_request_serialize_params(HarvestLATERequest *self)
 {
 	HarvestLATERequestPrivate *priv = harvest_late_request_get_instance_private(self);
@@ -136,6 +137,7 @@ harvest_late_request_class_init(HarvestLATERequestClass *klass)
 	obj_class->get_property = harvest_late_request_get_property;
 	obj_class->set_property = harvest_late_request_set_property;
 
+	// TODO: Finish implemeting this
 	obj_properties[PROP_USER_ID]   = g_param_spec_int("user_id", _("User ID"), _(""), 0, INT_MAX, 0,
 		  G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_CLIENT_ID] = g_param_spec_int("client_id", _("Client ID"), _(""), 0,

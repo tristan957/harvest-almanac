@@ -21,5 +21,10 @@
 			<summary>Harvest API Contact Email</summary>
 			<description>Harvest API will contact this email if the API is misused in anyway. Must be set.</description>
 		</key>
+		<key name="harvest-account-id" type="s">
+			<default>""</default>
+			<summary>Harvest Account ID</summary>
+			<description>Harvest account ID.</description>
+		</key>
 	</schema>
 </schemalist>

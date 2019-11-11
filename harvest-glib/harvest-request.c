@@ -4,10 +4,12 @@
 
 #include <glib-object.h>
 #include <glib/gi18n-lib.h>
+#include <json-glib/json-glib.h>
 
 #include "harvest-http.h"
 #include "harvest-request.h"
 #include "harvest-response-metadata.h"
+#include "harvest-response.h"
 
 typedef struct _HarvestRequestPrivate
 {
@@ -15,11 +17,19 @@ typedef struct _HarvestRequestPrivate
 	char *endpoint;
 	char *query_params;
 	GObject *data;
-	HttpStatusCode expected_status;
 	HarvestResponseMetadata *response_metadata;
 } HarvestRequestPrivate;
 
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(HarvestRequest, harvest_request, G_TYPE_OBJECT)
+
+enum HarvestRequestSignals
+{
+	SIGNAL_QUEUED,
+	SIGNAL_COMPLETED,
+	N_SIGNALS,
+};
+
+static guint obj_signals[N_SIGNALS];
 
 enum HarvestRequestProps
 {
@@ -28,7 +38,6 @@ enum HarvestRequestProps
 	PROP_ENDPOINT,
 	PROP_QUERY_PARAMS,
 	PROP_DATA,
-	PROP_EXPECTED_STATUS,
 	PROP_RESPONSE_METADATA,
 	N_PROPS,
 };
@@ -120,10 +129,15 @@ harvest_request_class_init(HarvestRequestClass *klass)
 	obj_class->get_property = harvest_request_get_property;
 	obj_class->set_property = harvest_request_set_property;
 
+	obj_signals[SIGNAL_QUEUED]	  = g_signal_new("queued", G_TYPE_FROM_CLASS(klass),
+		   G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
+	obj_signals[SIGNAL_COMPLETED] = g_signal_new("completed", G_TYPE_FROM_CLASS(klass),
+		G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, HARVEST_TYPE_RESPONSE);
+
 	obj_properties[PROP_HTTP_METHOD]  = g_param_spec_int("http-method", _("HTTP Method"),
 		 _("The HTTP method by which to send the request."), HTTP_METHOD_GET, HTTP_METHOD_DELETE,
 		 HTTP_METHOD_GET, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_ENDPOINT]	 = g_param_spec_string("endpoint", _("Endpoint"),
+	obj_properties[PROP_ENDPOINT]	  = g_param_spec_string("endpoint", _("Endpoint"),
 		_("The server endpoint to send the request to."), NULL,
 		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_QUERY_PARAMS] = g_param_spec_string("query-params", _("Query Params"),

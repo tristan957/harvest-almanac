@@ -27,5 +27,6 @@
 #include "harvest-time-entry.h"
 #include "harvest-user-assignment.h"
 #include "harvest-user.h"
+#include "harvest-users-me-request.h"
 
 #undef __HARVEST_HEADER_INTERNAL__

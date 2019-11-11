@@ -7,6 +7,7 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <harvest.h>
+#include <libsecret/secret.h>
 #include <libsoup/soup.h>
 
 #include "hal-application.h"
@@ -33,6 +34,30 @@ typedef struct HalApplicationPrivate
 G_DEFINE_TYPE_WITH_PRIVATE(HalApplication, hal_application, GTK_TYPE_APPLICATION)
 
 static void
+construct_client(HalApplication *self, const char *access_token, const char *account_id,
+	const char *contact_email)
+{
+	g_autoptr(GVariant) max_connections_v
+		= g_settings_get_value(self->settings, "soup-max-connections");
+	guint32 max_connections = HAL_DEFAULT_SOUP_MAX_CONNECTIONS;
+	g_variant_get(max_connections_v, "u", &max_connections);
+	g_autoptr(GVariant) logger_level_v = g_settings_get_value(self->settings, "soup-logger-level");
+	unsigned char logger_level		   = HAL_DEFAULT_SOUP_LOGGER_LEVEL;
+	g_variant_get(logger_level_v, "y", &logger_level);
+
+	g_autoptr(SoupLogger) logger = soup_logger_new(logger_level, -1);
+
+	g_autoptr(GString) user_agent = g_string_new(NULL);
+	g_string_append_printf(user_agent, "Harvest Almanac (%s)", contact_email);
+
+	SoupSession *session = soup_session_new_with_options(SOUP_SESSION_MAX_CONNS, max_connections,
+		SOUP_SESSION_USER_AGENT, user_agent->str, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
+		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
+
+	self->client = harvest_api_client_new(session, access_token, account_id);
+}
+
+static void
 hal_application_activate(GApplication *app)
 {
 	HalApplication *self		= HAL_APPLICATION(app);
@@ -40,6 +65,30 @@ hal_application_activate(GApplication *app)
 
 	if (priv->main_window == NULL) {
 		priv->main_window = hal_window_new(app);
+	}
+
+	if (self->client == NULL) {
+		g_autofree const char *account_id
+			= g_settings_get_string(self->settings, "harvest-account-id");
+		g_autofree const char *contact_email
+			= g_settings_get_string(self->settings, "harvest-api-contact-email");
+
+		g_autoptr(GError) err = NULL;
+
+		// Synchronous since window hasn't been presented yet
+		gchar *access_token = secret_password_lookup_sync(HAL_SECRET_SCHEMA, NULL, &err,
+			"account-id", account_id, "contact-email", contact_email, NULL);
+		if (err != NULL) {
+			g_error("Failed to look up Harvest API access token: %s", err->message);
+		} else if (access_token == NULL) {
+			g_debug("Harvest API access token is <null>");
+			hal_window_hide_content(priv->main_window);
+		} else {
+			g_debug("Constructing Harvest API access token");
+			construct_client(self, access_token, account_id, contact_email);
+			hal_window_show_content(priv->main_window);
+			secret_password_free(access_token);
+		}
 	}
 
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
@@ -98,27 +147,18 @@ hal_application_time_entry_stop(G_GNUC_UNUSED GSimpleAction *action, GVariant *p
 }
 
 static void
-hal_application_create_client(
-	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
+hal_application_reconstruct_client(
+	G_GNUC_UNUSED GSimpleAction *action, GVariant *param, gpointer data)
 {
 	HalApplication *self = HAL_APPLICATION(data);
 
-	g_autofree const char *harvest_api_access_token
-		= g_settings_get_string(self->settings, "harvest-api-access-token");
+	const char *harvest_api_access_token = g_variant_get_string(param, NULL);
 	g_autofree const char *harvest_api_contact_email
 		= g_settings_get_string(self->settings, "harvest-api-contact-email");
-	const unsigned int harvest_account_id
-		= g_settings_get_uint(self->settings, "harvest-account-id");
-	const unsigned int logger_level = g_settings_get_uint(self->settings, "soup-logger-level");
+	g_autofree const char *harvest_account_id
+		= g_settings_get_string(self->settings, "harvest-account-id");
 
-	SoupLogger *logger = soup_logger_new(logger_level, -1);
-
-	SoupSession *session = soup_session_new_with_options(SOUP_SESSION_MAX_CONNS,
-		g_settings_get_uint(self->settings, "soup-max-conns"), SOUP_SESSION_USER_AGENT,
-		"Harvest Almanac (tristan dot partin at gmail dot com)", SOUP_SESSION_ADD_FEATURE_BY_TYPE,
-		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
-
-	self->client = harvest_api_client_new(session, harvest_api_access_token, harvest_account_id);
+	construct_client(self, harvest_api_access_token, harvest_account_id, harvest_api_contact_email);
 }
 
 static void
@@ -135,6 +175,7 @@ hal_application_finalize(GObject *obj)
 {
 	HalApplication *self = HAL_APPLICATION(obj);
 
+	g_clear_object(&self->client);
 	g_clear_object(&self->settings);
 
 	G_OBJECT_CLASS(hal_application_parent_class)->finalize(obj);
@@ -172,8 +213,9 @@ static const GActionEntry app_entries[] = {
 		.parameter_type = "t"
 	},
 	{
-		.name	  = "check-settings",
-		.activate = hal_application_create_client
+		.name	  		= "reconstruct-client",
+		.activate 		= hal_application_reconstruct_client,
+		.parameter_type = "s"
 	}
 };
 // clang-format on

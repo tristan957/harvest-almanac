@@ -1,4 +1,5 @@
 #include "config.h"
+
 #define G_LOG_DOMAIN "HarvestApiClient"
 
 #include <limits.h>
@@ -19,14 +20,6 @@
 #define HARVEST_API_URL "https://api.harvestapp.com/v2"
 
 static HarvestApiClient *instance;
-
-typedef struct HarvestAsyncCallbackData
-{
-	GType body_type;
-	HttpStatusCode expected_status;
-	HarvestAsyncCallback callback;
-	gpointer user_data;
-} HarvestAsyncCallbackData;
 
 struct _HarvestApiClient
 {
@@ -98,7 +91,7 @@ harvest_api_client_set_property(GObject *obj, guint prop_id, const GValue *val, 
 		break;
 	case PROP_ACCOUNT_ID:
 		g_free(self->account_id);
-		self->account_id = g_strdup_printf("%u", g_value_get_uint(val));
+		self->account_id = g_value_dup_string(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -138,8 +131,8 @@ harvest_api_client_class_init(HarvestApiClientClass *klass)
 		_("Developer access token for the Harvest API."), NULL,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ACCOUNT_ID]
-		= g_param_spec_uint("account-id", _("Account ID"), _("Harvest account ID to use."), 1,
-			UINT_MAX, 1, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		= g_param_spec_string("account-id", _("Account ID"), _("Harvest account ID to use."), NULL,
+			G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
@@ -149,12 +142,13 @@ harvest_api_client_init(G_GNUC_UNUSED HarvestApiClient *self)
 {}
 
 HarvestApiClient *
-harvest_api_client_new(SoupSession *session, const char *access_token, unsigned int account_id)
+harvest_api_client_new(SoupSession *session, const char *access_token, const char *account_id)
 {
 	g_return_val_if_fail(
-		!SOUP_IS_SESSION(session) || access_token == NULL || account_id == 0, NULL);
+		SOUP_IS_SESSION(session) && access_token != NULL && account_id != NULL, NULL);
 
 	if (instance != NULL) {
+		g_object_unref(instance);
 		instance = g_object_new(HARVEST_TYPE_API_CLIENT, "session", session, "server",
 			HARVEST_API_URL, "access-token", access_token, "account-id", account_id, NULL);
 	}
@@ -162,31 +156,47 @@ harvest_api_client_new(SoupSession *session, const char *access_token, unsigned 
 	return instance;
 }
 
+HarvestApiClient *
+harvest_api_client_get_instance(void)
+{
+	return instance;
+}
+
+static void
+harvest_api_client_destroy_request(HarvestRequest *req, gpointer user_data)
+{
+	g_object_unref(req);
+	g_object_unref(HARVEST_RESPONSE(user_data));
+}
+
 static void
 harvest_api_client_async_callback(
 	G_GNUC_UNUSED SoupSession *Session, SoupMessage *msg, gpointer user_data)
 {
-	GObject *body				   = NULL;
-	GError *err					   = NULL;
-	HarvestAsyncCallbackData *data = user_data;
+	HarvestRequest *req				  = HARVEST_REQUEST(user_data);
+	HarvestResponseMetadata *metadata = harvest_request_get_response_metadata(req);
+	const GType body_type			  = harvest_response_metadata_get_body_type(metadata);
 
-	if (data->body_type != G_TYPE_NONE) {
+	GObject *body = NULL;
+	GError *err	  = NULL;
+
+	if (body_type != G_TYPE_NONE) {
 		g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
 		g_autoptr(GBytes) bytes	  = soup_buffer_get_as_bytes(buf);
 
 		gsize size				= 0;
 		gconstpointer body_data = g_bytes_get_data(bytes, &size);
-		body					= json_gobject_from_data(data->body_type, body_data, size, &err);
+		body					= json_gobject_from_data(body_type, body_data, size, &err);
 	}
 
 	HarvestResponse *response = harvest_response_new(body, msg->status_code, err);
-
-	data->callback(response);
+	g_signal_connect_after(
+		req, "completed", G_CALLBACK(harvest_api_client_destroy_request), response);
+	g_signal_emit_by_name(req, "completed", response);
 }
 
 void
-harvest_api_client_execute_request_async(
-	HarvestApiClient *self, HarvestRequest *req, HarvestAsyncCallback callback, gpointer user_data)
+harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest *req)
 {
 	g_return_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req));
 
@@ -196,6 +206,7 @@ harvest_api_client_execute_request_async(
 	gboolean response_has_body = harvest_request_get_data(req) != NULL;
 	char *body				   = NULL;
 	gsize len				   = 0;
+
 	if (response_has_body) {
 		body = json_gobject_to_data(harvest_request_get_data(req), &len);
 		len	 = strlen(body);
@@ -211,8 +222,6 @@ harvest_api_client_execute_request_async(
 		break;
 	case HTTP_METHOD_PATCH:
 		break;
-	case HTTP_METHOD_PUT:
-		break;
 	case HTTP_METHOD_DELETE:
 		break;
 	default:
@@ -222,12 +231,5 @@ harvest_api_client_execute_request_async(
 	soup_message_headers_append(msg->request_headers, "Authorization", self->access_token);
 	soup_message_headers_append(msg->request_headers, "Harvest-Account-Id", self->account_id);
 
-	HarvestResponseMetadata *meta  = harvest_request_get_response_metadata(req);
-	HarvestAsyncCallbackData *data = g_malloc(sizeof(HarvestAsyncCallbackData));
-	data->body_type				   = harvest_response_metadata_get_body_type(meta);
-	data->expected_status		   = harvest_response_metadata_get_expected_status(meta);
-	data->callback				   = callback;
-	data->user_data				   = user_data;
-
-	soup_session_queue_message(self->session, msg, harvest_api_client_async_callback, data);
+	soup_session_queue_message(self->session, msg, harvest_api_client_async_callback, req);
 }

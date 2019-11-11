@@ -36,7 +36,7 @@
         </child>
         <child>
           <object class="HdyPreferencesGroup">
-            <property name="description" translatable="yes">Harvest Almanac requires that an access token and contact email be set in order to properly use the Harvest API on your behalf.</property>
+            <property name="description" translatable="yes">Harvest Almanac requires that an access token, account ID, and contact email be set in order to properly use the Harvest API on your behalf.</property>
             <property name="title" translatable="yes">Harvest API</property>
             <property name="visible">True</property>
             <child>
@@ -44,14 +44,61 @@
                 <property name="title" translatable="yes">Access Token</property>
                 <property name="visible">True</property>
                 <child type="action">
-                  <object class="GtkEntry" id="harvest_api_access_token_entry">
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkButton" id="harvest_api_access_token_forget_button">
+                        <property name="label" translatable="yes">Forget</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="valign">center</property>
+                        <property name="sensitive">False</property>
+                        <signal name="clicked" handler="on_harvest_api_access_token_forget_button_clicked" object="HalPreferencesWindow" swapped="no"/>
+                        <style>
+                            <class name="destructive-action"/>
+                          </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="harvest_api_access_token_entry">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="valign">center</property>
+                        <property name="visibility">False</property>
+                        <property name="invisible_char">•</property>
+                        <property name="input_purpose">password</property>
+                        <property name="sensitive">False</property>
+                        <signal name="changed" handler="on_harvest_api_access_token_entry_changed" object="HalPreferencesWindow" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="HdyActionRow">
+                <property name="title" translatable="yes">Account ID</property>
+                <property name="visible">True</property>
+                <child type="action">
+                  <object class="GtkEntry" id="harvest_account_id_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="valign">center</property>
-                    <property name="visibility">False</property>
-                    <property name="invisible_char">•</property>
-                    <property name="input_purpose">password</property>
-                    <signal name="changed" handler="on_harvest_api_access_token_entry_changed" object="HalPreferencesWindow" swapped="no"/>
+                    <property name="sensitive">False</property>
+                    <signal name="changed" handler="on_harvest_account_id_entry_changed" object="HalPreferencesWindow" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -61,10 +108,11 @@
                 <property name="title" translatable="yes">Contact Email</property>
                 <property name="visible">True</property>
                 <child type="action">
-                  <object class="GtkEntry" id="harvest_api_contact_email">
+                  <object class="GtkEntry" id="harvest_api_contact_email_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="valign">center</property>
+                    <property name="sensitive">False</property>
                     <signal name="changed" handler="on_harvest_api_contact_email_entry_changed" object="HalPreferencesWindow" swapped="no"/>
                   </object>
                 </child>

@@ -11,6 +11,7 @@
 
 #include "harvest-api-client.h"
 #include "harvest-user.h"
+#include "harvest-users-me-request.h"
 
 struct _HarvestUser
 {
@@ -83,7 +84,7 @@ harvest_user_json_deserialize_property(JsonSerializable *serializable, const gch
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "roles") == 0) {
-		JsonArray *arr	 = json_node_get_array(prop_node);
+		JsonArray *arr	   = json_node_get_array(prop_node);
 		const guint length = json_array_get_length(arr);
 		GPtrArray *roles   = g_ptr_array_sized_new(length);
 		for (guint i = 0; i < length; i++)
@@ -338,7 +339,7 @@ harvest_user_class_init(HarvestUserClass *klass)
 	obj_properties[PROP_IS_CONTRACTOR] = g_param_spec_boolean("is-contractor", _("Is Contractor"),
 		_("Whether the user is a contractor or an employee."), FALSE,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_IS_ADMIN]	  = g_param_spec_boolean("is-admin", _("Is Admin"),
+	obj_properties[PROP_IS_ADMIN]	   = g_param_spec_boolean("is-admin", _("Is Admin"),
 		 _("Whether the user has admin permissions."), FALSE,
 		 G_PARAM_READABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_IS_PROJECT_MANAGER] = g_param_spec_boolean("is-project-manager",
@@ -387,8 +388,13 @@ static void
 harvest_user_init(G_GNUC_UNUSED HarvestUser *self)
 {}
 
-HarvestUser *
-harvest_user_get_me(G_GNUC_UNUSED HarvestApiClient *client)
+void
+harvest_user_get_me_async(HarvestCompletedCallback *callback, gpointer user_data)
 {
-	return NULL;
+	HarvestApiClient *client = harvest_api_client_get_instance();
+
+	HarvestUsersMeRequest *request = harvest_users_me_request_new();
+	g_signal_connect(HARVEST_REQUEST(request), "completed", G_CALLBACK(callback), user_data);
+
+	harvest_api_client_execute_request_async(client, HARVEST_REQUEST(request));
 }

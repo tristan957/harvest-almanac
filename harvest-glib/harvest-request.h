@@ -8,6 +8,7 @@
 
 #include "harvest-http.h"
 #include "harvest-response-metadata.h"
+#include "harvest-response.h"
 
 G_BEGIN_DECLS
 
@@ -18,6 +19,10 @@ struct _HarvestRequestClass
 {
 	GObjectClass parent_class;
 };
+
+typedef void (*HarvestQueuedCallback)(HarvestRequest *request, gpointer user_data);
+typedef void (*HarvestCompletedCallback)(
+	HarvestRequest *request, HarvestResponse *response, gpointer user_data);
 
 HttpMethod harvest_request_get_http_method(HarvestRequest *self) G_GNUC_CONST;
 const char *harvest_request_get_endpoint(HarvestRequest *self) G_GNUC_CONST;

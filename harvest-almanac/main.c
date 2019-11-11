@@ -19,15 +19,15 @@ main(int argc, char *argv[])
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
 
-	g_autoptr(HalApplication) app = hal_application_new("io.partin.tristan.HarvestAlmanac");
-
-	g_set_application_name(_("Harvest Almanac"));
-
 	const gboolean success = hdy_init(&argc, &argv);
 	if (!success) {
 		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Unable to initialize libhandy");
 		return 1;
 	}
+
+	g_autoptr(HalApplication) app = hal_application_new("io.partin.tristan.HarvestAlmanac");
+
+	g_set_application_name(_("Harvest Almanac"));
 
 	const int status = g_application_run(G_APPLICATION(app), argc, argv);
 

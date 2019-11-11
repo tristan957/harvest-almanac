@@ -34,11 +34,9 @@ typedef struct HalWindowPrivate
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalWindow, hal_window, GTK_TYPE_APPLICATION_WINDOW)
 
-static void
-hal_window_show_content(
-	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
+void
+hal_window_show_content(HalWindow *self)
 {
-	HalWindow *self		   = HAL_WINDOW(data);
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
 
 	/**
@@ -49,11 +47,9 @@ hal_window_show_content(
 	gtk_stack_set_visible_child_name(GTK_STACK(priv->profile), "profile");
 }
 
-static void
-hal_window_hide_content(
-	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
+void
+hal_window_hide_content(HalWindow *self)
 {
-	HalWindow *self		   = HAL_WINDOW(data);
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
 
 	gtk_stack_set_visible_child_name(priv->function_stack, "profile");
@@ -122,30 +118,14 @@ hal_window_class_init(HalWindowClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, title_label);
 }
 
-// clang-format off
-static const GActionEntry win_entries[] = {
-	{
-		.name 	  = "show-content",
-		.activate = hal_window_show_content
-	},
-	{
-		.name 	  = "hide-content",
-		.activate = hal_window_hide_content
-	}
-};
-// clang-format on
-
 static void
 hal_window_init(HalWindow *self)
 {
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
 
-	g_action_map_add_action_entries(
-		G_ACTION_MAP(self), win_entries, G_N_ELEMENTS(win_entries), self);
-
 	gtk_widget_init_template(GTK_WIDGET(self));
 
-	priv->profile	  = hal_profile_new();
+	priv->profile	   = hal_profile_new();
 	priv->time_tracker = hal_time_tracker_new();
 
 	gtk_stack_add_titled(priv->function_stack, GTK_WIDGET(priv->profile), "profile", "Profile");
@@ -157,20 +137,6 @@ hal_window_init(HalWindow *self)
 		"icon-name", "document-open-recent-symbolic", NULL);
 
 	g_autoptr(GSettings) settings = g_settings_new("io.partin.tristan.HarvestAlmanac");
-	const char *harvest_api_access_token
-		= g_settings_get_string(settings, "harvest-api-access-token");
-	const char *harvest_api_contact_email
-		= g_settings_get_string(settings, "harvest-api-contact-email");
-
-	GActionMap *map = G_ACTION_MAP(self);
-	if ((harvest_api_access_token != NULL && strlen(harvest_api_access_token) != 0)
-		&& (harvest_api_contact_email != NULL || strlen(harvest_api_contact_email) != 0)) {
-		GAction *show_content = g_action_map_lookup_action(map, "show-content");
-		g_action_activate(show_content, NULL);
-	} else {
-		GAction *show_content = g_action_map_lookup_action(map, "hide-content");
-		g_action_activate(show_content, NULL);
-	}
 
 	self->user_validated = FALSE;
 
