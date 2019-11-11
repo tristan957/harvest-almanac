@@ -6,6 +6,7 @@ packages:
   - libhandy-dev
   - libsoup-dev
   - libsecret-dev
+  - flatpak
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
 sources:
@@ -17,3 +18,7 @@ tasks:
   - build: |
       cd harvest-almanac
       ninja -C build
+  - flatpak: \
+      flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo \
+        --ccache --user --install-deps-from=flathub --install .flatpak \
+        dist/flatpak/io.partin.tristan.HarvestAlmanac.json
