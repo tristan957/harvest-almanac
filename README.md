@@ -2,8 +2,6 @@
 
 # Harvest Almanac
 
-**Not endorsed by Harvest in any way shape or form**
-
 If you have used Harvest in the past, you have probably used their Mobile, Mac,
 and/or Windows clients. Unfortunately, Harvest does not provide a Linux client.
 
@@ -20,3 +18,7 @@ Contributors are welcome to participate, however. Please refer to the
 * `harvest-glib` (the library) is licensed under the `LGPL-3.0-only` license.
 
 You can find each project's license in their sub-directory.
+
+---
+
+**Not endorsed by Harvest in any way, shape, or form**.
