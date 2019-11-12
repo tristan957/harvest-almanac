@@ -78,7 +78,7 @@ static gboolean
 harvest_user_json_deserialize_property(JsonSerializable *serializable, const gchar *prop_name,
 	GValue *val, GParamSpec *pspec, JsonNode *prop_node)
 {
-	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
+	if (g_strcmp0(prop_name, "created-at") == 0 || g_strcmp0(prop_name, "updated-at") == 0) {
 		const GDateTime *dt = g_date_time_new_from_iso8601(json_node_get_string(prop_node), NULL);
 		g_value_set_boxed(val, dt);
 
@@ -315,71 +315,69 @@ harvest_user_class_init(HarvestUserClass *klass)
 	obj_class->get_property = harvest_user_get_property;
 	obj_class->set_property = harvest_user_set_property;
 
-	obj_properties[PROP_ID]
-		= g_param_spec_int("id", _("ID"), _("User ID"), 0, INT_MAX, 0, G_PARAM_READWRITE);
-	obj_properties[PROP_FIRST_NAME]
-		= g_param_spec_string("first-name", _("First Name"), _("The first name of the user."), NULL,
-			G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_LAST_NAME]
-		= g_param_spec_string("last-name", _("Last Name"), _("The last name of the user."), NULL,
-			G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_EMAIL]
-		= g_param_spec_string("email", _("Email"), _("The email address of the user."), NULL,
-			G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_TELEPHONE]
-		= g_param_spec_string("telephone", _("Telephone"), _("The telephone number for the user."),
-			NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_TIMEZONE]
-		= g_param_spec_string("timezone", _("Timezone"), _("The user’s timezone."), NULL,
-			G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_ID] = g_param_spec_int(
+		"id", _("ID"), _("User ID"), 0, INT_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_FIRST_NAME] = g_param_spec_string("first-name", _("First Name"),
+		_("The first name of the user."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_LAST_NAME]	= g_param_spec_string("last-name", _("Last Name"),
+		 _("The last name of the user."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_EMAIL]		= g_param_spec_string("email", _("Email"),
+		 _("The email address of the user."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_TELEPHONE]	= g_param_spec_string("telephone", _("Telephone"),
+		 _("The telephone number for the user."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_TIMEZONE]	= g_param_spec_string("timezone", _("Timezone"),
+		  _("The user’s timezone."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_HAS_ACCESS_TO_ALL_FUTURE_PROJECTS] = g_param_spec_boolean(
 		"has-access-to-all-future-projects", _("Has Access to All Future Projects"),
 		_(" 	Whether the user should be automatically added to future projects."), FALSE,
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_IS_CONTRACTOR] = g_param_spec_boolean("is-contractor", _("Is Contractor"),
 		_("Whether the user is a contractor or an employee."), FALSE,
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_IS_ADMIN]	   = g_param_spec_boolean("is-admin", _("Is Admin"),
-		 _("Whether the user has admin permissions."), FALSE,
-		 G_PARAM_READABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		 _("Whether the user has admin permissions."), FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_IS_PROJECT_MANAGER] = g_param_spec_boolean("is-project-manager",
 		_("Is Project Manager"), _("Whether the user has project manager permissions."), FALSE,
-		G_PARAM_READABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_CAN_SEE_RATES] = g_param_spec_boolean("can-see-rates", _("Can See Rates"),
 		_("Whether the user can see billable rates on projects. Only applicable to project "
 		  "managers."),
-		FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_CAN_CREATE_PROJECTS]
 		= g_param_spec_boolean("can-create-projects", _("Can Create Projects"),
 			_("Whether the user can create projects. Only applicable to project managers."), FALSE,
-			G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_CAN_CREATE_INVOICES]
 		= g_param_spec_boolean("can-create-invoices", _("Can Create Invoices"),
 			_("Whether the user can create invoices. Only applicable to project managers."), FALSE,
-			G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_IS_ACTIVE] = g_param_spec_boolean("is-active", _("Is Active"),
-		_("Whether the user is active or archived."), FALSE,
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_IS_ACTIVE] = g_param_spec_boolean("is_active", _("Is Active"),
+		_("Whether the user is active or archived."), FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_WEEKLY_CAPACITY]
 		= g_param_spec_double("weekly-capacity", _("Weekly Capacity"),
 			_("The number of hours per week this person is available to work in seconds, in half "
 			  "hour increments. For example, if a person’s capacity is 35 hours, the API will "
 			  "return 126000 seconds."),
-			0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+			0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_DEFAULT_HOURLY_RATE]
 		= g_param_spec_double("default-hourly-rate", _("Default Hourly Rate"),
 			_("The billable rate to use for this user when they are added to a project."), 0,
-			DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+			DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_COST_RATE] = g_param_spec_double("cost-rate", _("Cost Rate"),
 		_("The cost rate to use for this user when calculating a project’s "
 		  "costs vs billable amount."),
-		0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		0, DBL_MAX, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_ROLES]
 		= g_param_spec_boxed("roles", _("Roles"), _("The role names assigned to this person."),
-			G_TYPE_PTR_ARRAY, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+			G_TYPE_PTR_ARRAY, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	obj_properties[PROP_AVATAR_URL] = g_param_spec_string("avatar-url", _("Avatar URL"),
-		_("The URL to the user’s avatar image."), NULL,
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+		_("The URL to the user’s avatar image."), NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_CREATED_AT] = g_param_spec_boxed("created-at", _("Created At"),
+		_("Date and time the user was created."), G_TYPE_DATE_TIME,
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+	obj_properties[PROP_UPDATED_AT] = g_param_spec_boxed("updated-at", _("Updated At"),
+		_("Date and time the user was last updated."), G_TYPE_DATE_TIME,
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }

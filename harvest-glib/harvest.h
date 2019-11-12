@@ -6,7 +6,6 @@
 #include "harvest-client.h"
 #include "harvest-common.h"
 #include "harvest-creator.h"
-#include "harvest-error.h"
 #include "harvest-estimate-item-category.h"
 #include "harvest-estimate-line-item.h"
 #include "harvest-estimate.h"

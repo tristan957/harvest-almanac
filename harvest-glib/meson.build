@@ -43,7 +43,6 @@ harvest_glib_public_headers = [
     'harvest-client.h',
     'harvest-common.h',
     'harvest-creator.h',
-    'harvest-error.h',
     'harvest-estimate.h',
     'harvest-estimate-item-category.h',
     'harvest-estimate-line-item.h',
@@ -101,14 +100,14 @@ harvest_glib = library(
 )
 
 harvest_glib_dep = declare_dependency(
-    include_directories: include_directories('.'),
+    include_directories: include_directories('..'),
     link_with: harvest_glib,
     version: harvest_glib_version
 )
 
 pkg.generate(
 	harvest_glib,
-	description: 'GLib-based library for interacting with the Harvest API',
+	description: 'GLib-based library for interacting with the Harvest API.',
 	filebase: 'harvest-glib-1.0.0',
 	name: 'harvest-glib',
 	version: harvest_glib_version,

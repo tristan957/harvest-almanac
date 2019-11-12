@@ -6,7 +6,7 @@
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
-#include <harvest.h>
+#include <harvest-glib/harvest.h>
 #include <libsecret/secret.h>
 #include <libsoup/soup.h>
 
@@ -34,6 +34,21 @@ typedef struct HalApplicationPrivate
 G_DEFINE_TYPE_WITH_PRIVATE(HalApplication, hal_application, GTK_TYPE_APPLICATION)
 
 static void
+validate_user(
+	G_GNUC_UNUSED HarvestRequest *req, G_GNUC_UNUSED HarvestResponse *res, gpointer user_data)
+{
+	HalApplication *self		= HAL_APPLICATION(user_data);
+	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
+
+	if (res->err == NULL) {
+		hal_window_show_content(priv->main_window);
+	} else {
+		g_error("Error hitting /users/me (%u): %s", res->status_code, res->err->message);
+		hal_window_hide_content(priv->main_window);
+	}
+}
+
+static void
 construct_client(HalApplication *self, const char *access_token, const char *account_id,
 	const char *contact_email)
 {
@@ -48,13 +63,15 @@ construct_client(HalApplication *self, const char *access_token, const char *acc
 	g_autoptr(SoupLogger) logger = soup_logger_new(logger_level, -1);
 
 	g_autoptr(GString) user_agent = g_string_new(NULL);
-	g_string_append_printf(user_agent, "Harvest Almanac (%s)", contact_email);
+	g_string_printf(user_agent, "Harvest Almanac (%s)", contact_email);
 
 	SoupSession *session = soup_session_new_with_options(SOUP_SESSION_MAX_CONNS, max_connections,
 		SOUP_SESSION_USER_AGENT, user_agent->str, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
 		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
 
 	self->client = harvest_api_client_new(session, access_token, account_id);
+
+	harvest_user_get_me_async(validate_user, self);
 }
 
 static void
@@ -82,11 +99,9 @@ hal_application_activate(GApplication *app)
 			g_error("Failed to look up Harvest API access token: %s", err->message);
 		} else if (access_token == NULL) {
 			g_debug("Harvest API access token is <null>");
-			hal_window_hide_content(priv->main_window);
 		} else {
 			g_debug("Constructing Harvest API access token");
 			construct_client(self, access_token, account_id, contact_email);
-			hal_window_show_content(priv->main_window);
 			secret_password_free(access_token);
 		}
 	}

@@ -11,7 +11,6 @@
 
 #include "harvest-api-client.h"
 #include "harvest-common.h"
-#include "harvest-error.h"
 #include "harvest-http.h"
 #include "harvest-request.h"
 #include "harvest-response-metadata.h"
@@ -26,11 +25,9 @@ struct _HarvestApiClient
 	GObject parent_instance;
 
 	SoupSession *session;
-	const char *server;
+	char *server;
 	char *access_token;
 	char *account_id;
-	char *application_name;
-	char *contact_info;
 };
 
 G_DEFINE_TYPE(HarvestApiClient, harvest_api_client, G_TYPE_OBJECT)
@@ -83,7 +80,8 @@ harvest_api_client_set_property(GObject *obj, guint prop_id, const GValue *val, 
 		self->session = g_value_dup_object(val);
 		break;
 	case PROP_SERVER:
-		self->server = g_value_get_string(val);
+		g_free(self->server);
+		self->server = g_value_dup_string(val);
 		break;
 	case PROP_ACCESS_TOKEN:
 		g_free(self->access_token);
@@ -104,10 +102,9 @@ harvest_api_client_finalize(GObject *obj)
 {
 	HarvestApiClient *self = HARVEST_API_CLIENT(obj);
 
+	g_free(self->server);
 	g_free(self->access_token);
 	g_free(self->account_id);
-	g_free(self->application_name);
-	g_free(self->contact_info);
 
 	G_OBJECT_CLASS(harvest_api_client_parent_class)->finalize(obj);
 }
@@ -125,7 +122,7 @@ harvest_api_client_class_init(HarvestApiClientClass *klass)
 		_("SoupSession object to use to make requests."), SOUP_TYPE_SESSION,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_SERVER]
-		= g_param_spec_string("server", _("Server"), _("Location of the server"), NULL,
+		= g_param_spec_string("server", _("Server"), _("Base URL for the server."), NULL,
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ACCESS_TOKEN] = g_param_spec_string("access-token", _("Access Token"),
 		_("Developer access token for the Harvest API."), NULL,
@@ -147,8 +144,10 @@ harvest_api_client_new(SoupSession *session, const char *access_token, const cha
 	g_return_val_if_fail(
 		SOUP_IS_SESSION(session) && access_token != NULL && account_id != NULL, NULL);
 
-	if (instance != NULL) {
+	if (instance != NULL)
 		g_object_unref(instance);
+
+	if (instance == NULL) {
 		instance = g_object_new(HARVEST_TYPE_API_CLIENT, "session", session, "server",
 			HARVEST_API_URL, "access-token", access_token, "account-id", account_id, NULL);
 	}
@@ -200,9 +199,9 @@ harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest 
 {
 	g_return_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req));
 
-	g_autoptr(SoupMessage) msg = NULL;
-	g_autoptr(GString) uri	   = g_string_new(NULL);
-	g_string_append_printf(uri, "%s%s", self->server, harvest_request_get_endpoint(req));
+	SoupMessage *msg	   = NULL;
+	g_autoptr(GString) uri = g_string_new(self->server);
+	g_string_append(uri, harvest_request_get_endpoint(req));
 	gboolean response_has_body = harvest_request_get_data(req) != NULL;
 	char *body				   = NULL;
 	gsize len				   = 0;

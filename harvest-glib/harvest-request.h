@@ -20,8 +20,8 @@ struct _HarvestRequestClass
 	GObjectClass parent_class;
 };
 
-typedef void (*HarvestQueuedCallback)(HarvestRequest *request, gpointer user_data);
-typedef void (*HarvestCompletedCallback)(
+typedef void(HarvestQueuedCallback)(HarvestRequest *request, gpointer user_data);
+typedef void(HarvestCompletedCallback)(
 	HarvestRequest *request, HarvestResponse *response, gpointer user_data);
 
 HttpMethod harvest_request_get_http_method(HarvestRequest *self) G_GNUC_CONST;

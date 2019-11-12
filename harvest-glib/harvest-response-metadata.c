@@ -89,8 +89,8 @@ harvest_response_metadata_init(G_GNUC_UNUSED HarvestResponseMetadata *self)
 HarvestResponseMetadata *
 harvest_response_metadata_new(const GType body_type, const HttpStatusCode expected_status)
 {
-	return g_object_new(
-		HARVEST_TYPE_RESPONSE_METADATA, "body-type", body_type, "expected-status", expected_status);
+	return g_object_new(HARVEST_TYPE_RESPONSE_METADATA, "body-type", body_type, "expected-status",
+		expected_status, NULL);
 }
 
 HttpStatusCode

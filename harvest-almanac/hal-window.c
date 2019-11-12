@@ -44,6 +44,8 @@ hal_window_show_content(HalWindow *self)
 	 * valid using the me endpoint.
 	 */
 
+	self->user_validated = TRUE;
+
 	gtk_stack_set_visible_child_name(GTK_STACK(priv->profile), "profile");
 }
 
@@ -135,8 +137,6 @@ hal_window_init(HalWindow *self)
 		"icon-name", "user-info-symbolic", NULL);
 	gtk_container_child_set(GTK_CONTAINER(priv->function_stack), GTK_WIDGET(priv->time_tracker),
 		"icon-name", "document-open-recent-symbolic", NULL);
-
-	g_autoptr(GSettings) settings = g_settings_new("io.partin.tristan.HarvestAlmanac");
 
 	self->user_validated = FALSE;
 

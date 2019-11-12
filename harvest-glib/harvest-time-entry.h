@@ -5,7 +5,6 @@
 #endif
 
 #include <glib-object.h>
-#include <glib/gi18n-lib.h>
 
 G_BEGIN_DECLS
 
