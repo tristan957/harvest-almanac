@@ -1,4 +1,3 @@
----
 app-id: io.partin.tristan.HarvestAlmanac
 runtime: org.gnome.Platform
 runtime-version: "3.34"
