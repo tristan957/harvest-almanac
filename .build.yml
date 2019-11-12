@@ -6,7 +6,7 @@ packages:
   - libhandy-dev
   - libsoup-dev
   - libsecret-dev
-  - flatpak
+  - flatpak-builder
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
 sources:
