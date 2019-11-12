@@ -22,4 +22,4 @@ tasks:
       cd harvest-almanac
       flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo \
         --ccache --user --install-deps-from=flathub --install .flatpak \
-        dist/flatpak/io.partin.tristan.HarvestAlmanac.json
+        dist/flatpak/io.partin.tristan.HarvestAlmanac.yaml
