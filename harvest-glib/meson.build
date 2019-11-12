@@ -108,7 +108,7 @@ harvest_glib_dep = declare_dependency(
 pkg.generate(
 	harvest_glib,
 	description: 'GLib-based library for interacting with the Harvest API.',
-	filebase: 'harvest-glib-1.0.0',
+	filebase: 'harvest-glib-1.0',
 	name: 'harvest-glib',
 	version: harvest_glib_version,
     requires: [

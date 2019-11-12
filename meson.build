@@ -33,9 +33,17 @@ libhandy_dep = dependency('libhandy-0.0', version: '>= 0.0.11', required: true, 
 libsoup_dep = dependency('libsoup-2.4', version: '>= 2.68.1', required: true, fallback: ['libsoup', 'libsoup_dep'])
 libsecret_dep = dependency('libsecret-1', version: '>= 0.19.1', required: true, fallback: ['libsecret', 'libsecret_dep'])
 
-subdir('data')
-subdir('harvest-glib')
-subdir('harvest-almanac')
+if get_option('use-system-harvest-glib')
+    harvest_glib_dep = dependency('harvest-glib-1.0', version: '>= 1.0.0', required: false)
+else
+    subdir('harvest-glib')
+endif
+
+if not get_option('lib-only')
+    subdir('data')
+    subdir('harvest-almanac')
+endif
+
 subdir('po')
 
 meson.add_install_script('meson_post_install.sh')
