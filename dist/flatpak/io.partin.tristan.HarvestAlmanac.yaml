@@ -1,0 +1,71 @@
+---
+app-id: io.partin.tristan.HarvestAlmanac
+runtime: org.gnome.Platform
+runtime-version: "3.34"
+sdk: org.gnome.Sdk
+command: harvest-almanac
+finish-args:
+  - "--share=network"
+  - "--share=ipc"
+  - "--socket=x11"
+  - "--socket=wayland"
+  - "--filesystem=xdg-run/dconf"
+  - "--filesystem=~/.config/dconf:ro"
+  - "--talk-name=ca.desrt.dconf"
+  - "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+build-options:
+  cflags: "-O3"
+cleanup:
+  - "/include"
+  - "/lib/pkgconfig"
+  - "/man"
+  - "/share/doc"
+  - "/share/gtk-doc"
+  - "/share/man"
+  - "/share/pkgconfig"
+  - "*.la"
+  - "*.a"
+modules:
+  - name: libhandy
+    builddir: true
+    buildsystem: meson
+    config-opts:
+      - "-Dtests=false"
+      - "-Dvapi=false"
+      - "-Dexamples=false"
+    sources:
+      - type: archive
+        url: https://source.puri.sm/Librem5/libhandy/-/archive/v0.0.11/libhandy-v0.0.11.tar.gz
+        sha256: c7e7b51203d9221c50b1a38ba81e0aefb5ab906c55e85b6ca2d0501e907e077d
+  - name: harvest-almanac
+    builddir: true
+    buildsystem: meson
+    config-opts:
+      - "-Dwerror=true"
+      - "-Dbuildtype=release"
+      - "-Dwarning_level=2"
+    sources:
+      - type: git
+        url: https://git.sr.ht/~tristan957/harvest-almanac
+  - name: libsoup
+    builddir: true
+    buildsystem: meson
+    config-opts:
+      - "-Dtests=false"
+      - "-Dvapi=false"
+      - "-Dintrospection=false"
+    sources:
+      - type: archive
+        url: https://gitlab.gnome.org/GNOME/libsoup/-/archive/2.68.2/libsoup-2.68.2.tar.gz
+        sha256: a2a44f8b8eb5e145c5dff473f6d8c5b8f1addcf4e6f12223b4705c7fcc6c29b6
+  - name: libsecret
+    builddir: true
+    buildsystem: meson
+    config-opts:
+      - "-Dgtk_doc=false"
+      - "-Dvapi=false"
+      - "-Dman=false"
+    sources:
+      - type: archive
+        url: https://gitlab.gnome.org/GNOME/libsecret/-/archive/0.19.1/libsecret-0.19.1.tar.gz
+        sha256: 303c6e8cf3e12534e885b0682cd6130716c6834397b76d3829321b6d83b2389c
