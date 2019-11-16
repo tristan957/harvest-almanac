@@ -15,5 +15,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(HarvestUser, harvest_user, HARVEST, USER, GObject)
 
 void harvest_user_get_me_async(HarvestCompletedCallback *callback, gpointer user_data);
+const char *harvest_user_get_first_name(HarvestUser *user);
+const char *harvest_user_get_last_name(HarvestUser *user);
 
 G_END_DECLS

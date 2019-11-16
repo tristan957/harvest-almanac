@@ -396,3 +396,19 @@ harvest_user_get_me_async(HarvestCompletedCallback *callback, gpointer user_data
 
 	harvest_api_client_execute_request_async(client, HARVEST_REQUEST(request));
 }
+
+const char *
+harvest_user_get_first_name(HarvestUser *self)
+{
+	g_return_val_if_fail(HARVEST_IS_USER(self), NULL);
+
+	return self->first_name;
+}
+
+const char *
+harvest_user_get_last_name(HarvestUser *self)
+{
+	g_return_val_if_fail(HARVEST_IS_USER(self), NULL);
+
+	return self->last_name;
+}
