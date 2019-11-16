@@ -176,19 +176,28 @@ harvest_api_client_async_callback(
 	HarvestResponseMetadata *metadata = harvest_request_get_response_metadata(req);
 	const GType body_type			  = harvest_response_metadata_get_body_type(metadata);
 
-	GObject *body = NULL;
+	GValue val = G_VALUE_INIT;
+	g_value_init(&val, body_type);
+	GObject *data = NULL;
 	GError *err	  = NULL;
 
+	/**
+	 * This is extemely naiive. It assumes that all bodies serialize to GObjects from JSON when we
+	 * know that is not true. Returning raw strings and integers are valid JSON for instance.
+	 * Although this is fine for this project, reusing the same code will need tweaking to handle
+	 * all API cases mentioned in documentation.
+	 */
 	if (body_type != G_TYPE_NONE) {
 		g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
 		g_autoptr(GBytes) bytes	  = soup_buffer_get_as_bytes(buf);
 
 		gsize size				= 0;
 		gconstpointer body_data = g_bytes_get_data(bytes, &size);
-		body					= json_gobject_from_data(body_type, body_data, size, &err);
+		data					= json_gobject_from_data(body_type, body_data, size, &err);
+		g_value_set_object(&val, data);
 	}
 
-	HarvestResponse *response = harvest_response_new(body, msg->status_code, err);
+	HarvestResponse *response = harvest_response_new(&val, msg->status_code, err);
 	g_signal_connect_after(
 		req, "completed", G_CALLBACK(harvest_api_client_destroy_request), response);
 	g_signal_emit_by_name(req, "completed", response);

@@ -17,11 +17,11 @@ struct _HarvestResponse
 {
 	GObject parent_instance;
 
-	GObject *body;
+	GValue *body;
 	HttpStatusCode status_code;
 	GError *err;
 };
 
-HarvestResponse *harvest_response_new(GObject *obj, const HttpStatusCode code, GError *err);
+HarvestResponse *harvest_response_new(GValue *obj, const HttpStatusCode code, GError *err);
 
 G_END_DECLS

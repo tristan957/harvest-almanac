@@ -27,7 +27,7 @@ harvest_response_finalize(GObject *obj)
 	HarvestResponse *self = HARVEST_RESPONSE(obj);
 
 	if (self->body != NULL)
-		g_object_unref(self->body);
+		g_value_unset(self->body);
 	if (self->err != NULL)
 		g_error_free(self->err);
 
@@ -41,7 +41,7 @@ harvest_response_get_property(GObject *obj, guint prop_id, GValue *val, GParamSp
 
 	switch (prop_id) {
 	case PROP_BODY:
-		g_value_set_object(val, self->body);
+		g_value_set_boxed(val, self->body);
 		break;
 	case PROP_ERROR:
 		g_value_set_boxed(val, self->err);
@@ -62,8 +62,8 @@ harvest_response_set_property(GObject *obj, guint prop_id, const GValue *val, GP
 	switch (prop_id) {
 	case PROP_BODY:
 		if (self->body != NULL)
-			g_object_unref(self->body);
-		self->body = g_value_dup_object(val);
+			g_value_unset(self->body);
+		self->body = g_value_dup_boxed(val);
 		break;
 	case PROP_ERROR:
 		if (self->err != NULL)
@@ -87,8 +87,8 @@ harvest_response_class_init(HarvestResponseClass *klass)
 	obj_class->get_property = harvest_response_get_property;
 	obj_class->set_property = harvest_response_set_property;
 
-	obj_properties[PROP_BODY] = g_param_spec_object("body", _("Body"), _("Response body."),
-		G_TYPE_OBJECT, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_BODY] = g_param_spec_boxed("body", _("Body"), _("Response body."),
+		G_TYPE_VALUE, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ERROR]
 		= g_param_spec_boxed("error", _("Error"), _("Why the request errored out."), G_TYPE_ERROR,
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
@@ -105,7 +105,7 @@ harvest_response_init(G_GNUC_UNUSED HarvestResponse *self)
 {}
 
 HarvestResponse *
-harvest_response_new(GObject *body, const HttpStatusCode code, GError *err)
+harvest_response_new(GValue *body, const HttpStatusCode code, GError *err)
 {
 	return g_object_new(
 		HARVEST_TYPE_RESPONSE, "body", body, "status-code", code, "error", err, NULL);
