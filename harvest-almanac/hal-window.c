@@ -13,38 +13,90 @@
 struct _HalWindow
 {
 	GtkApplicationWindow parent_instance;
-
-	/**
-	 * user_validated keeps the view switchers from being visible when the user is not validated.
-	 */
-	gboolean user_validated : 1;
 };
 
 typedef struct HalWindowPrivate
 {
-	GtkStack *function_stack;
-	HdySqueezer *function_squeezer;
-	HdyViewSwitcherBar *function_switcher_bar;
-	HdyViewSwitcher *function_wide_switcher;
-	HdyViewSwitcher *function_narrow_switcher;
-	GtkLabel *title_label;
+	HdyHeaderGroup *header_group;
+	HdyLeaflet *content_leaflet;
+	HdyLeaflet *header_leaflet;
+	GtkHeaderBar *header_bar;
+	GtkHeaderBar *sub_header_bar;
+	GtkStack *stack;
+	GtkStackSidebar *sidebar;
+	GtkButton *back_button;
 	HalTimeTracker *time_tracker;
 	HalProfile *profile;
 } HalWindowPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalWindow, hal_window, GTK_TYPE_APPLICATION_WINDOW)
 
+static void
+update_header_bar_title(HalWindow *self)
+{
+	HalWindowPrivate *priv = hal_window_get_instance_private(self);
+
+	GtkWidget *child = gtk_stack_get_visible_child(priv->stack);
+	GValue title	 = G_VALUE_INIT;
+	g_value_init(&title, G_TYPE_STRING);
+	gtk_container_child_get_property(GTK_CONTAINER(priv->stack), child, "title", &title);
+	gtk_header_bar_set_title(priv->sub_header_bar, g_value_get_string(&title));
+}
+
+static void
+update_focus(HalWindow *self) // update
+{
+	HalWindowPrivate *priv = hal_window_get_instance_private(self);
+
+	GtkWidget *header_child = hdy_leaflet_get_visible_child(priv->header_leaflet);
+	const HdyFold fold		= hdy_leaflet_get_fold(priv->header_leaflet);
+
+	g_assert(header_child == NULL || GTK_IS_HEADER_BAR(header_child));
+
+	hdy_header_group_set_focus(
+		priv->header_group, fold == HDY_FOLD_FOLDED ? GTK_HEADER_BAR(header_child) : NULL);
+}
+
+static void
+stack_notify_visible_child_cb(
+	G_GNUC_UNUSED GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+{
+	HalWindow *self = HAL_WINDOW(user_data);
+
+	update_header_bar_title(self);
+}
+
+static void
+header_leaflet_notify_visible_child_cb(
+	G_GNUC_UNUSED GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+{
+	HalWindow *self = HAL_WINDOW(user_data);
+
+	update_focus(self);
+}
+
+static void
+header_leaflet_notify_fold_cb(
+	G_GNUC_UNUSED GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+{
+	HalWindow *self = HAL_WINDOW(user_data);
+
+	update_focus(self);
+}
+
+static void
+back_button_clicked_cb(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
+{
+	HalWindow *self		   = HAL_WINDOW(user_data);
+	HalWindowPrivate *priv = hal_window_get_instance_private(self);
+
+	hdy_leaflet_set_visible_child_name(priv->content_leaflet, "sidebar");
+}
+
 void
 hal_window_show_content(HalWindow *self)
 {
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
-
-	/**
-	 * There should probably be a check to make sure the access token is actually
-	 * valid using the me endpoint.
-	 */
-
-	self->user_validated = TRUE;
 
 	gtk_stack_set_visible_child_name(GTK_STACK(priv->profile), "profile");
 }
@@ -54,7 +106,7 @@ hal_window_hide_content(HalWindow *self)
 {
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
 
-	gtk_stack_set_visible_child_name(priv->function_stack, "profile");
+	gtk_stack_set_visible_child_name(priv->stack, "profile");
 	gtk_stack_set_visible_child_name(GTK_STACK(priv->profile), "harvest-api-access-token");
 }
 
@@ -65,42 +117,6 @@ hal_window_finalize(GObject *obj)
 }
 
 static void
-hal_window_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
-{
-	HalWindow *self		   = HAL_WINDOW(widget);
-	HalWindowPrivate *priv = hal_window_get_instance_private(self);
-
-	if (self->user_validated) {
-		hdy_squeezer_set_child_enabled(priv->function_squeezer,
-			GTK_WIDGET(priv->function_wide_switcher), allocation->width > 600);
-		hdy_squeezer_set_child_enabled(priv->function_squeezer,
-			GTK_WIDGET(priv->function_narrow_switcher), allocation->width > 400);
-	} else {
-		hdy_squeezer_set_child_enabled(
-			priv->function_squeezer, GTK_WIDGET(priv->title_label), TRUE);
-		hdy_squeezer_set_child_enabled(
-			priv->function_squeezer, GTK_WIDGET(priv->function_wide_switcher), FALSE);
-		hdy_squeezer_set_child_enabled(
-			priv->function_squeezer, GTK_WIDGET(priv->function_narrow_switcher), FALSE);
-	}
-
-	GTK_WIDGET_CLASS(hal_window_parent_class)->size_allocate(widget, allocation);
-}
-
-static gboolean
-hal_window_is_title_label_visible(
-	G_GNUC_UNUSED GBinding *binding, const GValue *from_value, GValue *to_value, gpointer user_data)
-{
-	HalWindow *self		   = HAL_WINDOW(user_data);
-	HalWindowPrivate *priv = hal_window_get_instance_private(self);
-
-	g_value_set_boolean(
-		to_value, g_value_get_object(from_value) == priv->title_label && self->user_validated);
-
-	return TRUE;
-}
-
-static void
 hal_window_class_init(HalWindowClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS(klass);
@@ -108,16 +124,20 @@ hal_window_class_init(HalWindowClass *klass)
 
 	object_class->finalize = hal_window_finalize;
 
-	wid_class->size_allocate = hal_window_size_allocate;
-
 	gtk_widget_class_set_template_from_resource(
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-window.ui");
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, function_stack);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, function_squeezer);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, function_switcher_bar);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, function_wide_switcher);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, function_narrow_switcher);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, title_label);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, header_group);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, content_leaflet);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, header_leaflet);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, header_bar);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, sub_header_bar);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, sidebar);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, back_button);
+	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_fold_cb);
+	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_visible_child_cb);
+	gtk_widget_class_bind_template_callback(wid_class, stack_notify_visible_child_cb);
+	gtk_widget_class_bind_template_callback(wid_class, back_button_clicked_cb);
 }
 
 static void
@@ -130,19 +150,16 @@ hal_window_init(HalWindow *self)
 	priv->profile	   = hal_profile_new();
 	priv->time_tracker = hal_time_tracker_new();
 
-	gtk_stack_add_titled(priv->function_stack, GTK_WIDGET(priv->profile), "profile", "Profile");
-	gtk_stack_add_titled(
-		priv->function_stack, GTK_WIDGET(priv->time_tracker), "time-tracker", "Time");
-	gtk_container_child_set(GTK_CONTAINER(priv->function_stack), GTK_WIDGET(priv->profile),
-		"icon-name", "user-info-symbolic", NULL);
-	gtk_container_child_set(GTK_CONTAINER(priv->function_stack), GTK_WIDGET(priv->time_tracker),
-		"icon-name", "document-open-recent-symbolic", NULL);
+	gtk_stack_add_titled(priv->stack, GTK_WIDGET(priv->profile), "profile", "Profile");
+	gtk_stack_add_titled(priv->stack, GTK_WIDGET(priv->time_tracker), "time-tracker", "Time");
+	gtk_container_child_set(GTK_CONTAINER(priv->stack), GTK_WIDGET(priv->profile), "icon-name",
+		"user-info-symbolic", NULL);
+	gtk_container_child_set(GTK_CONTAINER(priv->stack), GTK_WIDGET(priv->time_tracker), "icon-name",
+		"document-open-recent-symbolic", NULL);
 
-	self->user_validated = FALSE;
+	update_header_bar_title(self);
 
-	g_object_bind_property_full(priv->function_squeezer, "visible-child",
-		priv->function_switcher_bar, "reveal", G_BINDING_SYNC_CREATE,
-		hal_window_is_title_label_visible, NULL, self, NULL);
+	hdy_leaflet_set_visible_child_name(priv->content_leaflet, "content");
 }
 
 HalWindow *

@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 
 	const gboolean success = hdy_init(&argc, &argv);
 	if (!success) {
-		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Unable to initialize libhandy");
+		g_critical("Unable to initialize libhandy");
 		return 1;
 	}
 

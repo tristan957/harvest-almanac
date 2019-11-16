@@ -106,10 +106,17 @@ hal_application_activate(GApplication *app)
 			construct_client(self, access_token, account_id, contact_email);
 			secret_password_free(access_token);
 		}
-	}
 
-	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
-		g_settings_get_boolean(self->settings, "prefer-dark-theme"), NULL);
+		g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
+			g_settings_get_boolean(self->settings, "prefer-dark-theme"), NULL);
+
+		g_autoptr(GtkCssProvider) css_provider = gtk_css_provider_new();
+		gtk_css_provider_load_from_resource(
+			css_provider, "/io/partin/tristan/HarvestAlmanac/ui/style.css");
+		gtk_style_context_add_provider_for_screen(
+			gtk_window_get_screen(GTK_WINDOW(priv->main_window)), GTK_STYLE_PROVIDER(css_provider),
+			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+	}
 
 	gtk_window_present(GTK_WINDOW(priv->main_window));
 }
