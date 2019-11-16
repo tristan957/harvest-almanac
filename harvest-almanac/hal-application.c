@@ -11,6 +11,7 @@
 #include <libsoup/soup.h>
 
 #include "hal-application.h"
+#include "hal-context.h"
 #include "hal-preferences-window.h"
 #include "hal-resources.h"
 #include "hal-time-entry.h"
@@ -41,6 +42,7 @@ validate_user(
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
 	if (res->err == NULL) {
+		hal_context_set_user(g_value_get_object(res->body));
 		hal_window_show_content(priv->main_window);
 	} else {
 		g_error("Error hitting /users/me (%u): %s", res->status_code, res->err->message);
@@ -242,6 +244,8 @@ hal_application_init(HalApplication *self)
 
 	g_action_map_add_action_entries(
 		G_ACTION_MAP(self), app_entries, G_N_ELEMENTS(app_entries), self);
+
+	hal_context_initialize();
 }
 
 HalApplication *

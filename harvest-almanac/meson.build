@@ -20,6 +20,7 @@ configure_file(
 harvest_almanac_sources = [
     'main.c',
     'hal-application.c',
+    'hal-context.c',
     'hal-preferences-window.c',
     'hal-profile.c',
     'hal-time-entry.c',
