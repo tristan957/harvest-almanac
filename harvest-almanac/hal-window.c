@@ -22,8 +22,8 @@ typedef struct HalWindowPrivate
 	HdyLeaflet *header_leaflet;
 	GtkHeaderBar *header_bar;
 	GtkHeaderBar *sub_header_bar;
+	GtkStackSidebar *stack_sidebar;
 	GtkStack *stack;
-	GtkStackSidebar *sidebar;
 	GtkButton *back_button;
 	HalTimeTracker *time_tracker;
 	HalProfile *profile;
@@ -131,8 +131,8 @@ hal_window_class_init(HalWindowClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, header_leaflet);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, header_bar);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, sub_header_bar);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack_sidebar);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, sidebar);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, back_button);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_fold_cb);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_visible_child_cb);
@@ -152,10 +152,6 @@ hal_window_init(HalWindow *self)
 
 	gtk_stack_add_titled(priv->stack, GTK_WIDGET(priv->profile), "profile", "Profile");
 	gtk_stack_add_titled(priv->stack, GTK_WIDGET(priv->time_tracker), "time-tracker", "Time");
-	gtk_container_child_set(GTK_CONTAINER(priv->stack), GTK_WIDGET(priv->profile), "icon-name",
-		"user-info-symbolic", NULL);
-	gtk_container_child_set(GTK_CONTAINER(priv->stack), GTK_WIDGET(priv->time_tracker), "icon-name",
-		"document-open-recent-symbolic", NULL);
 
 	update_header_bar_title(self);
 
