@@ -67,8 +67,8 @@ construct_client(HalApplication *self, const char *access_token, const char *acc
 	g_autoptr(GString) user_agent = g_string_new(NULL);
 	g_string_printf(user_agent, "Harvest Almanac (%s)", contact_email);
 
-	SoupSession *session = soup_session_new_with_options(SOUP_SESSION_MAX_CONNS, max_connections,
-		SOUP_SESSION_USER_AGENT, user_agent->str, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
+	g_autoptr(SoupSession) session = soup_session_new_with_options(SOUP_SESSION_MAX_CONNS,
+		max_connections, SOUP_SESSION_USER_AGENT, user_agent->str, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
 		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
 
 	self->client = harvest_api_client_new(session, access_token, account_id);
