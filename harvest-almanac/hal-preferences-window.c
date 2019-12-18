@@ -177,8 +177,7 @@ on_harvest_api_access_token_store(
 
 	secret_password_store_finish(result, &err);
 	if (err != NULL) {
-		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed storing Harvest API access token: %s",
-			err->message);
+		g_critical("Failed storing Harvest API access token: %s", err->message);
 		hal_preferences_window_set_dirty(self, TRUE);
 	} else {
 		hal_preferences_window_set_dirty(self, FALSE);
@@ -207,8 +206,7 @@ on_harvest_api_access_token_lookup(
 
 	gchar *access_token = secret_password_lookup_finish(result, &err);
 	if (err != NULL) {
-		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to lookup Harvest API access token: %s",
-			access_token);
+		g_critical("Failed to lookup Harvest API access token: %s", access_token);
 	} else if (access_token == NULL || strlen(access_token) == 0) {
 		self->cached_access_token = NULL;
 		gtk_widget_set_sensitive(GTK_WIDGET(priv->harvest_api_access_token_forget_button), FALSE);
@@ -234,8 +232,7 @@ on_harvest_api_access_token_clear(
 
 	G_GNUC_UNUSED const gboolean cleared = secret_password_clear_finish(result, &err);
 	if (err != NULL) {
-		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to clear Harvest API access token: %s",
-			err->message);
+		g_critical("Failed to clear Harvest API access token: %s", err->message);
 	} else {
 		self->cached_access_token = NULL;
 		gtk_widget_set_sensitive(GTK_WIDGET(priv->harvest_api_access_token_forget_button), FALSE);
