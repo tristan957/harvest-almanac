@@ -44,7 +44,7 @@ update_header_bar_title(HalWindow *self)
 }
 
 static void
-update_focus(HalWindow *self) // update
+update_focus(HalWindow *self)
 {
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
 

@@ -168,11 +168,9 @@ harvest_api_client_destroy_request(HarvestRequest *req, gpointer user_data)
 	g_object_unref(HARVEST_RESPONSE(user_data));
 }
 
-static void
-harvest_api_client_async_callback(
-	G_GNUC_UNUSED SoupSession *Session, SoupMessage *msg, gpointer user_data)
+static HarvestResponse *
+create_response(HarvestRequest *req, SoupMessage *msg)
 {
-	HarvestRequest *req				  = HARVEST_REQUEST(user_data);
 	HarvestResponseMetadata *metadata = harvest_request_get_response_metadata(req);
 	const GType body_type			  = harvest_response_metadata_get_body_type(metadata);
 
@@ -197,17 +195,25 @@ harvest_api_client_async_callback(
 		g_value_set_object(&val, data);
 	}
 
-	HarvestResponse *response = harvest_response_new(&val, msg->status_code, err);
-	g_signal_connect_after(
-		req, "completed", G_CALLBACK(harvest_api_client_destroy_request), response);
-	g_signal_emit_by_name(req, "completed", response);
+	HarvestResponse *res = harvest_response_new(&val, msg->status_code, err);
+
+	return res;
 }
 
-void
-harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest *req)
+static void
+harvest_api_client_async_callback(
+	G_GNUC_UNUSED SoupSession *Session, SoupMessage *msg, gpointer user_data)
 {
-	g_return_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req));
+	HarvestRequest *req	 = HARVEST_REQUEST(user_data);
+	HarvestResponse *res = create_response(req, msg);
 
+	g_signal_connect_after(req, "completed", G_CALLBACK(harvest_api_client_destroy_request), res);
+	g_signal_emit_by_name(req, "completed", res);
+}
+
+static SoupMessage *
+create_message(HarvestApiClient *self, HarvestRequest *req)
+{
 	SoupMessage *msg	   = NULL;
 	g_autoptr(GString) uri = g_string_new(self->server);
 	g_string_append(uri, harvest_request_get_endpoint(req));
@@ -233,11 +239,34 @@ harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest 
 	case HTTP_METHOD_DELETE:
 		break;
 	default:
-		g_return_if_reached();
+		g_return_val_if_reached(NULL);
 	}
 
 	soup_message_headers_append(msg->request_headers, "Authorization", self->access_token);
 	soup_message_headers_append(msg->request_headers, "Harvest-Account-Id", self->account_id);
+
+	return msg;
+}
+
+HarvestResponse *
+harvest_api_client_execute_request_sync(HarvestApiClient *self, HarvestRequest *req)
+{
+	g_return_val_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req), NULL);
+
+	g_autoptr(SoupMessage) msg = create_message(self, req);
+	soup_session_send_message(self->session, msg);
+	HarvestResponse *res = create_response(req, msg);
+	g_signal_emit_by_name(req, "completed", res);
+
+	return res;
+}
+
+void
+harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest *req)
+{
+	g_return_if_fail(HARVEST_IS_API_CLIENT(self) && HARVEST_IS_REQUEST(req));
+
+	SoupMessage *msg = create_message(self, req);
 
 	soup_session_queue_message(self->session, msg, harvest_api_client_async_callback, req);
 }

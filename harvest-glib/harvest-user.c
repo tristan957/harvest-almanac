@@ -386,6 +386,16 @@ static void
 harvest_user_init(G_GNUC_UNUSED HarvestUser *self)
 {}
 
+HarvestResponse *
+harvest_user_get_me()
+{
+	HarvestApiClient *client = harvest_api_client_get_instance();
+
+	HarvestUsersMeRequest *request = harvest_users_me_request_new();
+
+	return harvest_api_client_execute_request_sync(client, HARVEST_REQUEST(request));
+}
+
 void
 harvest_user_get_me_async(HarvestCompletedCallback *callback, gpointer user_data)
 {
