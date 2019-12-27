@@ -19,6 +19,8 @@
 
 #define HAL_MAX_CONNS_PER_HOST 4
 
+extern HalTimeEntry *CURRENTLY_RUNNING_TIME_ENTRY;
+
 struct _HalApplication
 {
 	GtkApplication parent_instance;
@@ -148,25 +150,19 @@ hal_application_preferences(
 
 static void
 hal_application_time_entry_start(
-	G_GNUC_UNUSED GSimpleAction *action, GVariant *param, gpointer data)
+	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
 {
-	const guint64 address			  = g_variant_get_uint64(param);
-	G_GNUC_UNUSED HalTimeEntry *entry = HAL_TIME_ENTRY((HalTimeEntry *) address);
-
 	g_autoptr(GNotification) notification = g_notification_new("Harvest Almanac");
 	g_notification_set_body(notification, "Client -- Project timer started");
-	g_notification_add_button_with_target(
-		notification, "Stop Timer", "app.time-entry-stop", "t", address, NULL);
+	g_notification_add_button(notification, "Stop Timer", "app.time-entry-stop");
 	g_application_send_notification(G_APPLICATION(data), "time-entry", notification);
 }
 
 static void
-hal_application_time_entry_stop(G_GNUC_UNUSED GSimpleAction *action, GVariant *param, gpointer data)
+hal_application_time_entry_stop(
+	G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *param, gpointer data)
 {
-	const guint64 address = g_variant_get_uint64(param);
-	HalTimeEntry *entry	  = HAL_TIME_ENTRY((HalTimeEntry *) address);
-
-	hal_time_entry_stop(entry);
+	hal_time_entry_stop(CURRENTLY_RUNNING_TIME_ENTRY);
 	g_application_withdraw_notification(G_APPLICATION(data), "time-entry");
 }
 
@@ -228,13 +224,11 @@ static const GActionEntry app_entries[] = {
 	},
 	{
 		.name			= "time-entry-start",
-		.activate		= hal_application_time_entry_start,
-		.parameter_type = "t"
+		.activate		= hal_application_time_entry_start
 	},
 	{
 		.name			= "time-entry-stop",
-		.activate		= hal_application_time_entry_stop,
-		.parameter_type = "t"
+		.activate		= hal_application_time_entry_stop
 	},
 	{
 		.name	  		= "reconstruct-client",

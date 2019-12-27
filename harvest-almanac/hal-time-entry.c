@@ -7,11 +7,13 @@
 
 #include "hal-time-entry.h"
 
+// The time entry which the notification alludes to
+HalTimeEntry *CURRENTLY_RUNNING_TIME_ENTRY;
+
 struct _HalTimeEntry
 {
 	GtkGrid parent_instance;
 
-	gboolean running;
 	GTimer *timer;
 	GCancellable *cancellable;
 };
@@ -50,9 +52,9 @@ update_time_label(gpointer user_data)
 		return G_SOURCE_REMOVE;
 	}
 
-	const gdouble elapsed	= g_timer_elapsed(self->timer, NULL);
+	const int elapsed		 = g_timer_elapsed(self->timer, NULL);
 	g_autoptr(GString) label = g_string_new(NULL);
-	g_string_printf(label, "%d:%02d", (int) elapsed / 3600, ((int) elapsed % 3600) / 60);
+	g_string_printf(label, "%d:%02d", elapsed / 3600, (elapsed % 3600) / 60);
 	gtk_label_set_text(priv->time, label->str);
 
 	return G_SOURCE_CONTINUE;
@@ -64,17 +66,15 @@ on_status_button_clicked(G_GNUC_UNUSED GtkButton *widget, gpointer user_data)
 	HalTimeEntry *self		  = HAL_TIME_ENTRY(user_data);
 	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
 
-	if (!self->running) {
-		self->running = TRUE;
+	if (!g_timer_is_active(self->timer)) {
+		CURRENTLY_RUNNING_TIME_ENTRY = self;
 		g_timer_continue(self->timer);
 		gtk_stack_set_visible_child_name(priv->status_stack, "stop");
 		g_cancellable_reset(self->cancellable);
 		g_timeout_add(500, update_time_label, self);
 	} else {
-		self->running = FALSE;
-		g_timer_stop(self->timer);
-		g_cancellable_cancel(self->cancellable);
-		gtk_stack_set_visible_child_name(priv->status_stack, "start");
+		CURRENTLY_RUNNING_TIME_ENTRY = NULL;
+		hal_time_entry_stop(self);
 	}
 }
 
@@ -120,7 +120,7 @@ hal_time_entry_set_property(
 static void
 hal_time_entry_class_init(HalTimeEntryClass *klass)
 {
-	GObjectClass *obj_class   = G_OBJECT_CLASS(klass);
+	GObjectClass *obj_class	  = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *wid_class = GTK_WIDGET_CLASS(klass);
 
 	obj_class->finalize		= hal_time_entry_finalize;
@@ -145,15 +145,9 @@ hal_time_entry_class_init(HalTimeEntryClass *klass)
 static void
 hal_time_entry_init(HalTimeEntry *self)
 {
-	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
-
 	gtk_widget_init_template(GTK_WIDGET(self));
 
-	gtk_actionable_set_action_target(GTK_ACTIONABLE(priv->start_button), "t", (guint64) self);
-	gtk_actionable_set_action_target(GTK_ACTIONABLE(priv->stop_button), "t", (guint64) self);
-
-	self->running = FALSE;
-	self->timer   = g_timer_new();
+	self->timer = g_timer_new();
 	g_timer_stop(self->timer);
 	self->cancellable = g_cancellable_new();
 }
@@ -164,19 +158,12 @@ hal_time_entry_new()
 	return g_object_new(HAL_TYPE_TIME_ENTRY, NULL);
 }
 
-gboolean
-hal_time_entry_is_running(HalTimeEntry *self)
-{
-	return self->running;
-}
-
 void
 hal_time_entry_stop(HalTimeEntry *self)
 {
 	HalTimeEntryPrivate *priv = hal_time_entry_get_instance_private(self);
 
-	if (self->running && !g_cancellable_is_cancelled(self->cancellable)) {
-		self->running = FALSE;
+	if (g_timer_is_active(self->timer) && !g_cancellable_is_cancelled(self->cancellable)) {
 		g_timer_stop(self->timer);
 		g_cancellable_cancel(self->cancellable);
 		gtk_stack_set_visible_child_name(priv->status_stack, "start");
