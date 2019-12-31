@@ -105,15 +105,16 @@ harvest_glib_dep = declare_dependency(
     version: harvest_glib_version
 )
 
+if get_option('tests')
+    subdir('tests')
+endif
+
 pkg.generate(
 	harvest_glib,
 	description: 'GLib-based library for interacting with the Harvest API.',
 	filebase: 'harvest-glib-1.0',
 	name: 'harvest-glib',
 	version: harvest_glib_version,
-    requires: [
-        libsoup_dep,
-    ],
     requires_private: [
         libgio_dep,
         json_glib_dep,

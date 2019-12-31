@@ -71,3 +71,19 @@ flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo --ccache 
 ```text
 flatpak run io.partin.tristan.HarvestAlmanac
 ```
+
+### Testing
+
+Make sure the following environment variables are set:
+
+* `HARVEST_API_ACCESS_TOKEN`
+* `HARVEST_API_CONTACT_EMAIL`
+* `HARVEST_API_ACCOUNT_ID`
+* `HARVEST_SOUP_MAX_CONNECTIONS`
+* `HARVEST_SOUP_LOG_LEVEL`
+
+Then run
+
+```text
+ninja test -C build
+```
