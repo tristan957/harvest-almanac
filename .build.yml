@@ -9,6 +9,7 @@ packages:
   - flatpak-builder
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
+  - 2fc824d8-76d2-4052-a53b-984639bed2a1
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
@@ -23,3 +24,7 @@ tasks:
   #     flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo \
   #       --ccache --user --install-deps-from=flathub --install .flatpak \
   #       dist/flatpak/io.partin.tristan.HarvestAlmanac.yaml
+  - test: |
+      cd harvest-almanac
+      . ~/.harvest-almanac.env
+      ninja test -C build
