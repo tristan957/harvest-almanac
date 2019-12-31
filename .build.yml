@@ -9,7 +9,7 @@ packages:
   - flatpak-builder
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
-  - 2fc824d8-76d2-4052-a53b-984639bed2a1
+  - e7a81607-18a2-4f0a-964e-9225b589dbb5
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
