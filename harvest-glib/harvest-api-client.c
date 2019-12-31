@@ -17,6 +17,7 @@
 #include "harvest-response.h"
 
 #define HARVEST_API_URL "https://api.harvestapp.com/v2"
+G_DEFINE_QUARK(HarvestApiClient, harvest_api_client)
 
 static HarvestApiClient *API_CLIENT;
 
@@ -170,11 +171,19 @@ create_response(HarvestRequest *req, SoupMessage *msg)
 {
 	HarvestResponseMetadata *metadata = harvest_request_get_response_metadata(req);
 	const GType body_type			  = harvest_response_metadata_get_body_type(metadata);
+	const HttpStatusCode expected	  = harvest_response_metadata_get_expected_status(metadata);
 
 	GValue val = G_VALUE_INIT;
 	g_value_init(&val, body_type);
 	GObject *data = NULL;
 	GError *err	  = NULL;
+
+	if (msg->status_code != expected) {
+		char *message = g_strdup_printf(
+			"unexpected status code of %u, expected %u", expected, msg->status_code);
+		// TODO: need an actual error code...
+		g_set_error_literal(&err, harvest_api_client_quark(), 0, message);
+	}
 
 	/**
 	 * This is extemely naiive. It assumes that all bodies serialize to GObjects from JSON when we
@@ -182,7 +191,7 @@ create_response(HarvestRequest *req, SoupMessage *msg)
 	 * Although this is fine for this project, reusing the same code will need tweaking to handle
 	 * all API cases mentioned in documentation.
 	 */
-	if (body_type != G_TYPE_NONE) {
+	if (err == NULL && body_type != G_TYPE_NONE) {
 		g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
 		g_autoptr(GBytes) bytes	  = soup_buffer_get_as_bytes(buf);
 

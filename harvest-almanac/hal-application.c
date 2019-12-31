@@ -49,7 +49,7 @@ validate_user(
 		hal_context_set_user(g_value_get_object(res->body));
 		hal_window_show_content(priv->main_window);
 	} else {
-		g_error("Error hitting /users/me (%u): %s", res->status_code, res->err->message);
+		g_critical("validate_user: %s", res->err->message);
 		hal_window_hide_content(priv->main_window);
 	}
 }
