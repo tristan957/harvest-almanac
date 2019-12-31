@@ -190,6 +190,9 @@ create_response(HarvestRequest *req, SoupMessage *msg)
 	 * know that is not true. Returning raw strings and integers are valid JSON for instance.
 	 * Although this is fine for this project, reusing the same code will need tweaking to handle
 	 * all API cases mentioned in documentation.
+	 *
+	 * This could be easily remedied by a switch statement and do something different for simple
+	 * types.
 	 */
 	if (err == NULL && body_type != G_TYPE_NONE) {
 		g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
