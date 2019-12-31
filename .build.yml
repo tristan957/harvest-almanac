@@ -26,5 +26,7 @@ tasks:
   #       dist/flatpak/io.partin.tristan.HarvestAlmanac.yaml
   - test: |
       cd harvest-almanac
+      set +x
       . ~/.harvest-almanac.env
+      set -x
       ninja test -C build
