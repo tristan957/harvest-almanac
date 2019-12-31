@@ -9,8 +9,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(HalContext, hal_context, HAL, CONTEXT, GObject)
 
 void hal_context_initialize();
-const HalContext *hal_context_get() G_GNUC_CONST;
-HarvestUser *hal_context_get_user() G_GNUC_CONST;
 void hal_context_set_user(HarvestUser *user);
+HarvestUser *hal_context_get_user() G_GNUC_CONST;
 
 G_END_DECLS

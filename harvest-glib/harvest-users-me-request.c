@@ -29,10 +29,10 @@ harvest_users_me_request_init(G_GNUC_UNUSED HarvestUsersMeRequest *self)
 HarvestUsersMeRequest *
 harvest_users_me_request_new()
 {
-	g_autoptr(GString) endpoint = g_string_new("/users/me");
+	g_autofree char *endpoint = g_strdup("/users/me");
 	g_autoptr(HarvestResponseMetadata) response_metadata
 		= harvest_response_metadata_new(HARVEST_TYPE_USER, HTTP_STATUS_OK);
 
 	return g_object_new(HARVEST_TYPE_USERS_ME_REQUEST, "http-method", HTTP_METHOD_GET, "endpoint",
-		endpoint->str, "response-metadata", response_metadata, NULL);
+		endpoint, "response-metadata", response_metadata, NULL);
 }

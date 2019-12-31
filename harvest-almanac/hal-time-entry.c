@@ -52,10 +52,9 @@ update_time_label(gpointer user_data)
 		return G_SOURCE_REMOVE;
 	}
 
-	const int elapsed		 = g_timer_elapsed(self->timer, NULL);
-	g_autoptr(GString) label = g_string_new(NULL);
-	g_string_printf(label, "%d:%02d", elapsed / 3600, (elapsed % 3600) / 60);
-	gtk_label_set_text(priv->time, label->str);
+	const int elapsed	   = g_timer_elapsed(self->timer, NULL);
+	g_autofree char *label = g_strdup_printf("%d:%02d", elapsed / 3600, (elapsed % 3600) / 60);
+	gtk_label_set_text(priv->time, label);
 
 	return G_SOURCE_CONTINUE;
 }

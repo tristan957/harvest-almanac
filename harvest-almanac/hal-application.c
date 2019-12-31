@@ -19,6 +19,8 @@
 
 #define HAL_MAX_CONNS_PER_HOST 4
 
+extern HalContext *CONTEXT;
+extern HarvestApiClient *API_CLIENT;
 extern HalTimeEntry *CURRENTLY_RUNNING_TIME_ENTRY;
 
 struct _HalApplication
@@ -66,14 +68,13 @@ construct_client(HalApplication *self, const char *access_token, const char *acc
 
 	g_autoptr(SoupLogger) logger = soup_logger_new(logger_level, -1);
 
-	g_autoptr(GString) user_agent = g_string_new(NULL);
-	g_string_printf(user_agent, "Harvest Almanac (%s)", contact_email);
+	g_autofree char *user_agent = g_strdup_printf("Harvest Almanac (%s)", contact_email);
 
 	g_autoptr(SoupSession) session = soup_session_new_with_options(SOUP_SESSION_MAX_CONNS,
-		max_connections, SOUP_SESSION_USER_AGENT, user_agent->str, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
+		max_connections, SOUP_SESSION_USER_AGENT, user_agent, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
 		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
 
-	self->client = harvest_api_client_new(session, access_token, account_id);
+	harvest_api_client_initialize(session, access_token, account_id);
 
 	harvest_user_get_me_async(validate_user, self);
 }
@@ -86,12 +87,9 @@ hal_application_activate(GApplication *app)
 
 	if (priv->main_window == NULL) {
 		priv->main_window = hal_window_new(app);
-	}
 
-	if (self->client == NULL) {
-		g_autofree const char *account_id
-			= g_settings_get_string(self->settings, "harvest-account-id");
-		g_autofree const char *contact_email
+		g_autofree char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
+		g_autofree char *contact_email
 			= g_settings_get_string(self->settings, "harvest-api-contact-email");
 
 		g_autoptr(GError) err = NULL;
@@ -173,9 +171,9 @@ hal_application_reconstruct_client(
 	HalApplication *self = HAL_APPLICATION(data);
 
 	const char *harvest_api_access_token = g_variant_get_string(param, NULL);
-	g_autofree const char *harvest_api_contact_email
+	g_autofree char *harvest_api_contact_email
 		= g_settings_get_string(self->settings, "harvest-api-contact-email");
-	g_autofree const char *harvest_account_id
+	g_autofree char *harvest_account_id
 		= g_settings_get_string(self->settings, "harvest-account-id");
 
 	construct_client(self, harvest_api_access_token, harvest_account_id, harvest_api_contact_email);
@@ -195,8 +193,9 @@ hal_application_finalize(GObject *obj)
 {
 	HalApplication *self = HAL_APPLICATION(obj);
 
-	g_clear_object(&self->client);
+	harvest_api_client_free();
 	g_clear_object(&self->settings);
+	g_clear_object(&CONTEXT);
 
 	G_OBJECT_CLASS(hal_application_parent_class)->finalize(obj);
 }

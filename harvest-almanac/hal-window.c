@@ -6,9 +6,12 @@
 #include <gtk/gtk.h>
 #include <handy.h>
 
+#include "hal-context.h"
 #include "hal-profile.h"
 #include "hal-time-tracker.h"
 #include "hal-window.h"
+
+extern HalContext *CONTEXT;
 
 struct _HalWindow
 {
@@ -25,11 +28,26 @@ typedef struct HalWindowPrivate
 	GtkStackSidebar *stack_sidebar;
 	GtkStack *stack;
 	GtkButton *back_button;
+	GtkLabel *username;
 	HalTimeTracker *time_tracker;
 	HalProfile *profile;
 } HalWindowPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HalWindow, hal_window, GTK_TYPE_APPLICATION_WINDOW)
+
+static void
+on_context_notify_user(
+	G_GNUC_UNUSED GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+{
+	HalWindow *self		   = HAL_WINDOW(user_data);
+	HalWindowPrivate *priv = hal_window_get_instance_private(self);
+	HarvestUser *user	   = hal_context_get_user(CONTEXT);
+
+	if (user != NULL) {
+		gtk_label_set_text(priv->username, g_strconcat(harvest_user_get_first_name(user), " ",
+											   harvest_user_get_last_name(user), NULL));
+	}
+}
 
 static void
 update_header_bar_title(HalWindow *self)
@@ -119,10 +137,10 @@ hal_window_finalize(GObject *obj)
 static void
 hal_window_class_init(HalWindowClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-	GtkWidgetClass *wid_class  = GTK_WIDGET_CLASS(klass);
+	GObjectClass *obj_class	  = G_OBJECT_CLASS(klass);
+	GtkWidgetClass *wid_class = GTK_WIDGET_CLASS(klass);
 
-	object_class->finalize = hal_window_finalize;
+	obj_class->finalize = hal_window_finalize;
 
 	gtk_widget_class_set_template_from_resource(
 		wid_class, "/io/partin/tristan/HarvestAlmanac/ui/hal-window.ui");
@@ -134,6 +152,7 @@ hal_window_class_init(HalWindowClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack_sidebar);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, back_button);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, username);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_fold_cb);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_visible_child_cb);
 	gtk_widget_class_bind_template_callback(wid_class, stack_notify_visible_child_cb);
@@ -156,6 +175,8 @@ hal_window_init(HalWindow *self)
 	update_header_bar_title(self);
 
 	hdy_leaflet_set_visible_child_name(priv->content_leaflet, "content");
+
+	g_signal_connect(CONTEXT, "notify::user", G_CALLBACK(on_context_notify_user), self);
 }
 
 HalWindow *

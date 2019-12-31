@@ -110,7 +110,7 @@ on_harvest_api_contact_email_entry_changed(GtkEditable *widget, gpointer user_da
 {
 	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
 
-	g_autofree const char *contact_email
+	g_autofree char *contact_email
 		= g_settings_get_string(self->settings, "harvest-api-contact-email");
 
 	if (!g_str_equal(gtk_entry_get_text(GTK_ENTRY(widget)), contact_email)) {
@@ -125,7 +125,7 @@ on_harvest_account_id_entry_changed(GtkEditable *widget, gpointer user_data)
 {
 	HalPreferencesWindow *self = HAL_PREFERENCES_WINDOW(user_data);
 
-	g_autofree const char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
+	g_autofree char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
 
 	if (!g_str_equal(gtk_entry_get_text(GTK_ENTRY(widget)), account_id)) {
 		hal_preferences_window_set_dirty(self, TRUE);
@@ -275,8 +275,8 @@ on_harvest_api_access_token_forget_button_clicked(
 	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(user_data);
 	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
-	g_autofree const char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
-	g_autofree const char *contact_email
+	g_autofree char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
+	g_autofree char *contact_email
 		= g_settings_get_string(self->settings, "harvest-api-contact-email");
 
 	secret_password_clear(HAL_SECRET_SCHEMA, self->cancellable, on_harvest_api_access_token_clear,
@@ -296,8 +296,8 @@ hal_preferences_window_constructed(GObject *obj)
 	HalPreferencesWindow *self		  = HAL_PREFERENCES_WINDOW(obj);
 	HalPreferencesWindowPrivate *priv = hal_preferences_window_get_instance_private(self);
 
-	g_autofree const char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
-	g_autofree const char *contact_email
+	g_autofree char *account_id = g_settings_get_string(self->settings, "harvest-account-id");
+	g_autofree char *contact_email
 		= g_settings_get_string(self->settings, "harvest-api-contact-email");
 	g_autoptr(GVariant) soup_max_connections_variant
 		= g_settings_get_value(self->settings, "soup-max-connections");
