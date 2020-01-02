@@ -11,6 +11,7 @@
 #include "harvest-client.h"
 #include "harvest-common.h"
 #include "harvest-creator.h"
+#include "harvest-enum-types.h"
 #include "harvest-estimate-line-item.h"
 #include "harvest-estimate.h"
 
@@ -98,7 +99,7 @@ harvest_estimate_deserialize_property(JsonSerializable *serializable, const gcha
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "line_items") == 0) {
-		JsonArray *arr	 = json_node_get_array(prop_node);
+		JsonArray *arr	   = json_node_get_array(prop_node);
 		const guint length = json_array_get_length(arr);
 		GPtrArray *roles   = g_ptr_array_sized_new(length);
 		json_array_foreach_element(arr, line_items_for_each, roles);
@@ -108,22 +109,6 @@ harvest_estimate_deserialize_property(JsonSerializable *serializable, const gcha
 	} else if (g_strcmp0(prop_name, "creator") == 0) {
 		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_CREATOR, prop_node);
 		g_value_set_object(val, obj);
-
-		return TRUE;
-	} else if (g_strcmp0(prop_name, "state") == 0) {
-		const char *state = json_node_get_string(prop_node);
-
-		if (g_strcmp0(state, "accepted") == 0) {
-			g_value_set_int(val, HARVEST_ESTIMATE_STATE_ACCEPTED);
-		} else if (g_strcmp0(state, "declined") == 0) {
-			g_value_set_int(val, HARVEST_ESTIMATE_STATE_DECLINED);
-		} else if (g_strcmp0(state, "draft") == 0) {
-			g_value_set_int(val, HARVEST_ESTIMATE_STATE_DRAFT);
-		} else if (g_strcmp0(state, "sent")) {
-			g_value_set_int(val, HARVEST_ESTIMATE_STATE_SENT);
-		} else {
-			g_warn_if_reached();
-		}
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "issue_date") == 0) {
@@ -256,7 +241,7 @@ harvest_estimate_get_property(GObject *obj, guint prop_id, GValue *val, GParamSp
 		g_value_set_string(val, self->currency);
 		break;
 	case PROP_STATE:
-		g_value_set_int(val, self->state);
+		g_value_set_enum(val, (int) self->state);
 		break;
 	case PROP_ISSUE_DATE:
 		g_value_set_boxed(val, self->issue_date);
@@ -364,7 +349,7 @@ harvest_estimate_set_property(GObject *obj, guint prop_id, const GValue *val, GP
 		self->currency = g_value_dup_string(val);
 		break;
 	case PROP_STATE:
-		self->state = g_value_get_int(val);
+		self->state = (HarvestEstimateState) g_value_get_enum(val);
 		break;
 	case PROP_ISSUE_DATE:
 		if (self->issue_date != NULL)
@@ -411,79 +396,79 @@ harvest_estimate_class_init(HarvestEstimateClass *klass)
 	obj_class->set_property = harvest_estimate_set_property;
 
 	obj_properties[PROP_ID] = g_param_spec_int("id", _("ID"), _("Unique ID for the estimate."), 0,
-		INT_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		INT_MAX, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_CLIENT] = g_param_spec_object("client", _("Client"),
 		_("An object containing estimate’s client id and name."), HARVEST_TYPE_CLIENT,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_LINE_ITEMS]
 		= g_param_spec_boxed("line_items", _("Line Items"), _("Array of estimate line items."),
-			G_TYPE_PTR_ARRAY, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+			G_TYPE_PTR_ARRAY, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_CREATOR]		= g_param_spec_object("creator", _("Creator"),
 		   _("An object containing the id and name of the person that created the estimate."),
-		   HARVEST_TYPE_CREATOR, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		   HARVEST_TYPE_CREATOR, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_CLIENT_KEY]		= g_param_spec_string("client_key", _("Client Key"),
 		_("Used to build a URL to the public web invoice for your client: "
 		  "https://{ACCOUNT_SUBDOMAIN}.harvestapp.com/client/estimates/abc123456"),
-		NULL, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		NULL, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_NUMBER]			= g_param_spec_string("number", _("Number"),
 		_("If no value is set, the number will be automatically generated."), NULL,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_PURCHASE_ORDER] = g_param_spec_string("purchase_order", _("Purshase Order"),
 		_("The purchase order number."), NULL,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_AMOUNT]			= g_param_spec_double("amount", _("Amount"),
 		_("The total amount for the estimate, including any discounts and taxes."), 0, DBL_MAX, 0,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_TAX]			= g_param_spec_double("tax", _("Tax"),
 		   _("This percentage is applied to the subtotal, including line items and discounts."), 0,
-		   DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		   DBL_MAX, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_TAX_AMOUNT]		= g_param_spec_double("tax_amount", _("Tax Amount"),
 		_("The first amount of tax included, calculated from tax. If no tax is defined, this value "
 		  "will be null."),
-		0, DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		0, DBL_MAX, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_TAX2]			= g_param_spec_double("tax2", _("Tax 2"),
 		  _("This percentage is applied to the subtotal, including line items and discounts."), 0,
-		  DBL_MAX, 0, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		  DBL_MAX, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_TAX2_AMOUNT]	= g_param_spec_double("tax2_amount", _("Tax2 Amount"),
 		   _("The amount calculated from tax2."), 0, DBL_MAX, 0,
-		   G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		   G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DISCOUNT]		= g_param_spec_double("discount", _("Discount"),
 		  _("This percentage is subtracted from the subtotal."), 0, DBL_MAX, 0,
-		  G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		  G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DISCOUNT_AMOUNT] = g_param_spec_double("discount_amount",
 		_("Discount Amount"), _("The amount calcuated from discount."), 0, DBL_MAX, 0,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_SUBJECT]
 		= g_param_spec_string("subject", _("Subject"), _("The estimate subject."), NULL,
-			G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_NOTES]	= g_param_spec_string("notes", _("Notes"),
+			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_NOTES]	  = g_param_spec_string("notes", _("Notes"),
 		   _("Any additional notes included on the estimate."), NULL,
-		   G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		   G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_CURRENCY] = g_param_spec_string("currency", _("Currency"),
 		_("The currency code associated with this estimate."), NULL,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_STATE]	= g_param_spec_int("state", _("State"),
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_STATE]	  = g_param_spec_enum("state", _("State"),
 		   _("The current state of the estimate: draft, sent, accepted, or declined."),
-		   HARVEST_ESTIMATE_STATE_DRAFT, HARVEST_ESTIMATE_STATE_DECLINED, HARVEST_ESTIMATE_STATE_DRAFT,
-		   G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		   HARVEST_TYPE_ESTIMATE_STATE, HARVEST_ESTIMATE_STATE_ACCEPTED,
+		   G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ISSUE_DATE]
 		= g_param_spec_boxed("issue_date", _("Issue Date"), _("Date the estimate was issued."),
-			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_SENT_AT]
 		= g_param_spec_boxed("sent_at", _("Sent At"), _("Date and time the estimate was sent."),
-			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ACCEPTED_AT] = g_param_spec_boxed("accepted_at", _("Accepted At"),
 		_("Date and time the estimate was accepted."), G_TYPE_DATE_TIME,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DECLINED_AT] = g_param_spec_boxed("declined_at", _("Declined At"),
 		_("Date and time the estimate was declined."), G_TYPE_DATE_TIME,
-		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_CREATED_AT]  = g_param_spec_boxed("created_at", _("Created At"),
+		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_CREATED_AT]	 = g_param_spec_boxed("created_at", _("Created At"),
 		 _("Date and time the estimate was created."), G_TYPE_DATE_TIME,
-		 G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_UPDATED_AT]  = g_param_spec_boxed("updated_at", _("Updated At"),
+		 G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATED_AT]	 = g_param_spec_boxed("updated_at", _("Updated At"),
 		 _("Date and time the estimate was last updated."), G_TYPE_DATE_TIME,
-		 G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		 G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
