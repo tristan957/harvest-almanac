@@ -127,7 +127,7 @@ harvest_glib_dep = declare_dependency(
     version: harvest_glib_version,
 )
 
-if get_option('with-tests')
+if get_option('tests')
     subdir('tests')
 endif
 

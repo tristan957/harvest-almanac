@@ -55,7 +55,7 @@ ninja -C build
 #### flatpak
 
 ```text
-flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo --ccache --user --install-deps-from=flathub --install .flatpak  dist/flatpak/io.partin.tristan.HarvestAlmanac.json
+flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo --ccache --user --install-deps-from=flathub --install .flatpak  dist/flatpak/io.partin.tristan.HarvestAlmanac.yaml
 ```
 
 ### Running
