@@ -48,6 +48,12 @@ enums = gnome.mkenums_simple(
         'harvest-invoice.h',
     ],
     install_header: true,
+    header_prefix:
+'''
+#if !defined(__HARVEST_HEADER_INTERNAL__) && !defined(__HARVEST_COMPILATION__)
+#	error "Only <harvest-glib/harvest.h> can be included directly."
+#endif
+''',
 )
 
 harvest_glib_public_headers = [
@@ -118,7 +124,7 @@ harvest_glib = library(
 harvest_glib_dep = declare_dependency(
     include_directories: include_directories('..'),
     link_with: harvest_glib,
-    version: harvest_glib_version
+    version: harvest_glib_version,
 )
 
 if get_option('with-tests')
