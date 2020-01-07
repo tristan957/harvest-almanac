@@ -17,7 +17,6 @@
 #include "harvest-response.h"
 
 #define HARVEST_API_URL "https://api.harvestapp.com/v2"
-G_DEFINE_QUARK(HarvestApiClient, harvest_api_client)
 
 static HarvestApiClient *API_CLIENT;
 
@@ -160,10 +159,11 @@ harvest_api_client_free()
 }
 
 static void
-harvest_api_client_destroy_request(HarvestRequest *req, gpointer user_data)
+harvest_api_client_destroy_request(
+	HarvestRequest *req, HarvestResponse *res, G_GNUC_UNUSED gpointer user_data)
 {
 	g_object_unref(req);
-	g_object_unref(HARVEST_RESPONSE(user_data));
+	g_object_unref(res);
 }
 
 static HarvestResponse *
@@ -173,35 +173,80 @@ create_response(HarvestRequest *req, SoupMessage *msg)
 	const GType body_type			  = harvest_response_metadata_get_body_type(metadata);
 	const HttpStatusCode expected	  = harvest_response_metadata_get_expected_status(metadata);
 
-	GValue val = G_VALUE_INIT;
-	g_value_init(&val, body_type);
-	GObject *data = NULL;
-	GError *err	  = NULL;
+	GValue val	= G_VALUE_INIT;
+	GError *err = NULL;
 
 	if (msg->status_code != expected) {
-		char *message = g_strdup_printf(
+		g_set_error(&err, HARVEST_API_CLIENT_ERROR, HARVEST_API_CLIENT_ERROR_UNEXPECTED_STATUS,
 			"unexpected status code of %u, expected %u", expected, msg->status_code);
-		// TODO: need an actual error code...
-		g_set_error_literal(&err, harvest_api_client_quark(), 0, message);
 	}
 
-	/**
-	 * This is extemely naiive. It assumes that all bodies serialize to GObjects from JSON when we
-	 * know that is not true. Returning raw strings and integers are valid JSON for instance.
-	 * Although this is fine for this project, reusing the same code will need tweaking to handle
-	 * all API cases mentioned in documentation.
-	 *
-	 * This could be easily remedied by a switch statement and do something different for simple
-	 * types.
-	 */
 	if (err == NULL && body_type != G_TYPE_NONE) {
-		g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
-		g_autoptr(GBytes) bytes	  = soup_buffer_get_as_bytes(buf);
+		/*
+		 * This probably looks absolutely stupid to the naked eye, but goto cannot be used
+		 * effectively here due to the location in which the response object is created, and not
+		 * wanting to repeat its creation at every error branch. With this do/while, we can use
+		 * break to provide effective control flow on error.
+		 */
+		do {
+			g_autoptr(SoupBuffer) buf = soup_message_body_flatten(msg->response_body);
+			g_autoptr(GBytes) bytes	  = soup_buffer_get_as_bytes(buf);
 
-		gsize size				= 0;
-		gconstpointer body_data = g_bytes_get_data(bytes, &size);
-		data					= json_gobject_from_data(body_type, body_data, size, &err);
-		g_value_set_object(&val, data);
+			gsize size				= 0;
+			gconstpointer body_data = g_bytes_get_data(bytes, &size);
+
+			g_autoptr(JsonNode) node = json_from_string(body_data, &err);
+			if (err != NULL) {
+				break;
+			}
+
+			if (json_node_is_null(node)) {
+				break;
+			}
+
+			g_value_init(&val, body_type);
+
+			switch (body_type) {
+			case G_TYPE_INT:
+			case G_TYPE_INT64:
+				g_value_set_int64(&val, json_node_get_int(node));
+				break;
+			case G_TYPE_FLOAT:
+			case G_TYPE_DOUBLE:
+				g_value_set_double(&val, json_node_get_double(node));
+				break;
+			case G_TYPE_STRING:
+				g_value_set_string(&val, json_node_dup_string(node));
+				break;
+			case G_TYPE_BOOLEAN:
+				g_value_set_boolean(&val, json_node_get_boolean(node));
+				break;
+			default:
+				// Handle non-static GTypes
+				if (body_type == JSON_TYPE_NODE) {
+					g_value_set_object(&val, node);
+				} else if (body_type == JSON_TYPE_ARRAY) {
+					g_value_set_object(&val, json_node_dup_array(node));
+				} else if (body_type == JSON_TYPE_OBJECT) {
+					g_value_set_object(&val, json_node_dup_object(node));
+				} else {
+					GObject *data = json_gobject_deserialize(body_type, node);
+					if (data == NULL) {
+						g_set_error_literal(&err, HARVEST_API_CLIENT_ERROR,
+							HARVEST_API_CLIENT_ERROR_UNABLE_TO_DESERIALIZE_OBJECT,
+							"create_response: unable to deserialize response body into a GObject");
+
+						break;
+					}
+
+					g_value_set_object(&val, data);
+				}
+			}
+		} while (FALSE);
+	}
+
+	if (err != NULL) {
+		g_value_unset(&val);
 	}
 
 	HarvestResponse *res = harvest_response_new(&val, msg->status_code, err);
@@ -279,3 +324,5 @@ harvest_api_client_execute_request_async(HarvestRequest *req)
 
 	soup_session_queue_message(API_CLIENT->session, msg, harvest_api_client_async_callback, req);
 }
+
+G_DEFINE_QUARK(harvest_api_client_error, harvest_api_client_error)

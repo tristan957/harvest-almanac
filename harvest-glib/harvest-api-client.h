@@ -15,6 +15,14 @@ G_BEGIN_DECLS
 #define HARVEST_TYPE_API_CLIENT (harvest_api_client_get_type())
 G_DECLARE_FINAL_TYPE(HarvestApiClient, harvest_api_client, HARVEST, API_CLIENT, GObject)
 
+#define HARVEST_API_CLIENT_ERROR (harvest_api_client_error_quark())
+GQuark harvest_api_client_error_quark(void);
+typedef enum
+{
+	HARVEST_API_CLIENT_ERROR_UNEXPECTED_STATUS,
+	HARVEST_API_CLIENT_ERROR_UNABLE_TO_DESERIALIZE_OBJECT,
+} HarevestApiClientError;
+
 void harvest_api_client_initialize(
 	SoupSession *session, const char *access_token, const char *account_id);
 void harvest_api_client_free(void);
