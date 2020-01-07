@@ -3,7 +3,6 @@
 #define G_LOG_DOMAIN "HarvestUsersMeRequest"
 
 #include <glib-object.h>
-#include <glib/gi18n-lib.h>
 
 #include "harvest-http.h"
 #include "harvest-request.h"

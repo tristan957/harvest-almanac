@@ -12,6 +12,6 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(
 	HarvestUsersMeRequest, harvest_users_me_request, HARVEST, HarvestUsersMe, GObject)
 
-HarvestUsersMeRequest *harvest_users_me_request_new() G_GNUC_WARN_UNUSED_RESULT;
+HarvestUsersMeRequest *harvest_users_me_request_new(void) G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
