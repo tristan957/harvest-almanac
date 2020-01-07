@@ -6,6 +6,7 @@
 #include <glib/gi18n-lib.h>
 #include <json-glib/json-glib.h>
 
+#include "harvest-enum-types.h"
 #include "harvest-http.h"
 #include "harvest-request.h"
 #include "harvest-response-metadata.h"
@@ -68,7 +69,7 @@ harvest_request_get_property(GObject *obj, guint prop_id, GValue *val, GParamSpe
 
 	switch (prop_id) {
 	case PROP_HTTP_METHOD:
-		g_value_set_int(val, priv->http_method);
+		g_value_set_enum(val, (gint) priv->http_method);
 		break;
 	case PROP_ENDPOINT:
 		g_value_set_string(val, priv->endpoint);
@@ -95,7 +96,7 @@ harvest_request_set_property(GObject *obj, guint prop_id, const GValue *val, GPa
 
 	switch (prop_id) {
 	case PROP_HTTP_METHOD:
-		priv->http_method = g_value_get_int(val);
+		priv->http_method = (HttpMethod) g_value_get_enum(val);
 		break;
 	case PROP_ENDPOINT:
 		g_free(priv->endpoint);
@@ -134,9 +135,9 @@ harvest_request_class_init(HarvestRequestClass *klass)
 	obj_signals[SIGNAL_COMPLETED] = g_signal_new("completed", G_TYPE_FROM_CLASS(klass),
 		G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, HARVEST_TYPE_RESPONSE);
 
-	obj_properties[PROP_HTTP_METHOD]  = g_param_spec_int("http-method", _("HTTP Method"),
-		 _("The HTTP method by which to send the request."), HTTP_METHOD_GET, HTTP_METHOD_DELETE,
-		 HTTP_METHOD_GET, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_HTTP_METHOD]  = g_param_spec_enum("http-method", _("HTTP Method"),
+		 _("The HTTP method by which to send the request."), HTTP_TYPE_METHOD, HTTP_METHOD_GET,
+		 G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ENDPOINT]	  = g_param_spec_string("endpoint", _("Endpoint"),
 		_("The server endpoint to send the request to."), NULL,
 		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);

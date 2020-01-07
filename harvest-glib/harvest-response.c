@@ -5,6 +5,7 @@
 #include <glib-object.h>
 #include <glib/gi18n-lib.h>
 
+#include "harvest-enum-types.h"
 #include "harvest-http.h"
 #include "harvest-response.h"
 
@@ -47,7 +48,7 @@ harvest_response_get_property(GObject *obj, guint prop_id, GValue *val, GParamSp
 		g_value_set_boxed(val, self->err);
 		break;
 	case PROP_STATUS_CODE:
-		g_value_set_int(val, self->status_code);
+		g_value_set_enum(val, (gint) self->status_code);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -71,7 +72,7 @@ harvest_response_set_property(GObject *obj, guint prop_id, const GValue *val, GP
 		self->err = g_value_dup_boxed(val);
 		break;
 	case PROP_STATUS_CODE:
-		self->status_code = g_value_get_int(val);
+		self->status_code = (HttpStatusCode) g_value_get_enum(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -92,9 +93,8 @@ harvest_response_class_init(HarvestResponseClass *klass)
 	obj_properties[PROP_ERROR]
 		= g_param_spec_boxed("error", _("Error"), _("Why the request errored out."), G_TYPE_ERROR,
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_STATUS_CODE] = g_param_spec_int("status-code", _("Status Code"),
-		_("Status code the response came back with"), HTTP_STATUS_OK,
-		HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK,
+	obj_properties[PROP_STATUS_CODE] = g_param_spec_enum("status-code", _("Status Code"),
+		_("Status code the response came back with."), HTTP_TYPE_STATUS_CODE, HTTP_STATUS_OK,
 		G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);

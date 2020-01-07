@@ -5,6 +5,7 @@
 #include <glib-object.h>
 #include <glib/gi18n-lib.h>
 
+#include "harvest-enum-types.h"
 #include "harvest-http.h"
 #include "harvest-response-metadata.h"
 
@@ -35,10 +36,10 @@ harvest_response_metadata_get_property(GObject *obj, guint prop_id, GValue *val,
 
 	switch (prop_id) {
 	case PROP_EXPECTED_STATUS:
-		g_value_set_int(val, self->expected_status);
+		g_value_set_enum(val, (gint) self->expected_status);
 		break;
 	case PROP_BODY_TYPE:
-		g_value_set_uint64(val, self->body_type);
+		g_value_set_gtype(val, self->body_type);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -53,10 +54,10 @@ harvest_response_metadata_set_property(
 
 	switch (prop_id) {
 	case PROP_EXPECTED_STATUS:
-		self->expected_status = g_value_get_int(val);
+		self->expected_status = (HttpStatusCode) g_value_get_enum(val);
 		break;
 	case PROP_BODY_TYPE:
-		self->body_type = g_value_get_uint64(val);
+		self->body_type = g_value_get_gtype(val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -71,13 +72,13 @@ harvest_response_metadata_class_init(HarvestResponseMetadataClass *klass)
 	obj_class->get_property = harvest_response_metadata_get_property;
 	obj_class->set_property = harvest_response_metadata_set_property;
 
-	obj_properties[PROP_EXPECTED_STATUS] = g_param_spec_int("expected-status", _("Expected Status"),
-		_("The expected status code the response should come back with."), HTTP_STATUS_OK,
-		HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK,
+	obj_properties[PROP_EXPECTED_STATUS] = g_param_spec_enum("expected-status",
+		_("Expected Status"), _("The expected status code the response should come back with."),
+		HTTP_TYPE_STATUS_CODE, HTTP_STATUS_OK,
 		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_BODY_TYPE]		 = g_param_spec_uint64("body-type", _("Body Type"),
-		  _("The GType of the response body."), G_TYPE_NONE, __UINT64_MAX__, G_TYPE_NONE,
-		  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_BODY_TYPE]
+		= g_param_spec_gtype("body-type", _("Body Type"), _("The GType of the response body."),
+			G_TYPE_NONE, G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
@@ -87,7 +88,7 @@ harvest_response_metadata_init(G_GNUC_UNUSED HarvestResponseMetadata *self)
 {}
 
 HarvestResponseMetadata *
-harvest_response_metadata_new(const GType body_type, const HttpStatusCode expected_status)
+harvest_response_metadata_new(GType body_type, HttpStatusCode expected_status)
 {
 	return g_object_new(HARVEST_TYPE_RESPONSE_METADATA, "body-type", body_type, "expected-status",
 		expected_status, NULL);
