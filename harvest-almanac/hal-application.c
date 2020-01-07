@@ -39,13 +39,25 @@ typedef struct HalApplicationPrivate
 G_DEFINE_TYPE_WITH_PRIVATE(HalApplication, hal_application, GTK_TYPE_APPLICATION)
 
 static void
-validate_user(
-	G_GNUC_UNUSED HarvestRequest *req, G_GNUC_UNUSED HarvestResponse *res, gpointer user_data)
+set_company(
+	G_GNUC_UNUSED HarvestRequest *req, HarvestResponse *res, G_GNUC_UNUSED gpointer user_data)
+{
+	if (res->err == NULL) {
+		HarvestCompany *company = HARVEST_COMPANY(g_value_get_object(res->body));
+		hal_context_set_company(company);
+	} else {
+		g_critical("set_company: %s", res->err->message);
+	}
+}
+
+static void
+validate_user(G_GNUC_UNUSED HarvestRequest *req, HarvestResponse *res, gpointer user_data)
 {
 	HalApplication *self		= HAL_APPLICATION(user_data);
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
 	if (res->err == NULL) {
+		harvest_company_get_company_async(set_company, self);
 		hal_context_set_user(g_value_get_object(res->body));
 		hal_window_show_content(priv->main_window);
 	} else {

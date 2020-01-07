@@ -29,6 +29,7 @@ typedef struct HalWindowPrivate
 	GtkStack *stack;
 	GtkButton *back_button;
 	GtkLabel *username;
+	GtkLabel *company;
 	HalTimeTracker *time_tracker;
 	HalProfile *profile;
 } HalWindowPrivate;
@@ -41,11 +42,24 @@ on_context_notify_user(
 {
 	HalWindow *self		   = HAL_WINDOW(user_data);
 	HalWindowPrivate *priv = hal_window_get_instance_private(self);
-	HarvestUser *user	   = hal_context_get_user(CONTEXT);
+	HarvestUser *user	   = hal_context_get_user();
 
 	if (user != NULL) {
 		gtk_label_set_text(priv->username, g_strconcat(harvest_user_get_first_name(user), " ",
 											   harvest_user_get_last_name(user), NULL));
+	}
+}
+
+static void
+on_contect_notify_computer(
+	G_GNUC_UNUSED GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
+{
+	HalWindow *self			= HAL_WINDOW(user_data);
+	HalWindowPrivate *priv	= hal_window_get_instance_private(self);
+	HarvestCompany *company = hal_context_get_company();
+
+	if (company != NULL) {
+		gtk_label_set_text(priv->company, harvest_company_get_name(company));
 	}
 }
 
@@ -153,6 +167,7 @@ hal_window_class_init(HalWindowClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, back_button);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, username);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, company);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_fold_cb);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_visible_child_cb);
 	gtk_widget_class_bind_template_callback(wid_class, stack_notify_visible_child_cb);
@@ -177,6 +192,7 @@ hal_window_init(HalWindow *self)
 	hdy_leaflet_set_visible_child_name(priv->content_leaflet, "content");
 
 	g_signal_connect(CONTEXT, "notify::user", G_CALLBACK(on_context_notify_user), self);
+	g_signal_connect(CONTEXT, "notify::company", G_CALLBACK(on_contect_notify_computer), self);
 }
 
 HalWindow *
