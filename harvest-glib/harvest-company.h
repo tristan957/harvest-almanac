@@ -6,6 +6,9 @@
 
 #include <glib-object.h>
 
+#include "harvest-api-client.h"
+#include "harvest-response.h"
+
 G_BEGIN_DECLS
 
 #define HARVEST_TYPE_COMPANY (harvest_company_get_type())
@@ -29,6 +32,7 @@ typedef enum
 	HARVEST_PLAN_TYPE_TRIAL,
 	HARVEST_PLAN_TYPE_FREE,
 	HARVEST_PLAN_TYPE_SIMPLE_V4,
+	HARVEST_PLAN_TYPE_BUSINESS,
 } HarvestPlanType;
 
 typedef enum
@@ -39,5 +43,8 @@ typedef enum
 
 const char *harvest_company_get_full_domain(HarvestCompany *self);
 const char *harvest_company_get_name(HarvestCompany *self);
+
+HarvestResponse *harvest_company_get_company(void) G_GNUC_WARN_UNUSED_RESULT;
+void harvest_company_get_company_async(HarvestCompletedCallback *callback, gpointer user_data);
 
 G_END_DECLS

@@ -19,6 +19,7 @@ harvest_glib_sources = [
     'harvest-estimate.c',
     'harvest-estimate-item-category.c',
     'harvest-estimate-line-item.c',
+    'harvest-get-company-request.c',
     'harvest-invoice.c',
     'harvest-invoice-item-category.c',
     'harvest-invoice-line-item.c',
@@ -38,6 +39,17 @@ harvest_glib_sources = [
     'harvest-users-me-request.c'
 ]
 
+enums = gnome.mkenums_simple(
+    'harvest-enum-types',
+    sources: [
+        'harvest-company.h',
+        'harvest-estimate.h',
+        'harvest-http.h',
+        'harvest-invoice.h',
+    ],
+    install_header: true,
+)
+
 harvest_glib_public_headers = [
     'harvest.h',
     'harvest-api-client.h',
@@ -48,6 +60,7 @@ harvest_glib_public_headers = [
     'harvest-estimate.h',
     'harvest-estimate-item-category.h',
     'harvest-estimate-line-item.h',
+    'harvest-get-company-request.h',
     'harvest-http.h',
     'harvest-invoice.h',
     'harvest-invoice-item-category.h',
@@ -67,16 +80,6 @@ harvest_glib_public_headers = [
     'harvest-user-assignment.h',
     'harvest-users-me-request.h',
 ]
-
-enums = gnome.mkenums_simple(
-    'harvest-enum-types',
-    sources: [
-        'harvest-company.h',
-        'harvest-estimate.h',
-        'harvest-http.h',
-        'harvest-invoice.h',
-    ]
-)
 
 install_headers(harvest_glib_public_headers, subdir: 'harvest-glib')
 
@@ -118,7 +121,7 @@ harvest_glib_dep = declare_dependency(
     version: harvest_glib_version
 )
 
-if get_option('tests')
+if get_option('with-tests')
     subdir('tests')
 endif
 
