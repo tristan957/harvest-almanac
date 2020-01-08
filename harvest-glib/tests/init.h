@@ -7,7 +7,7 @@
 
 #include "harvest.h"
 
-void
+HarvestApiClient *
 initialize_environment(void)
 {
 	char **env				  = g_get_environ();
@@ -25,5 +25,5 @@ initialize_environment(void)
 		max_connections, SOUP_SESSION_USER_AGENT, user_agent, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
 		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
 
-	harvest_api_client_initialize(session, access_token, account_id);
+	return harvest_api_client_new(session, access_token, account_id);
 }

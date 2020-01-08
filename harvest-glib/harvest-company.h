@@ -44,7 +44,8 @@ typedef enum
 const char *harvest_company_get_full_domain(HarvestCompany *self);
 const char *harvest_company_get_name(HarvestCompany *self);
 
-HarvestResponse *harvest_company_get_company(void) G_GNUC_WARN_UNUSED_RESULT;
-void harvest_company_get_company_async(HarvestCompletedCallback *callback, gpointer user_data);
+HarvestResponse *harvest_company_get_company(HarvestApiClient *client) G_GNUC_WARN_UNUSED_RESULT;
+void harvest_company_get_company_async(
+	HarvestApiClient *client, HarvestCompletedCallback *callback, gpointer user_data);
 
 G_END_DECLS

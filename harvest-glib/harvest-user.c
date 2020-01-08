@@ -10,6 +10,7 @@
 #include <json-glib/json-glib.h>
 
 #include "harvest-api-client.h"
+#include "harvest-response.h"
 #include "harvest-user.h"
 #include "harvest-users-me-request.h"
 
@@ -98,10 +99,18 @@ harvest_user_json_deserialize_property(JsonSerializable *serializable, const gch
 		serializable, prop_name, val, pspec, prop_node);
 }
 
+static JsonNode *
+harvest_user_json_serialize_property(
+	JsonSerializable *serializable, const gchar *prop_name, const GValue *val, GParamSpec *pspec)
+{
+	return json_serializable_default_serialize_property(serializable, prop_name, val, pspec);
+}
+
 static void
 harvest_user_json_serializable_init(JsonSerializableIface *iface)
 {
 	iface->deserialize_property = harvest_user_json_deserialize_property;
+	iface->serialize_property	= harvest_user_json_serialize_property;
 }
 
 static void
@@ -387,20 +396,26 @@ harvest_user_init(G_GNUC_UNUSED HarvestUser *self)
 {}
 
 HarvestResponse *
-harvest_user_get_me()
-{
-	HarvestUsersMeRequest *request = harvest_users_me_request_new();
+harvest_user_get_me(HarvestApiClient *client)
 
-	return harvest_api_client_execute_request_sync(HARVEST_REQUEST(request));
+{
+	g_return_val_if_fail(HARVEST_IS_API_CLIENT(client), NULL);
+
+	g_autoptr(HarvestUsersMeRequest) request = harvest_users_me_request_new();
+
+	return harvest_api_client_execute_request_sync(client, HARVEST_REQUEST(request));
 }
 
 void
-harvest_user_get_me_async(HarvestCompletedCallback *callback, gpointer user_data)
+harvest_user_get_me_async(
+	HarvestApiClient *client, HarvestCompletedCallback *callback, gpointer user_data)
 {
+	g_return_if_fail(HARVEST_IS_API_CLIENT(client));
+
 	HarvestUsersMeRequest *request = harvest_users_me_request_new();
 	g_signal_connect(HARVEST_REQUEST(request), "completed", G_CALLBACK(callback), user_data);
 
-	harvest_api_client_execute_request_async(HARVEST_REQUEST(request));
+	harvest_api_client_execute_request_async(client, HARVEST_REQUEST(request));
 }
 
 const char *

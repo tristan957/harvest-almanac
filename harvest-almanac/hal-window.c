@@ -28,8 +28,9 @@ typedef struct HalWindowPrivate
 	GtkStackSidebar *stack_sidebar;
 	GtkStack *stack;
 	GtkButton *back_button;
-	GtkLabel *username;
-	GtkLabel *company;
+	GtkStack *user_status_stack;
+	GtkLabel *user_name_label;
+	GtkLabel *company_label;
 	HalTimeTracker *time_tracker;
 	HalProfile *profile;
 } HalWindowPrivate;
@@ -45,8 +46,9 @@ on_context_notify_user(
 	HarvestUser *user	   = hal_context_get_user();
 
 	if (user != NULL) {
-		gtk_label_set_text(priv->username, g_strconcat(harvest_user_get_first_name(user), " ",
-											   harvest_user_get_last_name(user), NULL));
+		gtk_label_set_text(priv->user_name_label, g_strconcat(harvest_user_get_first_name(user),
+													  " ", harvest_user_get_last_name(user), NULL));
+		gtk_stack_set_visible_child_name(priv->user_status_stack, "logged-in");
 	}
 }
 
@@ -59,7 +61,7 @@ on_contect_notify_computer(
 	HarvestCompany *company = hal_context_get_company();
 
 	if (company != NULL) {
-		gtk_label_set_text(priv->company, harvest_company_get_name(company));
+		gtk_label_set_text(priv->company_label, harvest_company_get_name(company));
 	}
 }
 
@@ -166,8 +168,9 @@ hal_window_class_init(HalWindowClass *klass)
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack_sidebar);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, stack);
 	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, back_button);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, username);
-	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, company);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, user_status_stack);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, user_name_label);
+	gtk_widget_class_bind_template_child_private(wid_class, HalWindow, company_label);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_fold_cb);
 	gtk_widget_class_bind_template_callback(wid_class, header_leaflet_notify_visible_child_cb);
 	gtk_widget_class_bind_template_callback(wid_class, stack_notify_visible_child_cb);

@@ -23,10 +23,10 @@ typedef enum
 	HARVEST_API_CLIENT_ERROR_UNABLE_TO_DESERIALIZE_OBJECT,
 } HarevestApiClientError;
 
-void harvest_api_client_initialize(
-	SoupSession *session, const char *access_token, const char *account_id);
-void harvest_api_client_free(void);
-HarvestResponse *harvest_api_client_execute_request_sync(HarvestRequest *req);
-void harvest_api_client_execute_request_async(HarvestRequest *req);
+HarvestApiClient *harvest_api_client_new(SoupSession *session, const char *access_token,
+	const char *account_id) G_GNUC_WARN_UNUSED_RESULT;
+HarvestResponse *harvest_api_client_execute_request_sync(
+	HarvestApiClient *self, HarvestRequest *req);
+void harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest *req);
 
 G_END_DECLS

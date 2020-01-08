@@ -23,7 +23,7 @@
       <headerbar name="sub_header_bar" />
     </headerbars>
   </object>
-  <object class="GtkPopoverMenu" id="actions_popover">
+  <object class="GtkPopoverMenu" id="user_actions_popover">
     <property name="can_focus">False</property>
     <child>
       <object class="GtkBox">
@@ -34,13 +34,14 @@
         <property name="margin_top">3</property>
         <property name="margin_bottom">3</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">3</property>
         <child>
           <object class="GtkModelButton">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">app.preferences</property>
-            <property name="text" translatable="yes">Preferences</property>
+            <property name="action_name">win.show-details</property>
+            <property name="text" translatable="yes">Details</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -64,8 +65,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">app.about</property>
-            <property name="text" translatable="yes">About</property>
+            <property name="action_name">app.logout</property>
+            <property name="text" translatable="yes">Logout</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -76,7 +77,6 @@
       </object>
       <packing>
         <property name="submenu">main</property>
-        <property name="position">1</property>
       </packing>
     </child>
   </object>
@@ -161,7 +161,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="focus_on_click">False</property>
-                    <property name="popover">actions_popover</property>
+                    <property name="popover">user_actions_popover</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
@@ -243,103 +243,107 @@
             <property name="orientation">vertical</property>
             <property name="hexpand">False</property>
             <child>
-              <object class="GtkBox">
+              <object class="GtkStack" id="user_status_stack">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="vexpand">False</property>
+                <property name="transition_type">crossfade</property>
                 <property name="margin_left">15</property>
                 <property name="margin_right">15</property>
                 <property name="margin_top">15</property>
                 <property name="margin_bottom">15</property>
-                <property name="spacing">15</property>
                 <child>
-                  <object class="GtkImage">
+                  <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="pixel_size">40</property>
-                    <property name="icon_name">user-info-symbolic</property>
+                    <property name="label" translatable="yes">Logged Out</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="name">logged-out</property>
+                    <property name="title" translatable="yes">Logged Out</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <property name="spacing">3</property>
-                    <child>
-                      <object class="GtkLabel" id="username">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="valign">end</property>
-                        <property name="vexpand">True</property>
-                        <property name="label" translatable="yes"></property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="company">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="valign">start</property>
-                        <property name="vexpand">True</property>
-                        <property name="label" translatable="yes"></property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkMenuButton">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="valign">center</property>
-                    <property name="popover">account_popover</property>
+                    <property name="row_spacing">5</property>
+                    <property name="column_spacing">15</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="icon_name">view-more-symbolic</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="pixel_size">40</property>
+                        <property name="icon_name">user-info-symbolic</property>
+                        <property name="icon_size">2</property>
                       </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                        <property name="height">2</property>
+                      </packing>
                     </child>
-                    <style>
-                      <class name="flat" />
-                    </style>
+                    <child>
+                      <object class="GtkLabel" id="user_name_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Tristan Partin</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">1</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="company_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Expero</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkMenuButton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">end</property>
+                        <property name="valign">center</property>
+                        <property name="hexpand">True</property>
+                        <property name="popover">user_actions_popover</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="icon_name">view-more-symbolic</property>
+                          </object>
+                        </child>
+                        <style>
+                          <class name="flat" />
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">0</property>
+                        <property name="height">2</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="pack_type">end</property>
-                    <property name="position">2</property>
+                    <property name="name">logged-in</property>
+                    <property name="title" translatable="yes">Logged In</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkSeparator">

@@ -15,8 +15,9 @@ G_BEGIN_DECLS
 #define HARVEST_TYPE_USER (harvest_user_get_type())
 G_DECLARE_FINAL_TYPE(HarvestUser, harvest_user, HARVEST, USER, GObject)
 
-HarvestResponse *harvest_user_get_me();
-void harvest_user_get_me_async(HarvestCompletedCallback *callback, gpointer user_data);
+HarvestResponse *harvest_user_get_me(HarvestApiClient *client) G_GNUC_WARN_UNUSED_RESULT;
+void harvest_user_get_me_async(
+	HarvestApiClient *client, HarvestCompletedCallback *callback, gpointer user_data);
 const char *harvest_user_get_first_name(HarvestUser *user);
 const char *harvest_user_get_last_name(HarvestUser *user);
 

@@ -23,6 +23,8 @@ extern HalContext *CONTEXT;
 extern HarvestApiClient *API_CLIENT;
 extern HalTimeEntry *CURRENTLY_RUNNING_TIME_ENTRY;
 
+static HarvestApiClient *CLIENT;
+
 struct _HalApplication
 {
 	GtkApplication parent_instance;
@@ -57,7 +59,7 @@ validate_user(G_GNUC_UNUSED HarvestRequest *req, HarvestResponse *res, gpointer 
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
 	if (res->err == NULL) {
-		harvest_company_get_company_async(set_company, self);
+		harvest_company_get_company_async(CLIENT, set_company, self);
 		hal_context_set_user(g_value_get_object(res->body));
 		hal_window_show_content(priv->main_window);
 	} else {
@@ -86,9 +88,12 @@ construct_client(HalApplication *self, const char *access_token, const char *acc
 		max_connections, SOUP_SESSION_USER_AGENT, user_agent, SOUP_SESSION_ADD_FEATURE_BY_TYPE,
 		SOUP_TYPE_CONTENT_SNIFFER, SOUP_SESSION_ADD_FEATURE, SOUP_SESSION_FEATURE(logger), NULL);
 
-	harvest_api_client_initialize(session, access_token, account_id);
+	if (CLIENT != NULL)
+		g_object_unref(CLIENT);
 
-	harvest_user_get_me_async(validate_user, self);
+	CLIENT = harvest_api_client_new(session, access_token, account_id);
+
+	harvest_user_get_me_async(CLIENT, validate_user, self);
 }
 
 static void
@@ -205,7 +210,7 @@ hal_application_finalize(GObject *obj)
 {
 	HalApplication *self = HAL_APPLICATION(obj);
 
-	harvest_api_client_free();
+	g_clear_object(&CLIENT);
 	g_clear_object(&self->settings);
 	g_clear_object(&CONTEXT);
 

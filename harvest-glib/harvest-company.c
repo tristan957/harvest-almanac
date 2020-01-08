@@ -372,18 +372,21 @@ harvest_company_get_name(HarvestCompany *self)
 }
 
 HarvestResponse *
-harvest_company_get_company()
+harvest_company_get_company(HarvestApiClient *client)
 {
+	g_return_val_if_fail(HARVEST_IS_API_CLIENT(client), NULL);
+
 	g_autoptr(HarvestGetCompanyRequest) request = harvest_get_company_request_new();
 
-	return harvest_api_client_execute_request_sync(HARVEST_REQUEST(request));
+	return harvest_api_client_execute_request_sync(client, HARVEST_REQUEST(request));
 }
 
 void
-harvest_company_get_company_async(HarvestCompletedCallback *callback, gpointer user_data)
+harvest_company_get_company_async(
+	HarvestApiClient *client, HarvestCompletedCallback *callback, gpointer user_data)
 {
 	HarvestGetCompanyRequest *request = harvest_get_company_request_new();
 	g_signal_connect(HARVEST_REQUEST(request), "completed", G_CALLBACK(callback), user_data);
 
-	harvest_api_client_execute_request_async(HARVEST_REQUEST(request));
+	harvest_api_client_execute_request_async(client, HARVEST_REQUEST(request));
 }

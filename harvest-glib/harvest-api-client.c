@@ -18,8 +18,6 @@
 
 #define HARVEST_API_URL "https://api.harvestapp.com/v2"
 
-static HarvestApiClient *API_CLIENT;
-
 struct _HarvestApiClient
 {
 	GObject parent_instance;
@@ -75,8 +73,10 @@ harvest_api_client_set_property(GObject *obj, guint prop_id, const GValue *val, 
 
 	switch (prop_id) {
 	case PROP_SESSION:
-		if (self->session != NULL)
+		if (self->session != NULL) {
+			soup_session_abort(self->session);
 			g_object_unref(self->session);
+		}
 		self->session = g_value_dup_object(val);
 		break;
 	case PROP_SERVER:
@@ -102,6 +102,10 @@ harvest_api_client_finalize(GObject *obj)
 {
 	HarvestApiClient *self = HARVEST_API_CLIENT(obj);
 
+	if (self->session != NULL) {
+		soup_session_abort(self->session);
+		g_object_unref(self->session);
+	}
 	g_free(self->server);
 	g_free(self->access_token);
 	g_free(self->account_id);
@@ -138,24 +142,14 @@ static void
 harvest_api_client_init(G_GNUC_UNUSED HarvestApiClient *self)
 {}
 
-void
-harvest_api_client_initialize(
-	SoupSession *session, const char *access_token, const char *account_id)
+HarvestApiClient *
+harvest_api_client_new(SoupSession *session, const char *access_token, const char *account_id)
 {
-	g_return_if_fail(SOUP_IS_SESSION(session) && access_token != NULL && account_id != NULL);
+	g_return_val_if_fail(
+		SOUP_IS_SESSION(session) && access_token != NULL && account_id != NULL, NULL);
 
-	if (API_CLIENT != NULL)
-		g_object_unref(API_CLIENT);
-
-	API_CLIENT = g_object_new(HARVEST_TYPE_API_CLIENT, "session", session, "server",
-		HARVEST_API_URL, "access-token", access_token, "account-id", account_id, NULL);
-}
-
-void
-harvest_api_client_free()
-{
-	if (API_CLIENT != NULL)
-		g_object_unref(API_CLIENT);
+	return g_object_new(HARVEST_TYPE_API_CLIENT, "session", session, "server", HARVEST_API_URL,
+		"access-token", access_token, "account-id", account_id, NULL);
 }
 
 static void
@@ -178,7 +172,8 @@ create_response(HarvestRequest *req, SoupMessage *msg)
 
 	if (msg->status_code != expected) {
 		g_set_error(&err, HARVEST_API_CLIENT_ERROR, HARVEST_API_CLIENT_ERROR_UNEXPECTED_STATUS,
-			"unexpected status code of %u, expected %u", expected, msg->status_code);
+			"create_response: unexpected status code of %u, expected %u", expected,
+			msg->status_code);
 	}
 
 	if (err == NULL && body_type != G_TYPE_NONE) {
@@ -266,11 +261,10 @@ harvest_api_client_async_callback(
 }
 
 static SoupMessage *
-create_message(HarvestRequest *req)
+create_message(HarvestApiClient *self, HarvestRequest *req)
 {
-	SoupMessage *msg = NULL;
-	g_autofree char *uri
-		= g_strdup_printf("%s%s", API_CLIENT->server, harvest_request_get_endpoint(req));
+	SoupMessage *msg	 = NULL;
+	g_autofree char *uri = g_strdup_printf("%s%s", self->server, harvest_request_get_endpoint(req));
 	gboolean response_has_body = harvest_request_get_data(req) != NULL;
 	char *body				   = NULL;
 	gsize len				   = 0;
@@ -296,19 +290,19 @@ create_message(HarvestRequest *req)
 		g_return_val_if_reached(NULL);
 	}
 
-	soup_message_headers_append(msg->request_headers, "Authorization", API_CLIENT->access_token);
-	soup_message_headers_append(msg->request_headers, "Harvest-Account-Id", API_CLIENT->account_id);
+	soup_message_headers_append(msg->request_headers, "Authorization", self->access_token);
+	soup_message_headers_append(msg->request_headers, "Harvest-Account-Id", self->account_id);
 
 	return msg;
 }
 
 HarvestResponse *
-harvest_api_client_execute_request_sync(HarvestRequest *req)
+harvest_api_client_execute_request_sync(HarvestApiClient *self, HarvestRequest *req)
 {
 	g_return_val_if_fail(HARVEST_IS_REQUEST(req), NULL);
 
-	g_autoptr(SoupMessage) msg = create_message(req);
-	soup_session_send_message(API_CLIENT->session, msg);
+	g_autoptr(SoupMessage) msg = create_message(self, req);
+	soup_session_send_message(self->session, msg);
 	HarvestResponse *res = create_response(req, msg);
 	g_signal_emit_by_name(req, "completed", res);
 
@@ -316,13 +310,13 @@ harvest_api_client_execute_request_sync(HarvestRequest *req)
 }
 
 void
-harvest_api_client_execute_request_async(HarvestRequest *req)
+harvest_api_client_execute_request_async(HarvestApiClient *self, HarvestRequest *req)
 {
 	g_return_if_fail(HARVEST_IS_REQUEST(req));
 
-	SoupMessage *msg = create_message(req);
+	SoupMessage *msg = create_message(self, req);
 
-	soup_session_queue_message(API_CLIENT->session, msg, harvest_api_client_async_callback, req);
+	soup_session_queue_message(self->session, msg, harvest_api_client_async_callback, req);
 }
 
 G_DEFINE_QUARK(harvest_api_client_error, harvest_api_client_error)
