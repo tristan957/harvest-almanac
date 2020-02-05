@@ -1,8 +1,10 @@
+#include "init.h"
+
 #include <glib.h>
 #include <libsoup/soup.h>
 
-#include "harvest-glib/harvest.h"
-#include "init.h"
+#include "harvest-glib/http/api/harvest-api-client.h"
+#include "harvest-glib/user/harvest-user.h"
 
 static HarvestApiClient *CLIENT;
 

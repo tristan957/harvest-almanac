@@ -23,7 +23,6 @@ foreach test_name, value : harvest_tests
 		test_name,
 		test_name + '.c',
 		dependencies: dependencies,
-		include_directories: include_directories('..'),
 		c_args: c_args,
 	)
 
