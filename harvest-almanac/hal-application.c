@@ -237,15 +237,15 @@ static const GActionEntry app_entries[] = {
 		.activate = hal_application_preferences
 	},
 	{
-		.name			= "time-entry-start",
-		.activate		= hal_application_time_entry_start
+		.name	  = "time-entry-start",
+		.activate = hal_application_time_entry_start
 	},
 	{
-		.name			= "time-entry-stop",
-		.activate		= hal_application_time_entry_stop
+		.name	  = "time-entry-stop",
+		.activate = hal_application_time_entry_stop
 	},
 	{
-		.name	  		= "reconstruct-client",
+		.name			= "reconstruct-client",
 		.activate 		= hal_application_reconstruct_client,
 		.parameter_type = "s"
 	}
