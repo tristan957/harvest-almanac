@@ -80,7 +80,7 @@
       </packing>
     </child>
   </object>
-  <object class="GtkPopoverMenu" id="account_popover">
+  <object class="GtkPopoverMenu" id="application_popover">
     <property name="can_focus">False</property>
     <child>
       <object class="GtkBox">
@@ -91,13 +91,14 @@
         <property name="margin_top">3</property>
         <property name="margin_bottom">3</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">3</property>
         <child>
           <object class="GtkModelButton">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">app.view-account-details</property>
-            <property name="text" translatable="yes">Details</property>
+            <property name="action_name">app.about</property>
+            <property name="text" translatable="yes">About</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -121,8 +122,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">app.logout</property>
-            <property name="text" translatable="yes">Logout</property>
+            <property name="action_name">app.preferences</property>
+            <property name="text" translatable="yes">Preferences</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -161,7 +162,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="focus_on_click">False</property>
-                    <property name="popover">user_actions_popover</property>
+                    <property name="popover">application_popover</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
