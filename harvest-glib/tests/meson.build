@@ -14,14 +14,14 @@ test_env.set('G_TEST_SRCDIR', meson.current_source_dir())
 test_env.set('G_TEST_BUILDDIR', meson.current_build_dir())
 
 c_args = [
-	'-D__HARVEST_COMPILATION__'
+	'-D__HARVEST_COMPILATION__',
+	'-DG_LOG_DOMAIN="harvest-glib-testing"',
 ]
 
 foreach test_name, value : harvest_tests
 	exe = executable(
 		test_name,
 		test_name + '.c',
-		enums,
 		dependencies: dependencies,
 		include_directories: include_directories('..'),
 		c_args: c_args,

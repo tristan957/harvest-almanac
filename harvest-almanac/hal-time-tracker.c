@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HalTimeTracker"
-
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
@@ -137,7 +135,7 @@ hal_time_tracker_set_property(
 static void
 hal_time_tracker_class_init(HalTimeTrackerClass *klass)
 {
-	GObjectClass *obj_class   = G_OBJECT_CLASS(klass);
+	GObjectClass *obj_class	  = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *wid_class = GTK_WIDGET_CLASS(klass);
 
 	obj_class->finalize		= hal_time_tracker_finalize;

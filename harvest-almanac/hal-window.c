@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HalWindow"
-
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <handy.h>

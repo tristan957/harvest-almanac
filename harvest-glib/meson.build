@@ -1,5 +1,7 @@
 harvest_glib_version = '1.0.0'
 
+harvest_glib_header_subdir = 'harvest-glib'
+
 harvest_glib_config_h = configuration_data({
     'gettext_package': 'harvest-glib',
 })
@@ -11,86 +13,43 @@ configure_file(
 )
 
 harvest_glib_sources = [
-    'harvest-api-client.c',
-    'harvest-client.c',
-    'harvest-common.c',
-    'harvest-company.c',
-    'harvest-creator.c',
-    'harvest-estimate.c',
-    'harvest-estimate-item-category.c',
-    'harvest-estimate-line-item.c',
-    'harvest-get-company-request.c',
-    'harvest-invoice.c',
-    'harvest-invoice-item-category.c',
-    'harvest-invoice-line-item.c',
-    'harvest-late-request.c',
-    'harvest-links.c',
-    'harvest-pageable.c',
-    'harvest-paged.c',
-    'harvest-project.c',
-    'harvest-request.c',
-    'harvest-response.c',
-    'harvest-response-metadata.c',
-    'harvest-task.c',
-    'harvest-task-assignment.c',
-    'harvest-time-entry.c',
-    'harvest-user.c',
-    'harvest-user-assignment.c',
-    'harvest-users-me-request.c'
+    'client/harvest-client.c',
+    'common/harvest-common.c',
+    'common/harvest-creator.c',
+    'company/harvest-company.c',
+    'company/requests/harvest-get-company-request.c',
+    'estimate/harvest-estimate-item-category.c',
+    'estimate/harvest-estimate-line-item.c',
+    'estimate/harvest-estimate.c',
+    'http/api/harvest-api-client.c',
+    'http/response/harvest-links.c',
+    'http/request/harvest-pageable.c',
+    'http/response/harvest-paged.c',
+    'http/request/harvest-request.c',
+    'http/response/harvest-response.c',
+    'http/response/harvest-response-metadata.c',
+    'invoice/harvest-invoice-item-category.c',
+    'invoice/harvest-invoice-line-item.c',
+    'invoice/harvest-invoice.c',
+    'project/harvest-project.c',
+    'project/harvest-user-assignment.c',
+    'task/harvest-task-assignment.c',
+    'task/harvest-task.c',
+    'time-entry/harvest-time-entry.c',
+    'time-entry/requests/harvest-late-request.c',
+    'user/harvest-user.c',
+    'user/requests/harvest-users-me-request.c'
 ]
-
-enums = gnome.mkenums_simple(
-    'harvest-enum-types',
-    sources: [
-        'harvest-company.h',
-        'harvest-estimate.h',
-        'harvest-http.h',
-        'harvest-invoice.h',
-    ],
-    install_header: true,
-    header_prefix:
-'''
-#if !defined(__HARVEST_HEADER_INTERNAL__) && !defined(__HARVEST_COMPILATION__)
-#	error "Only <harvest-glib/harvest.h> can be included directly."
-#endif
-''',
-)
 
 harvest_glib_public_headers = [
     'harvest.h',
-    'harvest-api-client.h',
-    'harvest-client.h',
-    'harvest-common.h',
-    'harvest-company.h',
-    'harvest-creator.h',
-    'harvest-estimate.h',
-    'harvest-estimate-item-category.h',
-    'harvest-estimate-line-item.h',
-    'harvest-get-company-request.h',
-    'harvest-http.h',
-    'harvest-invoice.h',
-    'harvest-invoice-item-category.h',
-    'harvest-invoice-line-item.h',
-    'harvest-late-request.h',
-    'harvest-links.h',
-    'harvest-pageable.h',
-    'harvest-paged.h',
-    'harvest-project.h',
-    'harvest-request.h',
-    'harvest-response.h',
-    'harvest-response-metadata.h',
-    'harvest-task.h',
-    'harvest-task-assignment.h',
-    'harvest-time-entry.h',
-    'harvest-user.h',
-    'harvest-user-assignment.h',
-    'harvest-users-me-request.h',
 ]
 
 install_headers(harvest_glib_public_headers, subdir: 'harvest-glib')
 
 harvest_glib_c_args = [
     '-D__HARVEST_COMPILATION__',
+    '-DG_LOG_DOMAIN="harvest-glib"',
 ]
 
 if get_option('buildtype') == 'release'
@@ -111,23 +70,48 @@ harvest_glib_dependencies = [
     libsoup_dep,
 ]
 
+subdir('client')
+subdir('common')
+subdir('company')
+subdir('estimate')
+subdir('http')
+subdir('invoice')
+subdir('project')
+subdir('task')
+subdir('time-entry')
+subdir('user')
+
 harvest_glib = library(
     'harvest-glib',
     harvest_glib_sources,
-    enums,
+    company_enums,
+    estimate_enums,
+    http_enums,
+    invoice_enums,
     version: harvest_glib_version,
     c_args: harvest_glib_c_args,
     dependencies: harvest_glib_dependencies,
+    # Dealing with gnome.mkenums_simple()...
+    include_directories: include_directories(
+        '..',
+        'company',
+        'estimate',
+        'http',
+        'invoice',
+    ),
     install: true,
 )
 
 harvest_glib_dep = declare_dependency(
-    include_directories: include_directories('..'),
+    compile_args: [
+        '-Iharvest-glib',
+    ],
     link_with: harvest_glib,
     version: harvest_glib_version,
+    include_directories: include_directories('..'),
 )
 
-if get_option('tests')
+if get_option('with-tests')
     subdir('tests')
 endif
 
@@ -137,9 +121,8 @@ pkg.generate(
 	filebase: 'harvest-glib-1.0',
 	name: 'harvest-glib',
 	version: harvest_glib_version,
-    requires_private: [
-        libgio_dep,
-        json_glib_dep,
+    requires: [
+        libsoup_dep,
     ],
 	url: 'https://git.sr.ht/~tristan957/harvest-almanac',
 )

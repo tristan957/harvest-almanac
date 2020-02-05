@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HarvestAlmanac"
-
 #include <locale.h>
 
 #include <glib-object.h>

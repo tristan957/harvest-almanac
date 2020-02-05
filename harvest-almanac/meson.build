@@ -30,7 +30,14 @@ harvest_almanac_sources = [
 
 harvest_almanac_c_args = [
     '-DHANDY_USE_UNSTABLE_API',
+    '-DG_LOG_DOMAIN="harvest-almanac"',
 ]
+
+if not get_option('use-system-harvest-glib')
+    harvest_almanac_c_args += [
+        '-I' + join_paths(meson.current_source_dir(), '..', 'harvest-glib'),
+    ]
+endif
 
 if get_option('buildtype') == 'release'
     harvest_almanac_c_args += [

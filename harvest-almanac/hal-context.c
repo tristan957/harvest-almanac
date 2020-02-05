@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HalContext"
-
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>

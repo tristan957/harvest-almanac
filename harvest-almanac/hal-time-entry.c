@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HalTimeEntry"
-
 #include <glib-object.h>
 #include <gtk/gtk.h>
 

@@ -5,7 +5,7 @@
 #include <json-glib/json-glib.h>
 #include <libsoup/soup.h>
 
-#include "harvest.h"
+#include "harvest-glib/harvest.h"
 
 HarvestApiClient *
 initialize_environment(void)

@@ -11,16 +11,7 @@ project(
     ],
 )
 
-c_args = [
-    # Required to pick up hal-resources.h, config.h in some IDEs
-    '-I' + join_paths(meson.build_root(), 'data'),
-    '-I' + join_paths(meson.build_root(), 'harvest-almanac'),
-    '-I' + join_paths(meson.build_root(), 'harvest-glib'),
-]
-
 cc = meson.get_compiler('c')
-
-add_project_arguments(c_args, language: 'c')
 
 gnome = import('gnome')
 i18n = import('i18n')
@@ -34,7 +25,7 @@ libsoup_dep = dependency('libsoup-2.4', version: '>= 2.68.1', required: true, fa
 libsecret_dep = dependency('libsecret-1', version: '>= 0.19.1', required: true, fallback: ['libsecret', 'libsecret_dep'])
 
 if get_option('use-system-harvest-glib')
-    harvest_glib_dep = dependency('harvest-glib-1.0', version: '>= 1.0.0', required: false)
+    harvest_glib_dep = dependency('harvest-glib-1.0', version: '>= 1.0.0', required: true)
 else
     subdir('harvest-glib')
 endif

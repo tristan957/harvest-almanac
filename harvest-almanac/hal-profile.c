@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HalProfile"
-
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
@@ -64,7 +62,7 @@ hal_profile_set_property(
 static void
 hal_profile_class_init(HalProfileClass *klass)
 {
-	GObjectClass *obj_class   = G_OBJECT_CLASS(klass);
+	GObjectClass *obj_class	  = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *wid_class = GTK_WIDGET_CLASS(klass);
 
 	obj_class->finalize		= hal_profile_finalize;

@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define G_LOG_DOMAIN "HalApplication"
-
 #include <string.h>
 
 #include <glib-object.h>
