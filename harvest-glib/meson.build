@@ -104,9 +104,6 @@ harvest_glib = library(
 )
 
 harvest_glib_dep = declare_dependency(
-    compile_args: [
-        '-Iharvest-glib',
-    ],
     link_with: harvest_glib,
     version: harvest_glib_version,
     include_directories: include_directories('..'),
