@@ -1,4 +1,4 @@
-[![builds.sr.ht status](https://builds.sr.ht/~tristan957/harvest-almanac/.build.yml.svg)](https://builds.sr.ht/~tristan957/harvest-almanac/.build.yml?)
+[![builds.sr.ht status](https://builds.sr.ht/~tristan957/harvest-almanac.svg)](https://builds.sr.ht/~tristan957/harvest-almanac?)
 
 # Harvest Almanac
 
