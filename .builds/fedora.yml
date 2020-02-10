@@ -1,0 +1,34 @@
+image: fedora/31
+packages:
+  - gtk+-devel
+  - meson
+  - json-glib-devel
+  - libhandy-devel
+  - libsoup-devel
+  - libsecret-devel
+  - flatpak
+secrets:
+  - 92357bf7-1b44-4630-999e-fca4a120c50b
+  - e7a81607-18a2-4f0a-964e-9225b589dbb5
+sources:
+  - https://git.sr.ht/~tristan957/harvest-almanac
+tasks:
+  - setup: |
+      cd harvest-almanac
+      CC=gcc meson -Dwerror=true -Dbuildtype=release -Dwarning_level=2 \
+        -Dlibhandy:tests=false -Dlibhandy:vapi=false -Dlibhandy:example=false \
+        -Dlibhandy:introspection=disabled -Dlibhandy:glade_catalog=disabled build
+  - build: |
+      cd harvest-almanac
+      ninja -C build
+  # - flatpak: |
+  #     cd harvest-almanac
+  #     flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo \
+  #       --ccache --user --install-deps-from=flathub --install .flatpak \
+  #       dist/flatpak/io.partin.tristan.HarvestAlmanac.yaml
+  - test: |
+      cd harvest-almanac
+      set +x
+      . ~/.harvest-almanac.env
+      set -x
+      ninja test -C build
