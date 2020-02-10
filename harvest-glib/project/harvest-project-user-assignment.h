@@ -8,8 +8,8 @@
 
 G_BEGIN_DECLS
 
-#define HARVEST_TYPE_USER_ASSIGNMENT (harvest_invoice_get_type())
-G_DECLARE_FINAL_TYPE(
-	HarvestUserAssignment, harvest_user_assignment, HARVEST, USER_ASSIGNMENT, GObject)
+#define HARVEST_TYPE_PROJECT_USER_ASSIGNMENT (harvest_project_user_assignment_get_type())
+G_DECLARE_FINAL_TYPE(HarvestProjectUserAssignment, harvest_project_user_assignment, HARVEST,
+	PROJECT_USER_ASSIGNMENT, GObject)
 
 G_END_DECLS

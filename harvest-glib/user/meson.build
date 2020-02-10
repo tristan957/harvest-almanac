@@ -1,4 +1,5 @@
 component_public_headers = [
+	'harvest-user-project-assignment.h',
 	'harvest-user.h',
 ]
 

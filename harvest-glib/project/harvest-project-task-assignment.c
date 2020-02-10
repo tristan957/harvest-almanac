@@ -7,11 +7,11 @@
 #include <glib/gi18n-lib.h>
 #include <json-glib/json-glib.h>
 
+#include "harvest-glib/project/harvest-project-task-assignment.h"
 #include "harvest-glib/project/harvest-project.h"
-#include "harvest-glib/task/harvest-task-assignment.h"
 #include "harvest-glib/task/harvest-task.h"
 
-struct _HarvestTaskAssignment
+struct _HarvestProjectTaskAssignment
 {
 	GObject parent_instance;
 
@@ -26,12 +26,14 @@ struct _HarvestTaskAssignment
 	GDateTime *updated_at;
 };
 
-static void harvest_task_assignment_json_serializable_init(JsonSerializableIface *iface);
+static void harvest_project_task_assignment_json_serializable_init(JsonSerializableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE(HarvestTaskAssignment, harvest_task_assignment, G_TYPE_OBJECT,
-	G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE, harvest_task_assignment_json_serializable_init))
+G_DEFINE_TYPE_WITH_CODE(HarvestProjectTaskAssignment, harvest_project_task_assignment,
+	G_TYPE_OBJECT,
+	G_IMPLEMENT_INTERFACE(
+		JSON_TYPE_SERIALIZABLE, harvest_project_task_assignment_json_serializable_init))
 
-enum HarvestTaskAssignmentProps
+enum HarvestProjectTaskAssignmentProps
 {
 	PROP_0,
 	PROP_ID,
@@ -49,7 +51,7 @@ enum HarvestTaskAssignmentProps
 static GParamSpec *obj_properties[N_PROPS];
 
 static gboolean
-harvest_task_assignment_json_deserialize_property(JsonSerializable *serializable,
+harvest_project_task_assignment_json_deserialize_property(JsonSerializable *serializable,
 	const gchar *prop_name, GValue *val, GParamSpec *pspec, JsonNode *prop_node)
 {
 	if (g_strcmp0(prop_name, "created_at") == 0 || g_strcmp0(prop_name, "updated_at") == 0) {
@@ -74,15 +76,15 @@ harvest_task_assignment_json_deserialize_property(JsonSerializable *serializable
 }
 
 static void
-harvest_task_assignment_json_serializable_init(JsonSerializableIface *iface)
+harvest_project_task_assignment_json_serializable_init(JsonSerializableIface *iface)
 {
-	iface->deserialize_property = harvest_task_assignment_json_deserialize_property;
+	iface->deserialize_property = harvest_project_task_assignment_json_deserialize_property;
 }
 
 static void
-harvest_task_assignment_finalize(GObject *obj)
+harvest_project_task_assignment_finalize(GObject *obj)
 {
-	HarvestTaskAssignment *self = HARVEST_TASK_ASSIGNMENT(obj);
+	HarvestProjectTaskAssignment *self = HARVEST_PROJECT_TASK_ASSIGNMENT(obj);
 
 	if (self->project != NULL)
 		g_object_unref(self->project);
@@ -93,13 +95,14 @@ harvest_task_assignment_finalize(GObject *obj)
 	if (self->updated_at != NULL)
 		g_date_time_unref(self->updated_at);
 
-	G_OBJECT_CLASS(harvest_task_assignment_parent_class)->finalize(obj);
+	G_OBJECT_CLASS(harvest_project_task_assignment_parent_class)->finalize(obj);
 }
 
 static void
-harvest_task_assignment_get_property(GObject *obj, guint prop_id, GValue *val, GParamSpec *pspec)
+harvest_project_task_assignment_get_property(
+	GObject *obj, guint prop_id, GValue *val, GParamSpec *pspec)
 {
-	HarvestTaskAssignment *self = HARVEST_TASK_ASSIGNMENT(obj);
+	HarvestProjectTaskAssignment *self = HARVEST_PROJECT_TASK_ASSIGNMENT(obj);
 
 	switch (prop_id) {
 	case PROP_ID:
@@ -135,10 +138,10 @@ harvest_task_assignment_get_property(GObject *obj, guint prop_id, GValue *val, G
 }
 
 static void
-harvest_task_assignment_set_property(
+harvest_project_task_assignment_set_property(
 	GObject *obj, guint prop_id, const GValue *val, GParamSpec *pspec)
 {
-	HarvestTaskAssignment *self = HARVEST_TASK_ASSIGNMENT(obj);
+	HarvestProjectTaskAssignment *self = HARVEST_PROJECT_TASK_ASSIGNMENT(obj);
 
 	switch (prop_id) {
 	case PROP_ID:
@@ -182,13 +185,13 @@ harvest_task_assignment_set_property(
 }
 
 static void
-harvest_task_assignment_class_init(HarvestTaskAssignmentClass *klass)
+harvest_project_task_assignment_class_init(HarvestProjectTaskAssignmentClass *klass)
 {
 	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 
-	obj_class->finalize		= harvest_task_assignment_finalize;
-	obj_class->get_property = harvest_task_assignment_get_property;
-	obj_class->set_property = harvest_task_assignment_set_property;
+	obj_class->finalize		= harvest_project_task_assignment_finalize;
+	obj_class->get_property = harvest_project_task_assignment_get_property;
+	obj_class->set_property = harvest_project_task_assignment_set_property;
 
 	obj_properties[PROP_ID]
 		= g_param_spec_int("id", _("ID"), _("Unique ID for the task assignment."), 0, INT_MAX, 0,
@@ -223,5 +226,5 @@ harvest_task_assignment_class_init(HarvestTaskAssignmentClass *klass)
 }
 
 static void
-harvest_task_assignment_init(G_GNUC_UNUSED HarvestTaskAssignment *self)
+harvest_project_task_assignment_init(G_GNUC_UNUSED HarvestProjectTaskAssignment *self)
 {}

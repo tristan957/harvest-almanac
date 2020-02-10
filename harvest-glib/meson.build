@@ -31,12 +31,13 @@ harvest_glib_sources = [
     'invoice/harvest-invoice-item-category.c',
     'invoice/harvest-invoice-line-item.c',
     'invoice/harvest-invoice.c',
+    'project/harvest-project-task-assignment.c',
+    'project/harvest-project-user-assignment.c',
     'project/harvest-project.c',
-    'project/harvest-user-assignment.c',
-    'task/harvest-task-assignment.c',
     'task/harvest-task.c',
     'time-entry/harvest-time-entry.c',
     'time-entry/requests/harvest-late-request.c',
+    'user/harvest-user-project-assignment.c',
     'user/harvest-user.c',
     'user/requests/harvest-users-me-request.c'
 ]

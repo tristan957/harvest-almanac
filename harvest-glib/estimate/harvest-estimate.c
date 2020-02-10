@@ -98,11 +98,11 @@ harvest_estimate_deserialize_property(JsonSerializable *serializable, const gcha
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "line_items") == 0) {
-		JsonArray *arr	   = json_node_get_array(prop_node);
-		const guint length = json_array_get_length(arr);
-		GPtrArray *roles   = g_ptr_array_sized_new(length);
-		json_array_foreach_element(arr, line_items_for_each, roles);
-		g_value_set_boxed(val, roles);
+		JsonArray *arr		  = json_node_get_array(prop_node);
+		const guint length	  = json_array_get_length(arr);
+		GPtrArray *line_items = g_ptr_array_sized_new(length);
+		json_array_foreach_element(arr, line_items_for_each, line_items);
+		g_value_set_boxed(val, line_items);
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "creator") == 0) {

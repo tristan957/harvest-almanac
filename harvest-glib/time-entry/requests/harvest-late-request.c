@@ -109,9 +109,13 @@ harvest_late_request_set_property(GObject *obj, guint prop_id, const GValue *val
 
 	switch (prop_id) {
 	case PROP_USER_ID:
+		if (self->user_id != NULL)
+			g_variant_unref(self->user_id);
 		self->user_id = g_value_dup_variant(val);
 		break;
 	case PROP_CLIENT_ID:
+		if (self->client_id != NULL)
+			g_variant_unref(self->client_id);
 		self->client_id = g_value_dup_variant(val);
 		break;
 	case PROP_PROJECT_ID:

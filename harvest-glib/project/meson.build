@@ -1,6 +1,7 @@
 component_public_headers = [
+	'harvest-project-task-assignment.h',
+	'harvest-project-user-assignment.h',
 	'harvest-project.h',
-	'harvest-user-assignment.h',
 ]
 
 component_header_subdir = join_paths(harvest_glib_header_subdir, 'project')

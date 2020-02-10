@@ -8,8 +8,8 @@
 
 G_BEGIN_DECLS
 
-#define HARVEST_TYPE_TASK_ASSIGNMENT (harvest_task_assignment_get_type())
-G_DECLARE_FINAL_TYPE(
-	HarvestTaskAssignment, harvest_task_assignment, HARVEST, TASK_ASSIGNMENT, GObject)
+#define HARVEST_TYPE_PROJECT_TASK_ASSIGNMENT (harvest_project_task_assignment_get_type())
+G_DECLARE_FINAL_TYPE(HarvestProjectTaskAssignment, harvest_project_task_assignment, HARVEST,
+	PROJECT_TASK_ASSIGNMENT, GObject)
 
 G_END_DECLS

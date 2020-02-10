@@ -10,9 +10,9 @@
 #include "harvest-glib/client/harvest-client.h"
 #include "harvest-glib/common/harvest-common.h"
 #include "harvest-glib/invoice/harvest-invoice.h"
+#include "harvest-glib/project/harvest-project-task-assignment.h"
+#include "harvest-glib/project/harvest-project-user-assignment.h"
 #include "harvest-glib/project/harvest-project.h"
-#include "harvest-glib/project/harvest-user-assignment.h"
-#include "harvest-glib/task/harvest-task-assignment.h"
 #include "harvest-glib/task/harvest-task.h"
 #include "harvest-glib/time-entry/harvest-time-entry.h"
 #include "harvest-glib/user/harvest-user.h"
@@ -24,11 +24,11 @@ struct _HarvestTimeEntry
 	int id;
 	GDateTime *spent_date;
 	HarvestUser *user;
-	HarvestUserAssignment *user_assignment;
+	HarvestProjectUserAssignment *user_assignment;
 	HarvestClient *client;
 	HarvestProject *project;
 	HarvestTask *task;
-	HarvestTaskAssignment *task_assingment;
+	HarvestProjectTaskAssignment *task_assignment;
 	HarvestInvoice *invoice;
 	double hours;
 	char *notes;
@@ -111,7 +111,7 @@ harvest_time_entry_deserialize_property(JsonSerializable *serializable, const gc
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "user_assignment") == 0) {
-		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_USER_ASSIGNMENT, prop_node);
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_PROJECT_USER_ASSIGNMENT, prop_node);
 		g_value_set_object(val, obj);
 
 		return TRUE;
@@ -131,7 +131,7 @@ harvest_time_entry_deserialize_property(JsonSerializable *serializable, const gc
 
 		return TRUE;
 	} else if (g_strcmp0(prop_name, "task_assignment") == 0) {
-		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_TASK_ASSIGNMENT, prop_node);
+		GObject *obj = json_gobject_deserialize(HARVEST_TYPE_PROJECT_TASK_ASSIGNMENT, prop_node);
 		g_value_set_object(val, obj);
 
 		return TRUE;
@@ -169,8 +169,8 @@ harvest_time_entry_finalize(GObject *obj)
 		g_object_unref(self->project);
 	if (self->task != NULL)
 		g_object_unref(self->task);
-	if (self->task_assingment != NULL)
-		g_object_unref(self->task_assingment);
+	if (self->task_assignment != NULL)
+		g_object_unref(self->task_assignment);
 	if (self->invoice != NULL)
 		g_object_unref(self->invoice);
 	g_free(self->notes);
@@ -217,7 +217,7 @@ harvest_time_entry_get_property(GObject *obj, guint prop_id, GValue *val, GParam
 		g_value_set_object(val, self->task);
 		break;
 	case PROP_TASK_ASSIGNMEMT:
-		g_value_set_object(val, self->task_assingment);
+		g_value_set_object(val, self->task_assignment);
 		break;
 	case PROP_INVOICE:
 		g_value_set_object(val, self->invoice);
@@ -315,9 +315,9 @@ harvest_time_entry_set_property(GObject *obj, guint prop_id, const GValue *val, 
 		self->task = g_value_get_object(val);
 		break;
 	case PROP_TASK_ASSIGNMEMT:
-		if (self->task_assingment != NULL)
-			g_object_unref(self->task_assingment);
-		self->task_assingment = g_value_get_object(val);
+		if (self->task_assignment != NULL)
+			g_object_unref(self->task_assignment);
+		self->task_assignment = g_value_get_object(val);
 		break;
 	case PROP_INVOICE:
 		if (self->invoice != NULL)
@@ -403,31 +403,31 @@ harvest_time_entry_class_init(HarvestTimeEntryClass *klass)
 	obj_properties[PROP_SPENT_DATE]
 		= g_param_spec_boxed("spent_date", _("Spent Date"), _("Date of the time entry."),
 			G_TYPE_DATE_TIME, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_USER] = g_param_spec_object("user", _("User"),
-		_("An object containing the id and name of the associated user."), HARVEST_TYPE_USER,
+	obj_properties[PROP_USER]			 = g_param_spec_object("user", _("User"),
+		   _("An object containing the id and name of the associated user."), HARVEST_TYPE_USER,
+		   G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_USER_ASSIGNMENT] = g_param_spec_object("user_assignment",
+		_("User Assignment"), _("A user assignment object of the associated user."),
+		HARVEST_TYPE_PROJECT_USER_ASSIGNMENT,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_USER_ASSIGNMENT]
-		= g_param_spec_object("user_assignment", _("User Assignment"),
-			_("A user assignment object of the associated user."), HARVEST_TYPE_USER_ASSIGNMENT,
-			G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_CLIENT]	 = g_param_spec_object("client", _("Client"),
+	obj_properties[PROP_CLIENT]			 = g_param_spec_object("client", _("Client"),
 		 _("An object containing the id and name of the associated client."), HARVEST_TYPE_CLIENT,
 		 G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_PROJECT] = g_param_spec_object("project", _("Project"),
+	obj_properties[PROP_PROJECT]		 = g_param_spec_object("project", _("Project"),
 		_("An object containing the id and name of the associated project."), HARVEST_TYPE_PROJECT,
 		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_TASK]	 = g_param_spec_object("task", _("Task"),
+	obj_properties[PROP_TASK]			 = g_param_spec_object("task", _("Task"),
 		   _("An object containing the id and name of the associated task."), HARVEST_TYPE_TASK,
 		   G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_TASK_ASSIGNMEMT]
-		= g_param_spec_object("task_assignment", _("Task Assignment"),
-			_("A task assignment object of the associated task."), HARVEST_TYPE_TASK_ASSIGNMENT,
-			G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_INVOICE] = g_param_spec_object("invoice", _("Invoice"),
+	obj_properties[PROP_TASK_ASSIGNMEMT] = g_param_spec_object("task_assignment",
+		_("Task Assignment"), _("A task assignment object of the associated task."),
+		HARVEST_TYPE_PROJECT_TASK_ASSIGNMENT,
+		G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_INVOICE]		 = g_param_spec_object("invoice", _("Invoice"),
 		_("Once the time entry has been invoiced, this field will include the associated invoice’s "
 		  "id and number."),
 		HARVEST_TYPE_INVOICE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_HOURS]	 = g_param_spec_double("hours", _("Hours"),
+	obj_properties[PROP_HOURS]			 = g_param_spec_double("hours", _("Hours"),
 		  _("Number of (decimal time) hours tracked in this time entry."), 0, DBL_MAX, 0,
 		  G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_NOTES]
