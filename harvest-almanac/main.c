@@ -8,17 +8,17 @@
 #include <handy.h>
 
 #include "hal-application.h"
+#include "hal-resources.h"
 
 int
 main(int argc, char *argv[])
 {
-	setlocale(LC_ALL, "");
-	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
 	textdomain(GETTEXT_PACKAGE);
+	g_resources_register(hal_get_resource());
 
-	const gboolean success = hdy_init(&argc, &argv);
-	if (!success) {
+	if (!hdy_init(&argc, &argv)) {
 		g_critical("Unable to initialize libhandy");
 
 		return 1;
@@ -28,7 +28,5 @@ main(int argc, char *argv[])
 
 	g_set_application_name(_("Harvest Almanac"));
 
-	const int status = g_application_run(G_APPLICATION(app), argc, argv);
-
-	return status;
+	return g_application_run(G_APPLICATION(app), argc, argv);
 }
