@@ -135,19 +135,19 @@ harvest_request_class_init(HarvestRequestClass *klass)
 
 	obj_properties[PROP_HTTP_METHOD]  = g_param_spec_enum("http-method", _("HTTP Method"),
 		 _("The HTTP method by which to send the request."), HTTP_TYPE_METHOD, HTTP_METHOD_GET,
-		 G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+		 G_PARAM_WRITABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ENDPOINT]	  = g_param_spec_string("endpoint", _("Endpoint"),
 		_("The server endpoint to send the request to."), NULL,
-		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_QUERY_PARAMS] = g_param_spec_string("query-params", _("Query Params"),
 		_("The query params to send the request with."), NULL,
-		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DATA]
 		= g_param_spec_object("data", _("Data"), _("The data to send in the body of the request."),
-			G_TYPE_OBJECT, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+			G_TYPE_OBJECT, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_RESPONSE_METADATA] = g_param_spec_object("response-metadata", _("Response"),
 		_("An object containing meta information of the response."), HARVEST_TYPE_RESPONSE_METADATA,
-		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+		G_PARAM_WRITABLE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPS, obj_properties);
 }
