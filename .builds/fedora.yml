@@ -15,7 +15,7 @@ sources:
 tasks:
   - setup: |
       cd harvest-almanac
-      CC=gcc meson -Dwerror=true -Dbuildtype=release -Dwarning_level=2 \
+      CC=gcc meson -Dbuildtype=release -Dwarning_level=2 \
         -Dlibhandy:tests=false -Dlibhandy:vapi=false -Dlibhandy:example=false \
         -Dlibhandy:introspection=disabled -Dlibhandy:glade_catalog=disabled build
   - build: |
