@@ -174,6 +174,7 @@ harvest_user_project_assignment_get_property(
 		break;
 	case PROP_TASK_ASSIGNMENTS:
 		g_value_set_boxed(val, self->task_assignments);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 	}
@@ -240,6 +241,7 @@ harvest_user_project_assignment_set_property(
 			}
 			g_ptr_array_unref(self->task_assignments);
 		}
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 	}
