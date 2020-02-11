@@ -39,6 +39,16 @@ modules:
       - type: archive
         url: https://source.puri.sm/Librem5/libhandy/-/archive/v0.0.13/libhandy-v0.0.13.tar.gz
         sha256: 138bec94e66d15a7a19350b65845d4529bcd969ea913ab3eb438f56fe47d5d37
+  - name: harvest-glib
+    builddir: true
+    buildsystem: meson
+    config-opts:
+      - "-Dwerror=true"
+      - "-Dbuildtype=release"
+      - "-Dwarning_level=2"
+    sources:
+      - type: git
+        url: https://git.sr.ht/~tristan957/harvest-glib
   - name: harvest-almanac
     builddir: true
     buildsystem: meson

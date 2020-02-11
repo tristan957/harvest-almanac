@@ -1,9 +1,7 @@
-harvest_almanac_version = '1.0.0'
-
 harvest_almanac_config_h = configuration_data({
     'package_name': 'Harvest Almanac',
-    'package_version': harvest_almanac_version,
-    'package_license': 'GTK_LICENSE_GPL_3_0_ONLY',
+    'package_version': meson.project_version(),
+    'package_license': 'GTK_LICENSE_GPL_3_0',
     'package_website': 'https://git.sr.ht/~tristan957/harvest-almanac',
     'package_website_label': 'Repository',
     'gettext_package': 'meson.project_name()',
@@ -33,12 +31,6 @@ harvest_almanac_c_args = [
     '-DG_LOG_DOMAIN="harvest-almanac"',
 ]
 
-if not get_option('use-system-harvest-glib')
-    harvest_almanac_c_args += [
-        '-I' + join_paths(meson.current_source_dir(), '..', 'harvest-glib'),
-    ]
-endif
-
 if get_option('buildtype') == 'release'
     harvest_almanac_c_args += [
         '-DG_DISABLE_ASSERT',
@@ -64,6 +56,7 @@ executable(
     harvest_almanac_sources + harvest_almanac_resources,
     c_args: harvest_almanac_c_args,
     dependencies: harvest_almanac_dependencies,
+    include_directories: include_directories(join_paths('..', 'include')),
     gui_app: true,
     install: true,
 )

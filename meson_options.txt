@@ -1,6 +1,0 @@
-option('lib-only', type: 'boolean', value: false,
-	description: 'Only build harvest-glib, omitting the frontend')
-option('use-system-harvest-glib', type: 'boolean', value: false,
-	description: 'Use the system provided harvest-glib instead of the local copy')
-option('with-tests', type: 'boolean', value: true,
-	description: 'Build the test suite')

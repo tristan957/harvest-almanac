@@ -18,22 +18,39 @@ parts:
     plugin: meson
     meson-parameters:
       - -Dvapi=false
-      - -Dtest=false
+      - -Dtests=false
+      - -Dexamples=false
+      - -Dintrospection=disabled
+      - -Dglade_catalog=disabled
+      - -Dbuildtype=release
     source-type: git
     source: https://source.puri.sm/Librem5/libhandy
     build-packages:
       - gcc
       - libgtk-3-dev
-  harvest-almanac:
-    after: [libhandy]
+  harvest-glib:
     plugin: meson
     meson-parameters:
       - -Dbuildtype=release
-      - -Dlibhandy:glade_catalog=disabled
+      - -Dharvest-glib:with-tests=false
+    source-type: git
+    source: https://git.sr.ht/~tristan957/harvest-glib
+    build-packages:
+      - gcc
+      - libjson-glib-dev
+      - libsoup-dev
+  harvest-almanac:
+    after:
+      - libhandy
+      - harvest-glib
+    plugin: meson
+    meson-parameters:
+      - -Dbuildtype=release
     source-type: git
     source: https://git.sr.ht/~tristan957/harvest-almanac
     build-packages:
       - gcc
       - libjson-glib-dev
-      - libcurl4-openssl-dev
+      - libsoup-dev
+      - libsecret-dev
       - libgtk-3-dev

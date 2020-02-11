@@ -2,14 +2,12 @@ image: fedora/31
 packages:
   - gtk+-devel
   - meson
-  - json-glib-devel
   - libhandy-devel
   - libsoup-devel
   - libsecret-devel
-  - flatpak
+  # - flatpak
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
-  - e7a81607-18a2-4f0a-964e-9225b589dbb5
 sources:
   - https://git.sr.ht/~tristan957/harvest-almanac
 tasks:
@@ -26,9 +24,3 @@ tasks:
   #     flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo \
   #       --ccache --user --install-deps-from=flathub --install .flatpak \
   #       dist/flatpak/io.partin.tristan.HarvestAlmanac.yaml
-  - test: |
-      cd harvest-almanac
-      set +x
-      . ~/.harvest-almanac.env
-      set -x
-      ninja test -C build
