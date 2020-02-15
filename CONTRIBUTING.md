@@ -1,15 +1,5 @@
 # Contributing
 
-Harvest Almanac is composed of two components:
-
-* `libharvest-glib`
-* `harvest-almanac`
-
-## libharvest-glib
-
-`libharvest-glib` is an API wrapper around the Harvest API V2. It makes use of
-the GObject type system around its entities.
-
 ## harvest-almanac
 
 `harvest-almanac` is the GUI application written in GTK to interact with
@@ -27,6 +17,8 @@ CC=gcc meson build
 ```
 
 ### Dependencies
+
+You can find necessary dependecies and their versions in the root `meson.build`.
 
 This project has been configured to use Meson's WrapDB if development libraries
 are not found on the host system. If you want to use WrapDB-provided
@@ -46,7 +38,7 @@ Unfortunately the version of GTK in the `core18` snap is incompatible with
 would take time to figure out if versions of packages in `core18` work with
 GTK 3.24. This is doable if someone commits to it.
 
-#### Host
+#### Local
 
 ```text
 ninja -C build
@@ -60,7 +52,7 @@ flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo --ccache 
 
 ### Running
 
-#### Host
+#### Local
 
 ```text
 ./build/src/harvest-almanac
@@ -70,20 +62,4 @@ flatpak-builder --verbose --sandbox --force-clean --repo=.flatpak-repo --ccache 
 
 ```text
 flatpak run io.partin.tristan.HarvestAlmanac
-```
-
-### Testing
-
-Make sure the following environment variables are set:
-
-* `HARVEST_API_ACCESS_TOKEN`
-* `HARVEST_API_CONTACT_EMAIL`
-* `HARVEST_API_ACCOUNT_ID`
-* `HARVEST_SOUP_MAX_CONNECTIONS`
-* `HARVEST_SOUP_LOG_LEVEL`
-
-Then run
-
-```text
-ninja test -C build
 ```

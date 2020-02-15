@@ -5,6 +5,7 @@ packages:
   - libhandy-devel
   - libsoup-devel
   - libsecret-devel
+  - json-glib-devel
   # - flatpak
 secrets:
   - 92357bf7-1b44-4630-999e-fca4a120c50b
