@@ -17,7 +17,7 @@ tasks:
       CC=gcc meson -Dbuildtype=release -Dwarning_level=2 \
         -Dlibhandy:tests=false -Dlibhandy:vapi=false -Dlibhandy:example=false \
         -Dlibhandy:introspection=disabled -Dlibhandy:glade_catalog=disabled \
-        -Dharvest-glib:with-tests=false build
+        -Dharvest-glib:tests=false build
   - build: |
       cd harvest-almanac
       ninja -C build

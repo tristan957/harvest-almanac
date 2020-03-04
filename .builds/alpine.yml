@@ -14,7 +14,7 @@ sources:
 tasks:
   - setup: |
       cd harvest-almanac
-      CC=gcc meson -Dwerror=true -Dbuildtype=release -Dwarning_level=2 -Dharvest-glib:with-tests=false \
+      CC=gcc meson -Dwerror=true -Dbuildtype=release -Dwarning_level=2 -Dharvest-glib:tests=false \
         build
   - build: |
       cd harvest-almanac
