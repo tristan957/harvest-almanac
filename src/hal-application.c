@@ -145,7 +145,7 @@ hal_application_about(
 	HalApplication *self		= HAL_APPLICATION(data);
 	HalApplicationPrivate *priv = hal_application_get_instance_private(self);
 
-	gtk_show_about_dialog(GTK_WINDOW(priv->main_window), "program-name", PACKAGE_NAME, "version",
+	gtk_show_about_dialog(GTK_WINDOW(priv->main_window), "program-name", APPLICATION_NAME, "version",
 		PACKAGE_VERSION, "license-type", PACKAGE_LICENSE, "website", PACKAGE_WEBSITE,
 		"website-label", PACKAGE_WEBSITE_LABEL, "authors", authors, "logo-icon-name", "trophy-gold",
 		NULL);

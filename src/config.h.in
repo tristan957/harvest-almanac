@@ -7,8 +7,8 @@
 #endif
 
 #ifdef HAL_COMPILER
-#	define HAL_DIAGNOSTIC_PUSH (HAL_COMPILER diagnostic push)
-#	define HAL_DIAGNOSTIC_POP (HAL_COMPILER diagnostic pop)
+#	define HAL_DIAGNOSTIC_PUSH	   (HAL_COMPILER diagnostic push)
+#	define HAL_DIAGNOSTIC_POP	   (HAL_COMPILER diagnostic pop)
 #	define HAL_DIAGNOSTIC_IGNORED (HAL_COMPILER diagnostic ignored)
 #else
 #	define HAL_DIAGNOSTIC_PUSH
@@ -16,13 +16,13 @@
 #	define HAL_DIAGNOSTIC_IGNORED
 #endif
 
-#define PACKAGE_NAME "@package_name@"
-#define PACKAGE_VERSION "@package_version@"
+#define APPLICATION_NAME "@application_name@"
+#define PACKAGE_VERSION	 "@package_version@"
 // clang-format off
 #define PACKAGE_LICENSE @package_license@
 // clang-format on
-#define PACKAGE_WEBSITE "@package_website@"
+#define PACKAGE_WEBSITE		  "@package_website@"
 #define PACKAGE_WEBSITE_LABEL "@package_website_label@"
-#define GETTEXT_PACKAGE "@gettext_package@"
-#define LOCALEDIR "@localedir@"
-#define LIBDIR "@libdir@"
+#define GETTEXT_PACKAGE		  "@gettext_package@"
+#define LOCALEDIR			  "@localedir@"
+#define LIBDIR				  "@libdir@"

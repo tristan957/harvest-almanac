@@ -1,5 +1,5 @@
 harvest_almanac_config_h = configuration_data({
-    'package_name': 'Harvest Almanac',
+    'application_name': 'Harvest Almanac',
     'package_version': meson.project_version(),
     'package_license': 'GTK_LICENSE_GPL_3_0',
     'package_website': 'https://git.sr.ht/~tristan957/harvest-almanac',

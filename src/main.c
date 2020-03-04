@@ -25,8 +25,8 @@ main(int argc, char *argv[])
 	}
 
 	g_autoptr(HalApplication) app = hal_application_new("io.partin.tristan.HarvestAlmanac");
-
-	g_set_application_name(_("Harvest Almanac"));
+	g_set_prgname(APPLICATION_NAME);
+	g_set_application_name(_(APPLICATION_NAME));
 
 	return g_application_run(G_APPLICATION(app), argc, argv);
 }
